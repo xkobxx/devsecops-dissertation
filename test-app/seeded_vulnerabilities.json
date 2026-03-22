@@ -1,0 +1,72 @@
+{
+  "application": "test_app",
+  "total_vulnerabilities": 6,
+  "vulnerabilities": [
+    {
+      "id": "VULN-001",
+      "type": "Hardcoded Credentials",
+      "cwe": "CWE-798",
+      "owasp_category": "A07:2021 - Identification and Authentication Failures",
+      "severity": "HIGH",
+      "file": "app.py",
+      "line": 8,
+      "expected_tool": "Bandit",
+      "description": "Hardcoded password and secret key in source code"
+    },
+    {
+      "id": "VULN-002",
+      "type": "SQL Injection",
+      "cwe": "CWE-89",
+      "owasp_category": "A03:2021 - Injection",
+      "severity": "HIGH",
+      "file": "app.py",
+      "line": 17,
+      "expected_tool": "Bandit/Semgrep",
+      "description": "SQL query constructed via string concatenation with unsanitised user input"
+    },
+    {
+      "id": "VULN-003",
+      "type": "OS Command Injection",
+      "cwe": "CWE-78",
+      "owasp_category": "A03:2021 - Injection",
+      "severity": "HIGH",
+      "file": "app.py",
+      "line": 25,
+      "expected_tool": "Bandit/Semgrep",
+      "description": "subprocess.call with shell=True passes unsanitised user input to OS shell"
+    },
+    {
+      "id": "VULN-004",
+      "type": "Code Injection",
+      "cwe": "CWE-94",
+      "owasp_category": "A03:2021 - Injection",
+      "severity": "HIGH",
+      "file": "app.py",
+      "line": 32,
+      "expected_tool": "Bandit/Semgrep",
+      "description": "eval() executed on unsanitised user-supplied input"
+    },
+    {
+      "id": "VULN-005",
+      "type": "Unvalidated Redirect",
+      "cwe": "CWE-601",
+      "owasp_category": "A01:2021 - Broken Access Control",
+      "severity": "MEDIUM",
+      "file": "app.py",
+      "line": 38,
+      "expected_tool": "Semgrep",
+      "description": "Redirect target taken directly from user-controlled query parameter without validation"
+    },
+    {
+      "id": "VULN-006",
+      "type": "Path Traversal",
+      "cwe": "CWE-22",
+      "owasp_category": "A01:2021 - Broken Access Control",
+      "severity": "HIGH",
+      "file": "app.py",
+      "line": 45,
+      "expected_tool": "Bandit/Semgrep",
+      "description": "File path constructed with unsanitised user input allowing directory traversal"
+    }
+  ]
+}

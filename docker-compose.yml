@@ -1,0 +1,28 @@
+services:
+  dvwa:
+    image: vulnerables/web-dvwa
+    ports:
+      - "8081:80"
+    environment:
+      - DB_SERVER=dvwa-db
+    depends_on:
+      - dvwa-db
+
+  dvwa-db:
+    image: mariadb:10.1
+    environment:
+      - MYSQL_ROOT_PASSWORD=dvwa
+      - MYSQL_DATABASE=dvwa
+      - MYSQL_USER=dvwa
+      - MYSQL_PASSWORD=dvwa
+
+  juiceshop:
+    image: bkimminich/juice-shop
+    ports:
+      - "3000:3000"
+
+  webgoat:
+    image: webgoat/goatandwolf
+    ports:
+      - "8080:8080"
+      - "9090:9090"

@@ -4,6 +4,9 @@ import subprocess
 import os
 
 app = Flask(__name__)
+@app.route('/')
+def index():
+    return 'Test app running', 200
 
 # VULN-001: Hardcoded credentials
 DB_PASSWORD = "admin123"

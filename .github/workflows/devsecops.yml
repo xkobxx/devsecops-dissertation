@@ -197,13 +197,25 @@ jobs:
           python-version: "3.11"
 
       - name: Run aggregation and security gate
+        id: gate
         run: python scripts/aggregate_results.py
+        continue-on-error: true
 
       - name: Upload unified findings
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: unified-findings
           path: reports/findings.json
+
+      - name: Enforce security gate result
+        if: always()
+        run: |
+          if [ "${{ steps.gate.outcome }}" == "failure" ]; then
+            echo "Security gate failed — HIGH/CRITICAL findings detected. Blocking build."
+            exit 1
+          fi
+          echo "Security gate passed."
 
   generate-dashboard:
     name: Generate Report Dashboard

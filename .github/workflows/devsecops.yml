@@ -43,7 +43,7 @@ jobs:
 
       - name: Run Semgrep scan
         run: |
-          semgrep --config=p/owasp-2021 --json \
+          semgrep --config=p/python --json \
             --output reports/semgrep_report.json \
             test-app/ || true
 

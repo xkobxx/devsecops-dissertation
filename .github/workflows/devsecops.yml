@@ -81,10 +81,78 @@ jobs:
           fail_action: false
           artifact_name: zap-report
 
+  sca-pip-audit:
+    name: SCA - pip-audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Run pip-audit scan
+        run: pip-audit -r test-app/requirements.txt --format json -o reports/pip_audit_report.json || true
+
+      - name: Upload pip-audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-report
+          path: reports/pip_audit_report.json
+
+  container-scan-trivy:
+    name: Container Scan - Trivy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy config scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          scan-ref: .
+          format: json
+          output: reports/trivy_report.json
+          exit-code: "0"
+
+      - name: Upload Trivy report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-report
+          path: reports/trivy_report.json
+
+  secrets-scan-gitleaks:
+    name: Secrets Scan - Gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        run: |
+          docker run --rm -v "$PWD":/repo ghcr.io/gitleaks/gitleaks:latest \
+            detect --source /repo --report-format json \
+            --report-path /repo/reports/gitleaks_report.json \
+            --exit-code 0 || true
+
+      - name: Upload Gitleaks report
+        uses: actions/upload-artifact@v4
+        with:
+          name: gitleaks-report
+          path: reports/gitleaks_report.json
+
   security-gate:
     name: Security Gate
     runs-on: ubuntu-latest
-    needs: [sast-bandit, sast-semgrep]
+    needs: [sast-bandit, sast-semgrep, sca-pip-audit, container-scan-trivy, secrets-scan-gitleaks]
     if: always()
     steps:
       - name: Checkout code
@@ -102,6 +170,27 @@ jobs:
           name: semgrep-report
           path: reports/
 
+      - name: Download pip-audit report
+        uses: actions/download-artifact@v4
+        with:
+          name: pip-audit-report
+          path: reports/
+        continue-on-error: true
+
+      - name: Download Trivy report
+        uses: actions/download-artifact@v4
+        with:
+          name: trivy-report
+          path: reports/
+        continue-on-error: true
+
+      - name: Download Gitleaks report
+        uses: actions/download-artifact@v4
+        with:
+          name: gitleaks-report
+          path: reports/
+        continue-on-error: true
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -115,3 +204,32 @@ jobs:
         with:
           name: unified-findings
           path: reports/findings.json
+
+  generate-dashboard:
+    name: Generate Report Dashboard
+    runs-on: ubuntu-latest
+    needs: [security-gate]
+    if: always()
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download unified findings
+        uses: actions/download-artifact@v4
+        with:
+          name: unified-findings
+          path: reports/
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Generate HTML dashboard
+        run: python scripts/generate_report.py
+
+      - name: Upload dashboard
+        uses: actions/upload-artifact@v4
+        with:
+          name: dashboard
+          path: reports/dashboard.html

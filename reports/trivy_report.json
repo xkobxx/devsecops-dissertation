@@ -1,0 +1,19 @@
+{
+  "SchemaVersion": 2,
+  "Trivy": {
+    "Version": "0.69.3"
+  },
+  "ReportID": "019d9425-de2c-79b4-87bd-fa18d8ee6f63",
+  "CreatedAt": "2026-04-16T03:36:42.924637+01:00",
+  "ArtifactID": "sha256:84e12cf376f540cb85040a888d72f88388033f486eb03fcfc4f8a50eb4b191dd",
+  "ArtifactName": ".",
+  "ArtifactType": "repository",
+  "Metadata": {
+    "RepoURL": "https://github.com/xkobxx/devsecops-dissertation.git",
+    "Branch": "main",
+    "Commit": "226f34ca7854da7e83a2bfe11ee32fdb6494da15",
+    "CommitMsg": "fix: quote 'on' keyword in YAML to fix trigger parsing",
+    "Author": "David Mensah \u003cdave2shee2012@gmail.com\u003e",
+    "Committer": "David Mensah \u003cdave2shee2012@gmail.com\u003e"
+  }
+}

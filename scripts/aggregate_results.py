@@ -50,6 +50,63 @@ if os.path.exists(zap_path):
                 'line': None
             })
 
+# Parse pip-audit (SCA)
+pip_audit_path = 'reports/pip_audit_report.json'
+if os.path.exists(pip_audit_path):
+    with open(pip_audit_path) as f:
+        pip_data = json.load(f)
+    for dep in pip_data.get('dependencies', []):
+        for vuln in dep.get('vulns', []):
+            findings.append({
+                'tool': 'pip-audit',
+                'rule_id': vuln.get('id'),
+                'severity': 'HIGH',
+                'description': vuln.get('description', ''),
+                'file': dep.get('name'),
+                'line': None
+            })
+
+# Parse Trivy (container/config scanning)
+trivy_path = 'reports/trivy_report.json'
+if os.path.exists(trivy_path):
+    with open(trivy_path) as f:
+        trivy = json.load(f)
+    for result in trivy.get('Results', []):
+        for vuln in result.get('Vulnerabilities', []):
+            findings.append({
+                'tool': 'Trivy',
+                'rule_id': vuln.get('VulnerabilityID'),
+                'severity': vuln.get('Severity', 'UNKNOWN'),
+                'description': vuln.get('Title', vuln.get('Description', '')),
+                'file': result.get('Target', ''),
+                'line': None
+            })
+        for misc in result.get('Misconfigurations', []):
+            findings.append({
+                'tool': 'Trivy',
+                'rule_id': misc.get('ID'),
+                'severity': misc.get('Severity', 'UNKNOWN'),
+                'description': misc.get('Title', ''),
+                'file': result.get('Target', ''),
+                'line': None
+            })
+
+# Parse Gitleaks (secrets scanning)
+gitleaks_path = 'reports/gitleaks_report.json'
+if os.path.exists(gitleaks_path):
+    with open(gitleaks_path) as f:
+        leaks = json.load(f)
+    if isinstance(leaks, list):
+        for leak in leaks:
+            findings.append({
+                'tool': 'Gitleaks',
+                'rule_id': leak.get('RuleID', 'secret'),
+                'severity': 'HIGH',
+                'description': leak.get('Description', 'Secret detected'),
+                'file': leak.get('File', ''),
+                'line': leak.get('StartLine')
+            })
+
 # Write unified findings
 os.makedirs('reports', exist_ok=True)
 with open('reports/findings.json', 'w') as f:
@@ -57,7 +114,7 @@ with open('reports/findings.json', 'w') as f:
 
 print(f"Aggregated {len(findings)} total findings.")
 
-# Security gate — fail build on any HIGH severity finding from Bandit or Semgrep
+# Security gate — fail build on any HIGH severity finding from SAST tools
 critical_findings = [
     f for f in findings
     if f['tool'] in ('Bandit', 'Semgrep')

@@ -1,0 +1,34 @@
+# AI assistant tooling — not part of the project
+.agent/
+.claude/
+.qwen/
+QWEN.md
+commands/
+skills/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+*.egg
+
+# Test / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+._*
+Thumbs.db
+
+# SQLite databases
+*.db
+
+# Secrets / env
+.env
+.env.*

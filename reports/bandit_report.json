@@ -1,6 +1,6 @@
 {
   "errors": [],
-  "generated_at": "2026-03-27T15:18:18Z",
+  "generated_at": "2026-04-16T02:31:44Z",
   "metrics": {
     "_totals": {
       "CONFIDENCE.HIGH": 3,
@@ -11,7 +11,7 @@
       "SEVERITY.LOW": 3,
       "SEVERITY.MEDIUM": 2,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 37,
+      "loc": 40,
       "nosec": 0,
       "skipped_tests": 0
     },
@@ -24,7 +24,7 @@
       "SEVERITY.LOW": 3,
       "SEVERITY.MEDIUM": 2,
       "SEVERITY.UNDEFINED": 0,
-      "loc": 37,
+      "loc": 40,
       "nosec": 0,
       "skipped_tests": 0
     }
@@ -51,7 +51,7 @@
       "test_name": "blacklist"
     },
     {
-      "code": "8 # VULN-001: Hardcoded credentials\n9 DB_PASSWORD = \"admin123\"\n10 SECRET_KEY = \"hardcoded_secret_key_123\"\n",
+      "code": "11 # VULN-001: Hardcoded credentials\n12 DB_PASSWORD = \"admin123\"\n13 SECRET_KEY = \"hardcoded_secret_key_123\"\n",
       "col_offset": 14,
       "end_col_offset": 24,
       "filename": "test-app/app.py",
@@ -62,16 +62,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: 'admin123'",
-      "line_number": 9,
+      "line_number": 12,
       "line_range": [
-        9
+        12
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "9 DB_PASSWORD = \"admin123\"\n10 SECRET_KEY = \"hardcoded_secret_key_123\"\n11 \n",
+      "code": "12 DB_PASSWORD = \"admin123\"\n13 SECRET_KEY = \"hardcoded_secret_key_123\"\n14 \n",
       "col_offset": 13,
       "end_col_offset": 39,
       "filename": "test-app/app.py",
@@ -82,16 +82,16 @@
       },
       "issue_severity": "LOW",
       "issue_text": "Possible hardcoded password: 'hardcoded_secret_key_123'",
-      "line_number": 10,
+      "line_number": 13,
       "line_range": [
-        10
+        13
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html",
       "test_id": "B105",
       "test_name": "hardcoded_password_string"
     },
     {
-      "code": "17     conn = sqlite3.connect('users.db')\n18     query = \"SELECT * FROM users WHERE username = '\" + username + \"' AND password = '\" + password + \"'\"\n19     conn.execute(query)\n",
+      "code": "20     conn = sqlite3.connect('users.db')\n21     query = \"SELECT * FROM users WHERE username = '\" + username + \"' AND password = '\" + password + \"'\"\n22     conn.execute(query)\n",
       "col_offset": 12,
       "end_col_offset": 52,
       "filename": "test-app/app.py",
@@ -102,16 +102,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Possible SQL injection vector through string-based query construction.",
-      "line_number": 18,
+      "line_number": 21,
       "line_range": [
-        18
+        21
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
       "test_id": "B608",
       "test_name": "hardcoded_sql_expressions"
     },
     {
-      "code": "26     # VULN-003: OS command injection via shell=True\n27     result = subprocess.call(cmd, shell=True)\n28     return str(result)\n",
+      "code": "29     # VULN-003: OS command injection via shell=True\n30     result = subprocess.call(cmd, shell=True)\n31     return str(result)\n",
       "col_offset": 13,
       "end_col_offset": 45,
       "filename": "test-app/app.py",
@@ -122,16 +122,16 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "subprocess call with shell=True identified, security issue.",
-      "line_number": 27,
+      "line_number": 30,
       "line_range": [
-        27
+        30
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b602_subprocess_popen_with_shell_equals_true.html",
       "test_id": "B602",
       "test_name": "subprocess_popen_with_shell_equals_true"
     },
     {
-      "code": "33     # VULN-004: Use of eval() on user input\n34     result = eval(expression)\n35     return str(result)\n",
+      "code": "36     # VULN-004: Use of eval() on user input\n37     result = eval(expression)\n38     return str(result)\n",
       "col_offset": 13,
       "end_col_offset": 29,
       "filename": "test-app/app.py",
@@ -142,16 +142,16 @@
       },
       "issue_severity": "MEDIUM",
       "issue_text": "Use of possibly insecure function - consider using safer ast.literal_eval.",
-      "line_number": 34,
+      "line_number": 37,
       "line_range": [
-        34
+        37
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_calls.html#b307-eval",
       "test_id": "B307",
       "test_name": "blacklist"
     },
     {
-      "code": "50 if __name__ == '__main__':\n51     app.run(debug=True)\n",
+      "code": "53 if __name__ == '__main__':\n54     app.run(debug=True)\n",
       "col_offset": 4,
       "end_col_offset": 23,
       "filename": "test-app/app.py",
@@ -162,9 +162,9 @@
       },
       "issue_severity": "HIGH",
       "issue_text": "A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.",
-      "line_number": 51,
+      "line_number": 54,
       "line_range": [
-        51
+        54
       ],
       "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b201_flask_debug_true.html",
       "test_id": "B201",

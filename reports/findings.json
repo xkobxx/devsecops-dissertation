@@ -1,0 +1,61 @@
+{
+  "total": 7,
+  "findings": [
+    {
+      "tool": "Bandit",
+      "rule_id": "B404",
+      "severity": "LOW",
+      "description": "Consider possible security implications associated with the subprocess module.",
+      "file": "test-app/app.py",
+      "line": 3
+    },
+    {
+      "tool": "Bandit",
+      "rule_id": "B105",
+      "severity": "LOW",
+      "description": "Possible hardcoded password: 'admin123'",
+      "file": "test-app/app.py",
+      "line": 12
+    },
+    {
+      "tool": "Bandit",
+      "rule_id": "B105",
+      "severity": "LOW",
+      "description": "Possible hardcoded password: 'hardcoded_secret_key_123'",
+      "file": "test-app/app.py",
+      "line": 13
+    },
+    {
+      "tool": "Bandit",
+      "rule_id": "B608",
+      "severity": "MEDIUM",
+      "description": "Possible SQL injection vector through string-based query construction.",
+      "file": "test-app/app.py",
+      "line": 21
+    },
+    {
+      "tool": "Bandit",
+      "rule_id": "B602",
+      "severity": "HIGH",
+      "description": "subprocess call with shell=True identified, security issue.",
+      "file": "test-app/app.py",
+      "line": 30
+    },
+    {
+      "tool": "Bandit",
+      "rule_id": "B307",
+      "severity": "MEDIUM",
+      "description": "Use of possibly insecure function - consider using safer ast.literal_eval.",
+      "file": "test-app/app.py",
+      "line": 37
+    },
+    {
+      "tool": "Bandit",
+      "rule_id": "B201",
+      "severity": "HIGH",
+      "description": "A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.",
+      "file": "test-app/app.py",
+      "line": 54
+    }
+  ]
+}

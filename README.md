@@ -206,7 +206,19 @@ docker-compose up -d
 |-----|-----|---------|
 | DVWA | <http://localhost:8081> | Damn Vulnerable Web Application |
 | OWASP Juice Shop | <http://localhost:3000> | Modern vulnerable Node.js app |
-| WebGoat | <http://localhost:8080> | Java-based security training app |
+| WebGoat | <http://localhost:8080/WebGoat> | Java-based security training app |
+
+#### DVWA — http://localhost:8081
+
+A classic PHP web application built specifically to be hacked. On first visit, click **Setup / Reset DB** to initialise the database, then log in with `admin` / `password`. Once in, use the left menu to pick a vulnerability category (SQL Injection, XSS, File Upload, etc.) and attempt to exploit it. The difficulty level can be changed under **DVWA Security** — start on Low to see vulnerabilities with no defences, then raise it to see how protections work.
+
+#### OWASP Juice Shop — http://localhost:3000
+
+A modern online shop deliberately full of security flaws. No login needed to browse — just start using the site and try to find weaknesses. There is a built-in **Score Board** (find it by looking for a hidden menu item or navigating to `/score-board`) that lists all the challenges and tracks your progress. Challenges range from finding hidden pages to bypassing login and manipulating prices.
+
+#### WebGoat — http://localhost:8080/WebGoat
+
+A structured security training platform. On first visit, click **Register** to create a free local account (no email needed). Once logged in, the left sidebar lists lessons organised by topic (Injection, Authentication, Broken Access Control, etc.). Each lesson explains the vulnerability, then gives you a live form to exploit it yourself, followed by hints and a solution if you get stuck.
 
 ```bash
 docker-compose down  # stop all services

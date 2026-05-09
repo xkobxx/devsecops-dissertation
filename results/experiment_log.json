@@ -1,0 +1,10 @@
+{
+  "experiment": "DevSecOps Pipeline Effectiveness Study",
+  "ground_truth_total": 6,
+  "scenarios": {
+    "bandit_only": [],
+    "semgrep_only": [],
+    "combined_sast": [],
+    "combined_sast_dast": []
+  }
+}

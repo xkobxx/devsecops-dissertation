@@ -1,0 +1,38 @@
+{
+  "Bandit": {
+    "precision": {
+      "mean": 0.571,
+      "ci": 0.0
+    },
+    "recall": {
+      "mean": 0.8,
+      "ci": 0.0
+    },
+    "f1": {
+      "mean": 0.666,
+      "ci": 0.0
+    },
+    "fp": {
+      "mean": 3.0,
+      "ci": 0.0
+    }
+  },
+  "Semgrep": {
+    "precision": {
+      "mean": 0.625,
+      "ci": 0.0
+    },
+    "recall": {
+      "mean": 1.0,
+      "ci": 0.0
+    },
+    "f1": {
+      "mean": 0.769,
+      "ci": 0.0
+    },
+    "fp": {
+      "mean": 3.0,
+      "ci": 0.0
+    }
+  }
+}

@@ -65,15 +65,22 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install Flask app dependencies
+      - name: Install Flask
         run: pip install flask==3.1.1
 
       - name: Start Flask app
         run: |
           cd test-app
-          nohup python app.py &
-          sleep 10
-          curl -s http://localhost:5000 || echo "App may not be ready"
+          nohup python app.py > /tmp/flask.log 2>&1 &
+          echo "Waiting for Flask to start..."
+          for i in {1..15}; do
+            if curl -s http://localhost:5000 > /dev/null; then
+              echo "Flask is up after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+          curl -v http://localhost:5000 || (cat /tmp/flask.log && exit 1)
 
       - name: Create reports directory
         run: mkdir -p reports
@@ -97,6 +104,13 @@ jobs:
             echo "No ZAP report found — creating empty placeholder"
             echo '{"site":[]}' > reports/zap_report.json
           fi
+
+      - name: Upload ZAP report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-report
+          path: reports/zap_report.json
 
       - name: Upload ZAP report
         if: always()

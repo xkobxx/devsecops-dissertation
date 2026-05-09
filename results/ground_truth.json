@@ -1,0 +1,61 @@
+{
+  "generated": "2026-05-09",
+  "applications": [
+    {
+      "app": "test-app",
+      "url": "http://localhost:5000",
+      "scanner": "SAST",
+      "total_known": 6,
+      "vulnerabilities": [
+        { "id": "TA-001", "type": "Hardcoded Credentials", "cwe": "CWE-798", "owasp": "A07:2021", "severity": "HIGH", "expected_tool": "Bandit" },
+        { "id": "TA-002", "type": "SQL Injection", "cwe": "CWE-89", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "Bandit/Semgrep" },
+        { "id": "TA-003", "type": "OS Command Injection", "cwe": "CWE-78", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "Bandit/Semgrep" },
+        { "id": "TA-004", "type": "Code Injection (eval)", "cwe": "CWE-94", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "Bandit/Semgrep" },
+        { "id": "TA-005", "type": "Unvalidated Redirect", "cwe": "CWE-601", "owasp": "A01:2021", "severity": "MEDIUM", "expected_tool": "Semgrep" },
+        { "id": "TA-006", "type": "Path Traversal", "cwe": "CWE-22", "owasp": "A01:2021", "severity": "HIGH", "expected_tool": "Bandit/Semgrep" }
+      ]
+    },
+    {
+      "app": "DVWA",
+      "url": "http://localhost:8081",
+      "scanner": "DAST",
+      "total_known": 6,
+      "vulnerabilities": [
+        { "id": "DVWA-001", "type": "SQL Injection", "cwe": "CWE-89", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "DVWA-002", "type": "Reflected XSS", "cwe": "CWE-79", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "DVWA-003", "type": "Stored XSS", "cwe": "CWE-79", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "DVWA-004", "type": "Command Injection", "cwe": "CWE-78", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "DVWA-005", "type": "File Inclusion", "cwe": "CWE-22", "owasp": "A01:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "DVWA-006", "type": "CSRF", "cwe": "CWE-352", "owasp": "A01:2021", "severity": "MEDIUM", "expected_tool": "ZAP" }
+      ]
+    },
+    {
+      "app": "Juice Shop",
+      "url": "http://localhost:3000",
+      "scanner": "DAST",
+      "total_known": 6,
+      "vulnerabilities": [
+        { "id": "JS-001", "type": "SQL Injection", "cwe": "CWE-89", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "JS-002", "type": "Reflected XSS", "cwe": "CWE-79", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "JS-003", "type": "Broken Authentication", "cwe": "CWE-287", "owasp": "A07:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "JS-004", "type": "Sensitive Data Exposure", "cwe": "CWE-200", "owasp": "A02:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "JS-005", "type": "Broken Access Control", "cwe": "CWE-284", "owasp": "A01:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "JS-006", "type": "Security Misconfiguration", "cwe": "CWE-16", "owasp": "A05:2021", "severity": "MEDIUM", "expected_tool": "ZAP" }
+      ]
+    },
+    {
+      "app": "WebGoat",
+      "url": "http://localhost:8080/WebGoat",
+      "scanner": "DAST",
+      "total_known": 6,
+      "vulnerabilities": [
+        { "id": "WG-001", "type": "SQL Injection", "cwe": "CWE-89", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "WG-002", "type": "XSS", "cwe": "CWE-79", "owasp": "A03:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "WG-003", "type": "Broken Access Control", "cwe": "CWE-284", "owasp": "A01:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "WG-004", "type": "Insecure Direct Object Reference", "cwe": "CWE-639", "owasp": "A01:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "WG-005", "type": "Cryptographic Failures", "cwe": "CWE-327", "owasp": "A02:2021", "severity": "HIGH", "expected_tool": "ZAP" },
+        { "id": "WG-006", "type": "XML Injection", "cwe": "CWE-91", "owasp": "A03:2021", "severity": "MEDIUM", "expected_tool": "ZAP" }
+      ]
+    }
+  ]
+}

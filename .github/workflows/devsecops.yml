@@ -112,13 +112,6 @@ jobs:
           name: zap-report
           path: reports/zap_report.json
 
-      - name: Upload ZAP report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: zap-report
-          path: reports/zap_report.json
-
   sca-pip-audit:
     name: SCA - pip-audit
     runs-on: ubuntu-latest

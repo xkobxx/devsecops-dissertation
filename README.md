@@ -22,6 +22,7 @@ A DevSecOps pipeline that demonstrates automated security vulnerability detectio
 | **CI/CD** | Continuous Integration / Continuous Deployment | An automated pipeline that builds, tests, and deploys code every time a change is pushed — this project adds security scanning as a mandatory step in that pipeline. |
 | **Security Gate** | — | A checkpoint in the pipeline that reads all scan results and deliberately fails the build if any high or critical vulnerabilities are found, blocking deployment until they are fixed. |
 | **Flask** | — | A lightweight Python web framework used here to build the deliberately vulnerable test application that the scanners are tested against. |
+| **ZAP** | Zed Attack Proxy | A DAST tool by OWASP that scans a *running* web application by sending real HTTP requests and observing how it responds. Unlike SAST tools that read code, ZAP finds vulnerabilities that only appear when the app is live — such as missing security headers, exposed error messages, and unprotected endpoints. |
 
 ---
 

@@ -1,3 +1,11 @@
+"""
+aggregate_results.py
+
+Parses scan reports from Bandit, Semgrep, ZAP, pip-audit, Trivy,
+and Gitleaks, normalises them into a unified findings.json, and
+evaluates the security gate condition.
+"""
+
 import json
 import sys
 import os

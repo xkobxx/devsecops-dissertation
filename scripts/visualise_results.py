@@ -1,3 +1,8 @@
+"""
+aggregate_results.py
+
+Visualises the results from the security scanning tools.
+"""
 import json
 import os
 import matplotlib

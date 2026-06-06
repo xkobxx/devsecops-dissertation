@@ -1,0 +1,262 @@
+{
+  "version": "1.0",
+  "description": "AI text detection and transformation patterns based on Wikipedia's Signs of AI Writing",
+  "categories": {
+    "citation_bugs": {
+      "name": "Citation Bugs",
+      "tier": "critical",
+      "fixable": true,
+      "method": "remove_line",
+      "patterns": [
+        { "re": "oaicite:\\{[^}]+\\}", "desc": "OpenAI citation artifact" },
+        { "re": "turn0search\\d*", "desc": "Search citation artifact" },
+        { "re": "contentReference", "desc": "Content reference artifact" },
+        { "re": "\\[citation needed\\]", "desc": "Placeholder citation" }
+      ]
+    },
+    "knowledge_cutoff": {
+      "name": "Knowledge Cutoff",
+      "tier": "critical",
+      "fixable": false,
+      "patterns": [
+        { "re": "as of my last (knowledge update|training data)", "flags": "i", "desc": "Knowledge cutoff reference" },
+        { "re": "my training data (only )?goes up to", "flags": "i", "desc": "Training data range" },
+        { "re": "based on (information|data) available (up to|as of)", "flags": "i", "desc": "Information availability" },
+        { "re": "I (do|don't) (not )?have access to (real-time|current|live) (information|data|updates)", "flags": "i", "desc": "No real-time access" },
+        { "re": "my knowledge cutoff", "flags": "i", "desc": "Cutoff mention" },
+        { "re": "I was trained on data (up to|until)", "flags": "i", "desc": "Training data limit" }
+      ]
+    },
+    "chatbot_artifacts": {
+      "name": "Chatbot Artifacts",
+      "tier": "critical",
+      "fixable": true,
+      "method": "remove_line",
+      "patterns": [
+        { "re": "I hope this helps", "flags": "i", "desc": "Polite closing" },
+        { "re": "Great question!", "flags": "i", "desc": "Enthusiastic response" },
+        { "re": "That('s| is) an? (great|excellent|good) question", "flags": "i", "desc": "Question praise" },
+        { "re": "As an AI", "desc": "AI self-identification" },
+        { "re": "I'm an AI", "desc": "AI self-identification" },
+        { "re": "I (cannot|can't) provide", "flags": "i", "desc": "Inability disclaimer" },
+        { "re": "I('m| am) here to help", "flags": "i", "desc": "Assistance offer" },
+        { "re": "Please let me know if (you have|there is)", "flags": "i", "desc": "Follow-up prompt" },
+        { "re": "Feel free to (reach out|ask|contact)", "flags": "i", "desc": "Permission grant" },
+        { "re": "Thanks for asking", "flags": "i", "desc": "Gratitude" },
+        { "re": "Let me know if you need (anything|further|more)", "flags": "i", "desc": "Further assistance" },
+        { "re": "Is there anything else", "flags": "i", "desc": "Closing prompt" },
+        { "re": "I('d| would) be happy to (help|assist)", "flags": "i", "desc": "Willingness offer" }
+      ]
+    },
+    "markdown_patterns": {
+      "name": "Markdown Patterns",
+      "tier": "critical",
+      "fixable": true,
+      "method": "convert",
+      "patterns": [
+        { "re": "\\*\\*(.+?)\\*\\*", "replacement": "\\1", "desc": "Bold text" },
+        { "re": "__(.+?)__", "replacement": "\\1", "desc": "Bold text (alt)" },
+        { "re": "\\*(.+?)\\*", "replacement": "\\1", "desc": "Italic text" },
+        { "re": "_(.+?)_", "replacement": "\\1", "desc": "Italic text (alt)" },
+        { "re": "^#{1,6}\\s+(.+)$", "replacement": "\\1", "desc": "Header", "multiline": false },
+        { "re": "```[\\s\\S]*?```", "replacement": "", "desc": "Code block" },
+        { "re": "`([^`]+)`", "replacement": "\\1", "desc": "Inline code" }
+      ]
+    },
+    "ai_vocabulary": {
+      "name": "AI Vocabulary",
+      "tier": "high",
+      "fixable": false,
+      "patterns": [
+        { "re": "\\bdelve[sd]?\\b", "flags": "i", "desc": "delve" },
+        { "re": "\\btapestry\\b", "flags": "i", "desc": "tapestry" },
+        { "re": "\\blandscape\\b", "flags": "i", "desc": "landscape (metaphor)" },
+        { "re": "\\bpivotal\\b", "flags": "i", "desc": "pivotal" },
+        { "re": "\\bunderscore[sd]?\\b", "flags": "i", "desc": "underscore" },
+        { "re": "\\bfoster[sd]?\\b", "flags": "i", "desc": "foster" },
+        { "re": "\\bintricate\\b", "flags": "i", "desc": "intricate" },
+        { "re": "\\bmultifaceted\\b", "flags": "i", "desc": "multifaceted" },
+        { "re": "\\bnuanced\\b", "flags": "i", "desc": "nuanced" },
+        { "re": "\\brealm\\b", "flags": "i", "desc": "realm" },
+        { "re": "\\btestament\\b", "flags": "i", "desc": "testament" },
+        { "re": "\\bcornerstone\\b", "flags": "i", "desc": "cornerstone" },
+        { "re": "\\bparadigm\\b", "flags": "i", "desc": "paradigm" },
+        { "re": "\\bleverage[ds]?\\b", "flags": "i", "desc": "leverage" },
+        { "re": "\\brobust\\b", "flags": "i", "desc": "robust" },
+        { "re": "\\bholistic\\b", "flags": "i", "desc": "holistic" },
+        { "re": "\\bgranular\\b", "flags": "i", "desc": "granular" },
+        { "re": "\\bactionable\\b", "flags": "i", "desc": "actionable" },
+        { "re": "\\bdynamic\\b", "flags": "i", "desc": "dynamic" }
+      ]
+    },
+    "significance_inflation": {
+      "name": "Significance Inflation",
+      "tier": "high",
+      "fixable": false,
+      "patterns": [
+        { "re": "serves as a testament to", "flags": "i", "desc": "Testament phrase" },
+        { "re": "pivotal (moment|role|point)", "flags": "i", "desc": "Pivotal X" },
+        { "re": "(indelible|lasting|profound) (mark|impact)", "flags": "i", "desc": "Indelible impact" },
+        { "re": "far-reaching implications", "flags": "i", "desc": "Far-reaching" },
+        { "re": "\\bmonumental\\b", "flags": "i", "desc": "Monumental" },
+        { "re": "\\bunprecedented\\b", "flags": "i", "desc": "Unprecedented" },
+        { "re": "\\btransformative\\b", "flags": "i", "desc": "Transformative" },
+        { "re": "cannot be overstated", "flags": "i", "desc": "Cannot be overstated" },
+        { "re": "worth noting that", "flags": "i", "desc": "Worth noting" },
+        { "re": "it is (important|essential|crucial) to note", "flags": "i", "desc": "Important to note" },
+        { "re": "it is worth mentioning", "flags": "i", "desc": "Worth mentioning" }
+      ]
+    },
+    "promotional_language": {
+      "name": "Promotional Language",
+      "tier": "high",
+      "fixable": false,
+      "patterns": [
+        { "re": "\\bvibrant\\b", "flags": "i", "desc": "vibrant" },
+        { "re": "\\bnestled\\b", "flags": "i", "desc": "nestled" },
+        { "re": "\\bbreathtaking\\b", "flags": "i", "desc": "breathtaking" },
+        { "re": "\\bstunning\\b", "flags": "i", "desc": "stunning" },
+        { "re": "\\bdelightful\\b", "flags": "i", "desc": "delightful" },
+        { "re": "\\bmagical\\b", "flags": "i", "desc": "magical" },
+        { "re": "\\benchanting\\b", "flags": "i", "desc": "enchanting" },
+        { "re": "\\bcharming\\b", "flags": "i", "desc": "charming" },
+        { "re": "\\bgroundbreaking\\b", "flags": "i", "desc": "groundbreaking" }
+      ]
+    },
+    "copula_avoidance": {
+      "name": "Copula Avoidance",
+      "tier": "high",
+      "fixable": true,
+      "method": "replace",
+      "patterns": [
+        { "re": "\\bserves as\\b", "replacement": "is", "flags": "i", "desc": "serves as \u2192 is" },
+        { "re": "\\bstands as\\b", "replacement": "is", "flags": "i", "desc": "stands as \u2192 is" },
+        { "re": "\\bacts as\\b", "replacement": "is", "flags": "i", "desc": "acts as \u2192 is" },
+        { "re": "\\bfunctions as\\b", "replacement": "is", "flags": "i", "desc": "functions as \u2192 is" },
+        { "re": "\\bboasts\\b", "replacement": "has", "flags": "i", "desc": "boasts \u2192 has" },
+        { "re": "\\bpossesses\\b", "replacement": "has", "flags": "i", "desc": "possesses \u2192 has" },
+        { "re": "\\bconstitutes\\b", "replacement": "is", "flags": "i", "desc": "constitutes \u2192 is" },
+        { "re": "\\bcomprises\\b", "replacement": "includes", "flags": "i", "desc": "comprises \u2192 includes" },
+        { "re": "\\butilizes\\b", "replacement": "uses", "flags": "i", "desc": "utilizes \u2192 uses" },
+        { "re": "\\bemploys\\b", "replacement": "uses", "flags": "i", "desc": "employs \u2192 uses" },
+        { "re": "\\bdemonstrates\\b", "replacement": "shows", "flags": "i", "desc": "demonstrates \u2192 shows" },
+        { "re": "\\bexhibits\\b", "replacement": "shows", "flags": "i", "desc": "exhibits \u2192 shows" },
+        { "re": "\\bshowcases\\b", "replacement": "shows", "flags": "i", "desc": "showcases \u2192 shows" },
+        { "re": "\\bhighlights\\b", "replacement": "shows", "flags": "i", "desc": "highlights \u2192 shows" }
+      ]
+    },
+    "superficial_ing": {
+      "name": "Superficial -ing",
+      "tier": "medium",
+      "fixable": true,
+      "method": "replace",
+      "aggressive": true,
+      "patterns": [
+        { "re": "[Hh]ighlighting the", "replacement": "Showing the", "desc": "highlighting" },
+        { "re": "[Ff]ostering", "replacement": "Building", "desc": "fostering" },
+        { "re": "[Uu]nderscoring the", "replacement": "Stressing the", "desc": "underscoring" },
+        { "re": "[Ee]mphasizing the", "replacement": "Stressing the", "desc": "emphasizing" },
+        { "re": "[Dd]emonstrating the", "replacement": "Proving the", "desc": "demonstrating" },
+        { "re": "[Ff]acilitating", "replacement": "Helping", "desc": "facilitating" },
+        { "re": "[Ee]nsuring", "replacement": "Making sure", "desc": "ensuring" },
+        { "re": "[Uu]nlocking", "replacement": "Opening", "desc": "unlocking" }
+      ]
+    },
+    "filler_phrases": {
+      "name": "Filler Phrases",
+      "tier": "medium",
+      "fixable": true,
+      "method": "replace",
+      "patterns": [
+        { "re": "\\bin order to\\b", "replacement": "to", "flags": "i", "desc": "in order to \u2192 to" },
+        { "re": "\\bdue to the fact that\\b", "replacement": "because", "flags": "i", "desc": "due to \u2192 because" },
+        { "re": "\\bowing to the fact that\\b", "replacement": "because", "flags": "i", "desc": "owing to \u2192 because" },
+        { "re": "\\bon a daily basis\\b", "replacement": "daily", "flags": "i", "desc": "on a daily basis \u2192 daily" },
+        { "re": "\\bon a regular basis\\b", "replacement": "regularly", "flags": "i", "desc": "on a regular basis \u2192 regularly" },
+        { "re": "\\bat this point in time\\b", "replacement": "now", "flags": "i", "desc": "at this point \u2192 now" },
+        { "re": "\\bat the present time\\b", "replacement": "now", "flags": "i", "desc": "at present \u2192 now" },
+        { "re": "\\bin the event that\\b", "replacement": "if", "flags": "i", "desc": "in the event \u2192 if" },
+        { "re": "\\bfor the purpose of\\b", "replacement": "for", "flags": "i", "desc": "for the purpose \u2192 for" },
+        { "re": "\\bwith the exception of\\b", "replacement": "except", "flags": "i", "desc": "with the exception \u2192 except" },
+        { "re": "\\bdespite the fact that\\b", "replacement": "although", "flags": "i", "desc": "despite the fact \u2192 although" },
+        { "re": "\\bthe majority of\\b", "replacement": "most", "flags": "i", "desc": "the majority \u2192 most" },
+        { "re": "\\ba significant number of\\b", "replacement": "many", "flags": "i", "desc": "a significant number \u2192 many" },
+        { "re": "\\blast but not least\\b", "replacement": "finally", "flags": "i", "desc": "last but not least \u2192 finally" },
+        { "re": "\\bin addition\\b", "replacement": "also", "flags": "i", "desc": "in addition \u2192 also" },
+        { "re": "\\bin conclusion\\b", "replacement": "finally", "flags": "i", "desc": "in conclusion \u2192 finally" }
+      ]
+    },
+    "vague_attributions": {
+      "name": "Vague Attributions",
+      "tier": "medium",
+      "fixable": false,
+      "patterns": [
+        { "re": "\\bexperts (believe|say|suggest|claim|argue)\\b", "flags": "i", "desc": "Experts say" },
+        { "re": "\\bindustry reports suggest\\b", "flags": "i", "desc": "Industry reports" },
+        { "re": "\\bresearch shows\\b", "flags": "i", "desc": "Research shows" },
+        { "re": "\\bstudies have shown\\b", "flags": "i", "desc": "Studies show" },
+        { "re": "\\bmany people say\\b", "flags": "i", "desc": "Many people say" },
+        { "re": "\\bit is widely believed\\b", "flags": "i", "desc": "Widely believed" },
+        { "re": "\\bsome have argued\\b", "flags": "i", "desc": "Some have argued" },
+        { "re": "\\bcritics argue\\b", "flags": "i", "desc": "Critics argue" },
+        { "re": "\\bproponents claim\\b", "flags": "i", "desc": "Proponents claim" }
+      ]
+    },
+    "challenges_formula": {
+      "name": "Challenges Formula",
+      "tier": "medium",
+      "fixable": false,
+      "patterns": [
+        { "re": "Despite these (challenges|obstacles|hurdles|difficulties)", "flags": "i", "desc": "Despite challenges" },
+        { "re": "However, it is (important|essential|crucial) to", "flags": "i", "desc": "However important" },
+        { "re": "\\bLooking ahead\\b", "desc": "Looking ahead" },
+        { "re": "\\bMoving forward\\b", "flags": "i", "desc": "Moving forward" },
+        { "re": "In the face of (these|this)", "flags": "i", "desc": "In the face of" },
+        { "re": "\\bFuture outlook\\b", "flags": "i", "desc": "Future outlook" }
+      ]
+    },
+    "curly_quotes": {
+      "name": "Curly Quotes",
+      "tier": "style",
+      "fixable": true,
+      "method": "replace",
+      "patterns": [
+        { "re": "\\u201c", "replacement": "\"", "desc": "Left double curly" },
+        { "re": "\\u201d", "replacement": "\"", "desc": "Right double curly" },
+        { "re": "\\u2018", "replacement": "'", "desc": "Left single curly" },
+        { "re": "\\u2019", "replacement": "'", "desc": "Right single curly" }
+      ]
+    },
+    "em_dash_overuse": {
+      "name": "Em Dash Overuse",
+      "tier": "style",
+      "fixable": true,
+      "method": "replace",
+      "aggressive": true,
+      "patterns": [
+        { "re": "\\s*[\\u2014\\u2013]\\s*", "replacement": " \u2014 ", "desc": "Em dash" },
+        { "re": "\\s*--\\s*", "replacement": " \u2014 ", "desc": "Double hyphen" }
+      ]
+    },
+    "negative_parallelisms": {
+      "name": "Negative Parallelisms",
+      "tier": "style",
+      "fixable": false,
+      "patterns": [
+        { "re": "not only\\s+.+\\s+but also", "flags": "i", "desc": "Not only... but also" },
+        { "re": "not just\\s+.+\\s+but", "flags": "i", "desc": "Not just... but" },
+        { "re": "(it's|it is) not just\\s+.+\\s+(it's|it is)", "flags": "i", "desc": "It's not just... it's" },
+        { "re": "(doesn't|does not) just\\s+.+\\s+(it|he|she) also", "flags": "i", "desc": "Doesn't just... also" },
+        { "re": "(isn't|is not) just\\s+.+\\s+(it's|it is)", "flags": "i", "desc": "Isn't just... it's" }
+      ]
+    },
+    "rule_of_three": {
+      "name": "Rule of Three",
+      "tier": "style",
+      "fixable": false,
+      "patterns": [
+        { "re": "\\b(innovation|inspiration|insight|creativity|passion|vision|dedication|commitment|excellence|integrity|collaboration|transparency|efficiency),\\s+(\\w+),\\s+and\\s+(\\w+)\\b", "flags": "i", "desc": "Abstract triplet" }
+      ]
+    }
+  }
+}

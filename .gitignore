@@ -5,7 +5,7 @@
 QWEN.md
 commands/
 skills/
-./antigravity/
+./antigravitycli/
 # Python
 __pycache__/
 *.py[cod]

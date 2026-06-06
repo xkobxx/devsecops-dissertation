@@ -1,8 +1,38 @@
 # DevSecOps Dissertation
 
-A DevSecOps pipeline that demonstrates automated security vulnerability detection across a deliberately vulnerable Python Flask application. Built as part of a dissertation on integrating security tooling into CI/CD workflows.
+A DevSecOps pipeline that automatically detects security vulnerabilities in a deliberately vulnerable Python Flask application. Built for a dissertation on integrating security tooling into CI/CD workflows.
 
-<!-- In plain terms: every time code is pushed to GitHub, a series of security scanners run automatically. If the code has serious security problems, the pipeline fails and nothing gets deployed until they are fixed. It is a safety net built into the development process itself. -->
+> **In plain terms:** every time code is pushed to GitHub, a series of security scanners run automatically. If serious problems are found, the pipeline fails and nothing ships until they are fixed — a safety net built into the development process itself.
+
+---
+
+## Quick Start
+
+> All commands are run from the **repository root** (`devsecops-dissertation/`) unless stated otherwise.
+
+```bash
+# 1. Install tools
+pip install bandit semgrep pip-audit flask
+brew install trivy          # macOS (Trivy container/config scanner)
+# Docker must also be installed and running.
+
+# 2. Run all scanners and build the report
+bandit -r test-app/ -f json -o reports/bandit_report.json
+semgrep --config=p/owasp-2021 --json --output reports/semgrep_report.json test-app/
+pip-audit -r test-app/requirements.txt --format json -o reports/pip_audit_report.json
+trivy config . --format json --output reports/trivy_report.json
+docker run --rm -v "$PWD":/repo ghcr.io/gitleaks/gitleaks:latest \
+  detect --source /repo --report-format json \
+  --report-path /repo/reports/gitleaks_report.json --exit-code 0
+
+python scripts/aggregate_results.py      # → reports/findings.json (+ security gate)
+python scripts/generate_report.py        # → reports/dashboard.html
+```
+
+Open `reports/dashboard.html` in a browser to view the results.
+Full step-by-step explanations are in [Running the Pipeline](#running-the-pipeline).
+
+---
 
 ## Key Terms
 
@@ -46,32 +76,42 @@ A DevSecOps pipeline that demonstrates automated security vulnerability detectio
 ```text
 devsecops-dissertation/
 ├── test-app/
-│   ├── app.py                     # Deliberately vulnerable Flask app (6 seeded vulns)
-│   ├── seeded_vulnerabilities.json # Catalogue of known vulnerabilities
+│   ├── app.py                      # Deliberately vulnerable Flask app (6 seeded vulns)
+│   ├── seeded_vulnerabilities.json # Ground truth: catalogue of known vulnerabilities
 │   └── requirements.txt
 ├── scripts/
-│   ├── aggregate_results.py       # Aggregates all scan reports → findings.json
-│   └── generate_report.py         # Generates HTML dashboard from findings.json
+│   ├── aggregate_results.py        # Aggregates all scan reports → findings.json (+ security gate)
+│   ├── generate_report.py          # Generates the HTML dashboard from findings.json
+│   ├── calculate_metrics.py        # Precision / recall / F1 across 5 runs → metrics_summary.json
+│   ├── visualise_results.py        # Renders the 4 dissertation charts → reports/charts/
+│   └── record_run.py               # Logs a single pipeline run → results/experiment_log.json
 ├── reports/
-│   ├── bandit_report.json         # Bandit SAST output
-│   ├── semgrep_report.json        # Semgrep SAST output
-│   ├── pip_audit_report.json      # pip-audit SCA output
-│   ├── trivy_report.json          # Trivy container/config scan output
-│   ├── gitleaks_report.json       # Gitleaks secrets scan output
-│   ├── findings.json              # Unified aggregated findings
-│   └── dashboard.html             # HTML report dashboard
+│   ├── bandit_report.json          # Bandit SAST output
+│   ├── semgrep_report.json         # Semgrep SAST output
+│   ├── pip_audit_report.json       # pip-audit SCA output
+│   ├── trivy_report.json           # Trivy container/config scan output
+│   ├── gitleaks_report.json        # Gitleaks secrets scan output
+│   ├── findings.json               # Unified aggregated findings
+│   ├── dashboard.html              # Interactive HTML report dashboard
+│   └── charts/                     # Generated metric charts (PNG)
+├── results/
+│   ├── run_1/ … run_5/             # findings.json captured per experiment run
+│   ├── ground_truth.json           # Expected detections per tool
+│   ├── metrics_summary.json        # Aggregated precision/recall/F1 (mean ± 95% CI)
+│   └── experiment_log.{json,md}    # Per-run experiment log
+├── docs/                           # Pipeline diagram, screenshots, PoC images
 ├── .github/workflows/
-│   └── devsecops.yml              # GitHub Actions CI/CD pipeline
-├── docker-compose.yml             # Vulnerable apps for DAST testing
+│   └── devsecops.yml               # GitHub Actions CI/CD pipeline
+├── docker-compose.yml              # Vulnerable apps for DAST testing
 └── .agent/system/
-    └── project_architecture.md   # Full architecture reference
+    └── project_architecture.md     # Full architecture reference
 ```
 
 ---
 
 ## Seeded Vulnerabilities
 
-The test app (`test-app/app.py`) contains 6 intentional vulnerabilities for tool validation:
+The test app (`test-app/app.py`) contains 6 intentional vulnerabilities used to validate the tools:
 
 | ID | Type | CWE | Severity | Expected Tool |
 |----|------|-----|----------|---------------|
@@ -84,123 +124,119 @@ The test app (`test-app/app.py`) contains 6 intentional vulnerabilities for tool
 
 ---
 
-## Running the Program
+## Running the Pipeline
 
-<!-- Think of this project as a security checkpoint system for code — like a metal detector at an airport, but for software vulnerabilities. Each step below is one detector in the line. -->
-
-### Prerequisites
-
-```bash
-pip install bandit semgrep pip-audit flask
-```
-
-```bash
-# macOS — install Trivy via Homebrew
-brew install trivy
-```
-
-Docker must be installed and running for DAST and container scanning.
-
----
+The [Quick Start](#quick-start) runs everything at once. Below is each step explained individually. All commands run from the repository root.
 
 ### 1. Start the Flask test app
 
-<!-- This switches the fake website on so the scanners have something to look at. The app is built on purpose with security holes — like leaving doors unlocked — so we can test whether our detectors find them. -->
+*Switches on the deliberately vulnerable app so the scanners have a live target.*
 
 ```bash
-# Run from: devsecops-dissertation/
 cd test-app
-python app.py
-# App runs at http://localhost:5000
+python app.py        # App runs at http://localhost:5000
 ```
-
----
 
 ### 2. Run SAST scans
 
-<!-- Two tools read through the code like a spell-checker, but instead of typos they look for dangerous patterns — things like passwords hardcoded in the code, or places where a hacker could trick the app into running their own commands. -->
+*Two tools read the source code and flag dangerous patterns — hardcoded passwords, injection points, and similar.*
 
 ```bash
-# Run from: devsecops-dissertation/
-
-# Bandit — Python security linter
 bandit -r test-app/ -f json -o reports/bandit_report.json
-
-# Semgrep — pattern-based static analysis (OWASP Top 10 ruleset)
 semgrep --config=p/owasp-2021 --json --output reports/semgrep_report.json test-app/
 ```
 
----
-
 ### 3. Run SCA (dependency scanning)
 
-<!-- The app uses third-party software packages (like plug-ins). This step checks whether any of those plug-ins have known security flaws — like checking whether the locks you bought from a shop are ones burglars already know how to pick. -->
+*Checks the project's third-party packages for known security flaws.*
 
 ```bash
-# Run from: devsecops-dissertation/
 pip-audit -r test-app/requirements.txt --format json -o reports/pip_audit_report.json
 ```
 
----
-
 ### 4. Run container / config scanning
 
-<!-- The Docker files describe how to package and deploy the app. This step checks those files for security misconfigurations — like making sure the packaging itself isn't leaving a window open. -->
+*Checks the Docker and infrastructure config files for security misconfigurations.*
 
 ```bash
-# Run from: devsecops-dissertation/
 trivy config . --format json --output reports/trivy_report.json
 ```
 
----
-
 ### 5. Run secrets scanning
 
-<!-- This scans the entire git history looking for accidentally committed passwords, API keys, or tokens — like checking whether anyone ever texted their bank PIN in the company group chat. -->
+*Scans the entire git history for accidentally committed passwords, API keys, or tokens.*
 
 ```bash
-# Run from: devsecops-dissertation/
 docker run --rm -v "$PWD":/repo ghcr.io/gitleaks/gitleaks:latest \
   detect --source /repo --report-format json \
   --report-path /repo/reports/gitleaks_report.json \
   --exit-code 0
 ```
 
----
+### 6. Aggregate findings and run the security gate
 
-### 6. Aggregate findings and run security gate
-
-<!-- All the scan results are combined into one report. If anything serious is found, the build is marked as failed — a hard stop that blocks the code from being released, like a bouncer refusing entry. -->
+*Combines all scan results into one report and fails the build if anything serious is found.*
 
 ```bash
-# Run from: devsecops-dissertation/
 python scripts/aggregate_results.py
 # Output: reports/findings.json
-# Exits with code 1 if HIGH/CRITICAL findings from Bandit or Semgrep are detected
+# Exits with code 1 if HIGH/CRITICAL findings from Bandit or Semgrep are detected.
 ```
 
----
+### 7. Generate the HTML dashboard
 
-### 7. Generate HTML dashboard
-
-<!-- Turns all those raw scan results into a readable page you can open in a browser — colour-coded by severity, filterable by tool, with a score showing how many of the planted vulnerabilities were actually caught. -->
+*Turns the raw results into a readable, colour-coded page filterable by tool and severity.*
 
 ```bash
-# Run from: devsecops-dissertation/
 python scripts/generate_report.py
-# Output: reports/dashboard.html
-# Open in browser to view findings by tool, severity, and detection rate
+# Output: reports/dashboard.html — open in a browser.
 ```
 
 ---
 
-### 8. Start Docker vulnerable apps (for DAST)
+## Measuring Effectiveness
 
-<!-- Spins up three well-known deliberately-broken websites that security researchers use worldwide for practice and live scanning. These are the targets for dynamic (live traffic) security testing. -->
+To evaluate detection quality, the pipeline is run **5 times** and the results compared against the ground truth in `test-app/seeded_vulnerabilities.json`.
+
+**1. Capture each run.** After running the pipeline, copy the findings into a numbered run folder:
 
 ```bash
-# Run from: devsecops-dissertation/
-docker-compose up -d
+cp reports/findings.json results/run_1/findings.json   # repeat for run_2 … run_5
+```
+
+**2. Calculate metrics** across all 5 runs:
+
+```bash
+python scripts/calculate_metrics.py
+# Output: results/metrics_summary.json (precision, recall, F1, false positives — mean ± 95% CI)
+```
+
+**3. Generate charts:**
+
+```bash
+python scripts/visualise_results.py
+# Output: reports/charts/chart1_precision_recall_f1.png, chart2_confusion_matrices.png,
+#         chart3_per_vuln_detection.png, chart4_false_positives.png
+```
+
+*Optional:* `python scripts/record_run.py [run_number] [scenario]` logs a single run's metrics to `results/experiment_log.json`.
+
+### Current Results
+
+| Tool | Precision | Recall | F1 |
+|------|-----------|--------|-----|
+| Bandit | 0.571 | 0.800 | 0.666 |
+| Semgrep | 0.625 | 1.000 | 0.769 |
+
+---
+
+## Vulnerable Apps for DAST
+
+Spin up three well-known deliberately vulnerable web apps as live targets for dynamic (running-app) testing:
+
+```bash
+docker-compose up -d     # start
+docker-compose down      # stop
 ```
 
 | App | URL | Purpose |
@@ -209,29 +245,15 @@ docker-compose up -d
 | OWASP Juice Shop | <http://localhost:3000> | Modern vulnerable Node.js app |
 | WebGoat | <http://localhost:8080/WebGoat> | Java-based security training app |
 
-#### DVWA — http://localhost:8081
-
-A classic PHP web application built specifically to be hacked. On first visit, click **Setup / Reset DB** to initialise the database, then log in with `admin` / `password`. Once in, use the left menu to pick a vulnerability category (SQL Injection, XSS, File Upload, etc.) and attempt to exploit it. The difficulty level can be changed under **DVWA Security** — start on Low to see vulnerabilities with no defences, then raise it to see how protections work.
-
-#### OWASP Juice Shop — http://localhost:3000
-
-A modern online shop deliberately full of security flaws. No login needed to browse — just start using the site and try to find weaknesses. There is a built-in **Score Board** (find it by looking for a hidden menu item or navigating to `/score-board`) that lists all the challenges and tracks your progress. Challenges range from finding hidden pages to bypassing login and manipulating prices.
-
-#### WebGoat — http://localhost:8080/WebGoat
-
-A structured security training platform. On first visit, click **Register** to create a free local account (no email needed). Once logged in, the left sidebar lists lessons organised by topic (Injection, Authentication, Broken Access Control, etc.). Each lesson explains the vulnerability, then gives you a live form to exploit it yourself, followed by hints and a solution if you get stuck.
-
-```bash
-docker-compose down  # stop all services
-```
+- **DVWA** — A classic PHP app built to be hacked. On first visit click **Setup / Reset DB**, then log in with `admin` / `password`. Pick a vulnerability category from the left menu; adjust difficulty under **DVWA Security** (start on Low).
+- **OWASP Juice Shop** — A modern shop full of flaws; no login needed. A built-in **Score Board** (`/score-board`) lists all challenges and tracks progress.
+- **WebGoat** — A structured training platform. Click **Register** to create a local account, then work through the lessons in the left sidebar (each explains a vulnerability and gives you a live form to exploit).
 
 ---
 
 ## CI/CD Pipeline
 
 The GitHub Actions pipeline (`.github/workflows/devsecops.yml`) runs automatically on push or pull request to `main`.
-
-### Pipeline Jobs
 
 ```text
 sast-bandit ──────────────────────────┐
@@ -253,9 +275,7 @@ secrets-scan-gitleaks ────────────────┘
 | `security-gate` | — | Aggregation | `unified-findings` |
 | `generate-dashboard` | — | Reporting | `dashboard` |
 
-### Security Gate
-
-The security gate fails the build if any **HIGH** or **CRITICAL** finding is detected by Bandit or Semgrep. All scan artifacts are downloadable from the GitHub Actions run summary.
+**Security Gate:** the build fails if any **HIGH** or **CRITICAL** finding is detected by Bandit or Semgrep. All scan artifacts are downloadable from the GitHub Actions run summary.
 
 ---
 
@@ -272,3 +292,4 @@ All reports are written to the `reports/` directory.
 | `gitleaks_report.json` | Detected secrets |
 | `findings.json` | Unified findings from all tools |
 | `dashboard.html` | Interactive HTML report — open in browser |
+| `charts/` | Generated metric charts (PNG) |

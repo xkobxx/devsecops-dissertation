@@ -1,3 +1,12 @@
+"""
+calculate_metrics.py
+
+Reads findings.json files from results/run_1 through results/run_5,
+compares each tool's output against the seeded vulnerability ground truth,
+and calculates precision, recall, F1 score, and 95% confidence intervals.
+Outputs a metrics_summary.json to the results/ directory.
+"""
+
 import json
 import os
 import math
@@ -11,10 +20,11 @@ with open(GROUND_TRUTH_PATH) as f:
 known_vulns = gt.get('vulnerabilities', [])
 
 def get_expected_tools(vuln):
+    """Return a list of tool names expected to detect the given vulnerability."""
     return [t.strip() for t in vuln.get('expected_tool', '').split('/')]
 
 def analyse_run(findings, tool):
-    tool_findings = [f for f in findings if f.get('tool') == tool]
+    """Calculate TP, FP, FN, precision, recall, and F1 for one tool across one run."""
     expected = [v for v in known_vulns if tool in get_expected_tools(v)]
 
     tp = 0
@@ -41,9 +51,11 @@ def analyse_run(findings, tool):
     }
 
 def mean(values):
+    """Return the arithmetic mean of a list of values, rounded to 3 decimal places."""
     return round(sum(values) / len(values), 3) if values else 0.0
 
 def confidence_interval(values, confidence=0.95):
+    """Calculate the 95% confidence interval margin using the t-distribution (n=5, df=4)."""
     n = len(values)
     if n < 2:
         return 0.0

@@ -1,5 +1,6 @@
 name: DevSecOps Pipeline
 
+# Kick off on every push or PR to main — keeps things honest
 "on":
   push:
     branches: [main]
@@ -7,6 +8,9 @@ name: DevSecOps Pipeline
     branches: [main]
 
 jobs:
+  # --- Static Analysis: Bandit ---
+  # Bandit reads through our Python source and flags anything that looks sketchy —
+  # hardcoded passwords, dodgy subprocess calls, that sort of thing.
   sast-bandit:
     name: SAST - Bandit
     runs-on: ubuntu-latest
@@ -22,6 +26,7 @@ jobs:
       - name: Install Bandit
         run: pip install bandit
 
+      # || true so a noisy scan doesn't kill the run — we'll gate on severity later
       - name: Run Bandit scan
         run: bandit -r test-app/ -f json -o reports/bandit_report.json || true
 
@@ -31,6 +36,9 @@ jobs:
           name: bandit-report
           path: reports/bandit_report.json
 
+  # --- Static Analysis: Semgrep ---
+  # Semgrep is our second pair of eyes on the code — it catches patterns Bandit misses
+  # and runs against a curated Python ruleset.
   sast-semgrep:
     name: SAST - Semgrep
     runs-on: ubuntu-latest
@@ -41,6 +49,7 @@ jobs:
       - name: Install Semgrep
         run: pip install semgrep
 
+      # Same deal — || true keeps the pipeline alive; severity is enforced downstream
       - name: Run Semgrep scan
         run: |
           semgrep --config=p/python --json \
@@ -53,6 +62,9 @@ jobs:
           name: semgrep-report
           path: reports/semgrep_report.json
 
+  # --- Dynamic Analysis: OWASP ZAP ---
+  # ZAP actually fires HTTP requests at the running app, so we spin Flask up first,
+  # wait for it to be ready, then let ZAP loose on it. Think of it as a robot pentester.
   dast-zap:
     name: DAST - OWASP ZAP
     runs-on: ubuntu-latest
@@ -68,6 +80,7 @@ jobs:
       - name: Install Flask
         run: pip install flask==3.1.1
 
+      # Start Flask in the background and poll until it responds — avoids race conditions
       - name: Start Flask app
         run: |
           cd test-app
@@ -85,6 +98,7 @@ jobs:
       - name: Create reports directory
         run: mkdir -p reports
 
+      # Baseline scan — not a full spider, but good enough to catch the obvious stuff
       - name: Run ZAP baseline scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
@@ -94,6 +108,7 @@ jobs:
           cmd_options: "-J zap_report.json"
         continue-on-error: true
 
+      # ZAP drops its report in the workspace root, so we move it into reports/
       - name: Move ZAP report to reports folder
         if: always()
         run: |
@@ -112,6 +127,9 @@ jobs:
           name: zap-report
           path: reports/zap_report.json
 
+  # --- Software Composition Analysis: pip-audit ---
+  # Checks our Python dependencies against known CVEs. Catches the "we forgot to update
+  # a library" class of vulnerability before it bites us in production.
   sca-pip-audit:
     name: SCA - pip-audit
     runs-on: ubuntu-latest
@@ -136,6 +154,9 @@ jobs:
           name: pip-audit-report
           path: reports/pip_audit_report.json
 
+  # --- Container / IaC Scan: Trivy ---
+  # Trivy looks at our Dockerfiles and config files for misconfigurations —
+  # things like running as root, exposed ports, or missing health checks.
   container-scan-trivy:
     name: Container Scan - Trivy
     runs-on: ubuntu-latest
@@ -158,6 +179,9 @@ jobs:
           name: trivy-report
           path: reports/trivy_report.json
 
+  # --- Secrets Scan: Gitleaks ---
+  # Trawls the full git history for accidentally committed secrets — API keys, tokens,
+  # passwords. fetch-depth: 0 is important here so we see every commit, not just HEAD.
   secrets-scan-gitleaks:
     name: Secrets Scan - Gitleaks
     runs-on: ubuntu-latest
@@ -180,6 +204,10 @@ jobs:
           name: gitleaks-report
           path: reports/gitleaks_report.json
 
+  # --- Security Gate ---
+  # This is the decision point. All scan reports land here and get fed into
+  # aggregate_results.py, which counts HIGH/CRITICAL findings. If the count is
+  # too high, the gate fails and the build is blocked. Nothing ships until it's clean.
   security-gate:
     name: Security Gate
     runs-on: ubuntu-latest
@@ -201,6 +229,8 @@ jobs:
           name: semgrep-report
           path: reports/
 
+      # These three are optional — if the upstream job was skipped they won't exist,
+      # and we don't want that to crater the gate itself
       - name: Download pip-audit report
         uses: actions/download-artifact@v4
         with:
@@ -227,6 +257,7 @@ jobs:
         with:
           python-version: "3.11"
 
+      # Run the aggregation script — it writes findings.json and exits non-zero on HIGH/CRITICAL
       - name: Run aggregation and security gate
         id: gate
         run: python scripts/aggregate_results.py
@@ -239,6 +270,7 @@ jobs:
           name: unified-findings
           path: reports/findings.json
 
+      # Final enforcement — if the gate script failed, block the build here with a clear message
       - name: Enforce security gate result
         if: always()
         run: |
@@ -248,6 +280,10 @@ jobs:
           fi
           echo "Security gate passed."
 
+  # --- Dashboard Generator ---
+  # Takes the unified findings and renders a nice HTML report so humans can actually
+  # read the results without staring at raw JSON. Runs last, even if the gate failed,
+  # so there's always a report to look at.
   generate-dashboard:
     name: Generate Report Dashboard
     runs-on: ubuntu-latest

@@ -19,6 +19,10 @@
   .sev-low { color: #27ae60; }
   .detected { color: #27ae60; font-weight: bold; }
   .missed { color: #c0392b; font-weight: bold; }
+  .conf-high { color: #1a7a1a; font-weight: bold; }
+  .conf-likely { color: #b8860b; font-weight: bold; }
+  .conf-noise { color: #999; }
+  .conf-unscored { color: #999; font-style: italic; }
   .stats { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 30px; }
   .stat-card { background: #fff; border-radius: 8px; padding: 20px 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); text-align: center; min-width: 120px; }
   .stat-card .num { font-size: 36px; font-weight: bold; color: #1a1a2e; }
@@ -33,8 +37,8 @@
 <h1>DevSecOps Security Dashboard</h1>
 
 <div class="stats">
-  <div class="stat-card"><div class="num">7</div><div class="label">Total Findings</div></div>
-  <div class="stat-card"><div class="num">7</div><div class="label">Bandit</div></div>
+  <div class="stat-card"><div class="num">15</div><div class="label">Total Findings</div></div>
+  <div class="stat-card"><div class="num">7</div><div class="label">Bandit</div></div><div class="stat-card"><div class="num">8</div><div class="label">Semgrep</div></div>
 </div>
 
 <h2>Findings by Tool & Severity</h2>
@@ -46,16 +50,26 @@
       <th>Total</th>
     </tr>
   </thead>
-  <tbody><tr><td><strong>Bandit</strong></td><td>0</td><td>2</td><td>2</td><td>3</td><td>0</td><td>0</td><td>0</td><td>7</td></tr></tbody>
+  <tbody><tr><td><strong>Bandit</strong></td><td>0</td><td>2</td><td>2</td><td>3</td><td>0</td><td>0</td><td>0</td><td>7</td></tr><tr><td><strong>Semgrep</strong></td><td>0</td><td>0</td><td>0</td><td>0</td><td>2</td><td>6</td><td>0</td><td>8</td></tr></tbody>
 </table>
 
 
+    <h2>Act On These First</h2>
+    <p><strong>13</strong> high-confidence finding(s), based on empirical accuracy per scanner rule.
+    <strong>2</strong> likely-noise finding(s) deprioritised.</p>
+    <table>
+      <thead><tr><th>Tool</th><th>Rule ID</th><th>Description</th><th>File</th><th>Line</th></tr></thead>
+      <tbody><tr><td>Bandit</td><td>B404</td><td>Consider possible security implications associated with the subprocess module.</td><td>test-app/app.py</td><td>3</td></tr><tr><td>Bandit</td><td>B105</td><td>Possible hardcoded password: &#x27;admin123&#x27;</td><td>test-app/app.py</td><td>12</td></tr><tr><td>Bandit</td><td>B105</td><td>Possible hardcoded password: &#x27;hardcoded_secret_key_123&#x27;</td><td>test-app/app.py</td><td>13</td></tr><tr><td>Bandit</td><td>B608</td><td>Possible SQL injection vector through string-based query construction.</td><td>test-app/app.py</td><td>21</td></tr><tr><td>Bandit</td><td>B602</td><td>subprocess call with shell=True identified, security issue.</td><td>test-app/app.py</td><td>30</td></tr><tr><td>Bandit</td><td>B307</td><td>Use of possibly insecure function - consider using safer ast.literal_eval.</td><td>test-app/app.py</td><td>37</td></tr><tr><td>Semgrep</td><td>python.flask.security.injection.tainted-sql-string.tainted-sql-string</td><td>Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as SQLAlchemy which will protect your queries.</td><td>test-app/app.py</td><td>21</td></tr><tr><td>Semgrep</td><td>python.flask.security.injection.subprocess-injection.subprocess-injection</td><td>Detected user input entering a `subprocess` call unsafely. This could result in a command injection vulnerability. An attacker could use this vulnerability to execute arbitrary commands on the host, which allows them to download malware, scan sensitive data, or run any command they wish on the server. Do not let users choose the command to run. In general, prefer to use Python API versions of system commands. If you must use subprocess, use a dictionary to allowlist a set of commands.</td><td>test-app/app.py</td><td>30</td></tr><tr><td>Semgrep</td><td>python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use</td><td>Detected subprocess function &#x27;call&#x27; with user controlled data. A malicious actor could leverage this to perform command injection. You may consider using &#x27;shlex.escape()&#x27;.</td><td>test-app/app.py</td><td>30</td></tr><tr><td>Semgrep</td><td>python.lang.security.audit.subprocess-shell-true.subprocess-shell-true</td><td>Found &#x27;subprocess&#x27; function &#x27;call&#x27; with &#x27;shell=True&#x27;. This is dangerous because this call will spawn the command using a shell process. Doing so propagates current shell settings and variables, which makes it much easier for a malicious actor to execute commands. Use &#x27;shell=False&#x27; instead.</td><td>test-app/app.py</td><td>30</td></tr><tr><td>Semgrep</td><td>python.django.security.injection.code.user-eval.user-eval</td><td>Found user data in a call to &#x27;eval&#x27;. This is extremely dangerous because it can enable an attacker to execute arbitrary remote code on the system. Instead, refactor your code to not use &#x27;eval&#x27; and instead use a safe library for the specific functionality you need.</td><td>test-app/app.py</td><td>35</td></tr><tr><td>Semgrep</td><td>python.flask.security.injection.user-eval.eval-injection</td><td>Detected user data flowing into eval. This is code injection and should be avoided.</td><td>test-app/app.py</td><td>37</td></tr><tr><td>Semgrep</td><td>python.flask.security.injection.path-traversal-open.path-traversal-open</td><td>Found request data in a call to &#x27;open&#x27;. Ensure the request data is validated or sanitized, otherwise it could result in path traversal attacks.</td><td>test-app/app.py</td><td>50</td></tr></tbody>
+    </table>
+    
+
+
     <h2>Seeded Vulnerability Detection Rate</h2>
-    <p><strong>5/6 detected (83%)</strong></p>
-    <div class="progress-bar-bg"><div class="progress-bar" style="width:83%">83%</div></div>
+    <p><strong>6/6 detected (100%)</strong></p>
+    <div class="progress-bar-bg"><div class="progress-bar" style="width:100%">100%</div></div>
     <table>
       <thead><tr><th>ID</th><th>Type</th><th>Severity</th><th>Expected Tool</th><th>Status</th></tr></thead>
-      <tbody><tr><td>VULN-001</td><td>Hardcoded Credentials</td><td>HIGH</td><td>Bandit</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-002</td><td>SQL Injection</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-003</td><td>OS Command Injection</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-004</td><td>Code Injection</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-005</td><td>Unvalidated Redirect</td><td>MEDIUM</td><td>Semgrep</td><td class="missed">❌ Missed</td></tr><tr><td>VULN-006</td><td>Path Traversal</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr></tbody>
+      <tbody><tr><td>VULN-001</td><td>Hardcoded Credentials</td><td>HIGH</td><td>Bandit</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-002</td><td>SQL Injection</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-003</td><td>OS Command Injection</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-004</td><td>Code Injection</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-005</td><td>Unvalidated Redirect</td><td>MEDIUM</td><td>Semgrep</td><td class="detected">✅ Detected</td></tr><tr><td>VULN-006</td><td>Path Traversal</td><td>HIGH</td><td>Bandit/Semgrep</td><td class="detected">✅ Detected</td></tr></tbody>
     </table>
     
 
@@ -64,7 +78,7 @@
   <label>Tool:
     <select id="filterTool" onchange="filterTable()">
       <option value="">All</option>
-      <option value="Bandit">Bandit</option>
+      <option value="Bandit">Bandit</option><option value="Semgrep">Semgrep</option>
     </select>
   </label>
   <label>Severity:
@@ -73,26 +87,37 @@
       <option value="CRITICAL">CRITICAL</option><option value="HIGH">HIGH</option><option value="MEDIUM">MEDIUM</option><option value="LOW">LOW</option><option value="WARNING">WARNING</option><option value="ERROR">ERROR</option><option value="UNKNOWN">UNKNOWN</option>
     </select>
   </label>
+  <label>Confidence:
+    <select id="filterConf" onchange="filterTable()">
+      <option value="">All</option>
+      <option value="High">High</option>
+      <option value="Likely">Likely</option>
+      <option value="Noise">Noise</option>
+      <option value="Unscored">Unscored</option>
+    </select>
+  </label>
   <label>Search:
     <input type="text" id="filterSearch" placeholder="keyword..." oninput="filterTable()">
   </label>
 </div>
 <table id="findingsTable">
-  <thead><tr><th>Tool</th><th>Severity</th><th>Rule ID</th><th>Description</th><th>File</th><th>Line</th></tr></thead>
-  <tbody><tr data-tool="Bandit" data-sev="LOW"><td>Bandit</td><td class="sev-low">LOW</td><td>B404</td><td>Consider possible security implications associated with the subprocess module.</td><td>test-app/app.py</td><td>3</td></tr><tr data-tool="Bandit" data-sev="LOW"><td>Bandit</td><td class="sev-low">LOW</td><td>B105</td><td>Possible hardcoded password: 'admin123'</td><td>test-app/app.py</td><td>12</td></tr><tr data-tool="Bandit" data-sev="LOW"><td>Bandit</td><td class="sev-low">LOW</td><td>B105</td><td>Possible hardcoded password: 'hardcoded_secret_key_123'</td><td>test-app/app.py</td><td>13</td></tr><tr data-tool="Bandit" data-sev="MEDIUM"><td>Bandit</td><td class="sev-medium">MEDIUM</td><td>B608</td><td>Possible SQL injection vector through string-based query construction.</td><td>test-app/app.py</td><td>21</td></tr><tr data-tool="Bandit" data-sev="HIGH"><td>Bandit</td><td class="sev-high">HIGH</td><td>B602</td><td>subprocess call with shell=True identified, security issue.</td><td>test-app/app.py</td><td>30</td></tr><tr data-tool="Bandit" data-sev="MEDIUM"><td>Bandit</td><td class="sev-medium">MEDIUM</td><td>B307</td><td>Use of possibly insecure function - consider using safer ast.literal_eval.</td><td>test-app/app.py</td><td>37</td></tr><tr data-tool="Bandit" data-sev="HIGH"><td>Bandit</td><td class="sev-high">HIGH</td><td>B201</td><td>A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.</td><td>test-app/app.py</td><td>54</td></tr></tbody>
+  <thead><tr><th>Tool</th><th>Severity</th><th>Confidence</th><th>Rule ID</th><th>Description</th><th>File</th><th>Line</th></tr></thead>
+  <tbody><tr data-tool="Bandit" data-sev="LOW" data-conf="High"><td>Bandit</td><td class="sev-low">LOW</td><td class="conf-high">High (100%)</td><td>B404</td><td>Consider possible security implications associated with the subprocess module.</td><td>test-app/app.py</td><td>3</td></tr><tr data-tool="Bandit" data-sev="LOW" data-conf="High"><td>Bandit</td><td class="sev-low">LOW</td><td class="conf-high">High (100%)</td><td>B105</td><td>Possible hardcoded password: &#x27;admin123&#x27;</td><td>test-app/app.py</td><td>12</td></tr><tr data-tool="Bandit" data-sev="LOW" data-conf="High"><td>Bandit</td><td class="sev-low">LOW</td><td class="conf-high">High (100%)</td><td>B105</td><td>Possible hardcoded password: &#x27;hardcoded_secret_key_123&#x27;</td><td>test-app/app.py</td><td>13</td></tr><tr data-tool="Bandit" data-sev="MEDIUM" data-conf="High"><td>Bandit</td><td class="sev-medium">MEDIUM</td><td class="conf-high">High (100%)</td><td>B608</td><td>Possible SQL injection vector through string-based query construction.</td><td>test-app/app.py</td><td>21</td></tr><tr data-tool="Bandit" data-sev="HIGH" data-conf="High"><td>Bandit</td><td class="sev-high">HIGH</td><td class="conf-high">High (100%)</td><td>B602</td><td>subprocess call with shell=True identified, security issue.</td><td>test-app/app.py</td><td>30</td></tr><tr data-tool="Bandit" data-sev="MEDIUM" data-conf="High"><td>Bandit</td><td class="sev-medium">MEDIUM</td><td class="conf-high">High (100%)</td><td>B307</td><td>Use of possibly insecure function - consider using safer ast.literal_eval.</td><td>test-app/app.py</td><td>37</td></tr><tr data-tool="Bandit" data-sev="HIGH" data-conf="Noise"><td>Bandit</td><td class="sev-high">HIGH</td><td class="conf-noise">Noise (0%)</td><td>B201</td><td>A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.</td><td>test-app/app.py</td><td>54</td></tr><tr data-tool="Semgrep" data-sev="ERROR" data-conf="High"><td>Semgrep</td><td class="sev-high">ERROR</td><td class="conf-high">High (100%)</td><td>python.flask.security.injection.tainted-sql-string.tainted-sql-string</td><td>Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as SQLAlchemy which will protect your queries.</td><td>test-app/app.py</td><td>21</td></tr><tr data-tool="Semgrep" data-sev="ERROR" data-conf="High"><td>Semgrep</td><td class="sev-high">ERROR</td><td class="conf-high">High (100%)</td><td>python.flask.security.injection.subprocess-injection.subprocess-injection</td><td>Detected user input entering a `subprocess` call unsafely. This could result in a command injection vulnerability. An attacker could use this vulnerability to execute arbitrary commands on the host, which allows them to download malware, scan sensitive data, or run any command they wish on the server. Do not let users choose the command to run. In general, prefer to use Python API versions of system commands. If you must use subprocess, use a dictionary to allowlist a set of commands.</td><td>test-app/app.py</td><td>30</td></tr><tr data-tool="Semgrep" data-sev="ERROR" data-conf="High"><td>Semgrep</td><td class="sev-high">ERROR</td><td class="conf-high">High (100%)</td><td>python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use</td><td>Detected subprocess function &#x27;call&#x27; with user controlled data. A malicious actor could leverage this to perform command injection. You may consider using &#x27;shlex.escape()&#x27;.</td><td>test-app/app.py</td><td>30</td></tr><tr data-tool="Semgrep" data-sev="ERROR" data-conf="High"><td>Semgrep</td><td class="sev-high">ERROR</td><td class="conf-high">High (100%)</td><td>python.lang.security.audit.subprocess-shell-true.subprocess-shell-true</td><td>Found &#x27;subprocess&#x27; function &#x27;call&#x27; with &#x27;shell=True&#x27;. This is dangerous because this call will spawn the command using a shell process. Doing so propagates current shell settings and variables, which makes it much easier for a malicious actor to execute commands. Use &#x27;shell=False&#x27; instead.</td><td>test-app/app.py</td><td>30</td></tr><tr data-tool="Semgrep" data-sev="WARNING" data-conf="High"><td>Semgrep</td><td class="sev-medium">WARNING</td><td class="conf-high">High (100%)</td><td>python.django.security.injection.code.user-eval.user-eval</td><td>Found user data in a call to &#x27;eval&#x27;. This is extremely dangerous because it can enable an attacker to execute arbitrary remote code on the system. Instead, refactor your code to not use &#x27;eval&#x27; and instead use a safe library for the specific functionality you need.</td><td>test-app/app.py</td><td>35</td></tr><tr data-tool="Semgrep" data-sev="ERROR" data-conf="High"><td>Semgrep</td><td class="sev-high">ERROR</td><td class="conf-high">High (100%)</td><td>python.flask.security.injection.user-eval.eval-injection</td><td>Detected user data flowing into eval. This is code injection and should be avoided.</td><td>test-app/app.py</td><td>37</td></tr><tr data-tool="Semgrep" data-sev="ERROR" data-conf="High"><td>Semgrep</td><td class="sev-high">ERROR</td><td class="conf-high">High (100%)</td><td>python.flask.security.injection.path-traversal-open.path-traversal-open</td><td>Found request data in a call to &#x27;open&#x27;. Ensure the request data is validated or sanitized, otherwise it could result in path traversal attacks.</td><td>test-app/app.py</td><td>50</td></tr><tr data-tool="Semgrep" data-sev="WARNING" data-conf="Noise"><td>Semgrep</td><td class="sev-medium">WARNING</td><td class="conf-noise">Noise (0%)</td><td>python.flask.security.audit.debug-enabled.debug-enabled</td><td>Detected Flask app with debug=True. Do not deploy to production with this flag enabled as it will leak sensitive information. Instead, consider using Flask configuration variables or setting &#x27;debug&#x27; using system environment variables.</td><td>test-app/app.py</td><td>54</td></tr></tbody>
 </table>
 
 <script>
 function filterTable() {
   var tool = document.getElementById('filterTool').value.toLowerCase();
   var sev = document.getElementById('filterSev').value.toLowerCase();
+  var conf = document.getElementById('filterConf').value;
   var search = document.getElementById('filterSearch').value.toLowerCase();
   var rows = document.querySelectorAll('#findingsTable tbody tr');
   rows.forEach(function(row) {
     var rowTool = (row.dataset.tool || '').toLowerCase();
     var rowSev = (row.dataset.sev || '').toLowerCase();
+    var rowConf = row.dataset.conf || '';
     var text = row.textContent.toLowerCase();
-    var show = (!tool || rowTool === tool) && (!sev || rowSev === sev) && (!search || text.includes(search));
+    var show = (!tool || rowTool === tool) && (!sev || rowSev === sev) && (!conf || rowConf === conf) && (!search || text.includes(search));
     row.style.display = show ? '' : 'none';
   });
 }

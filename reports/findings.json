@@ -1,5 +1,6 @@
 {
-  "total": 7,
+  "target": ".",
+  "total": 15,
   "findings": [
     {
       "tool": "Bandit",
@@ -7,7 +8,11 @@
       "severity": "LOW",
       "description": "Consider possible security implications associated with the subprocess module.",
       "file": "test-app/app.py",
-      "line": 3
+      "line": 3,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
     },
     {
       "tool": "Bandit",
@@ -15,7 +20,11 @@
       "severity": "LOW",
       "description": "Possible hardcoded password: 'admin123'",
       "file": "test-app/app.py",
-      "line": 12
+      "line": 12,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 2,
+      "confidence_source": "rule"
     },
     {
       "tool": "Bandit",
@@ -23,7 +32,11 @@
       "severity": "LOW",
       "description": "Possible hardcoded password: 'hardcoded_secret_key_123'",
       "file": "test-app/app.py",
-      "line": 13
+      "line": 13,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 2,
+      "confidence_source": "rule"
     },
     {
       "tool": "Bandit",
@@ -31,7 +44,11 @@
       "severity": "MEDIUM",
       "description": "Possible SQL injection vector through string-based query construction.",
       "file": "test-app/app.py",
-      "line": 21
+      "line": 21,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
     },
     {
       "tool": "Bandit",
@@ -39,7 +56,11 @@
       "severity": "HIGH",
       "description": "subprocess call with shell=True identified, security issue.",
       "file": "test-app/app.py",
-      "line": 30
+      "line": 30,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
     },
     {
       "tool": "Bandit",
@@ -47,7 +68,11 @@
       "severity": "MEDIUM",
       "description": "Use of possibly insecure function - consider using safer ast.literal_eval.",
       "file": "test-app/app.py",
-      "line": 37
+      "line": 37,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
     },
     {
       "tool": "Bandit",
@@ -55,7 +80,107 @@
       "severity": "HIGH",
       "description": "A Flask app appears to be run with debug=True, which exposes the Werkzeug debugger and allows the execution of arbitrary code.",
       "file": "test-app/app.py",
-      "line": 54
+      "line": 54,
+      "confidence": 0.0,
+      "confidence_tier": "Noise",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.tainted-sql-string.tainted-sql-string",
+      "severity": "ERROR",
+      "description": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as SQLAlchemy which will protect your queries.",
+      "file": "test-app/app.py",
+      "line": 21,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.subprocess-injection.subprocess-injection",
+      "severity": "ERROR",
+      "description": "Detected user input entering a `subprocess` call unsafely. This could result in a command injection vulnerability. An attacker could use this vulnerability to execute arbitrary commands on the host, which allows them to download malware, scan sensitive data, or run any command they wish on the server. Do not let users choose the command to run. In general, prefer to use Python API versions of system commands. If you must use subprocess, use a dictionary to allowlist a set of commands.",
+      "file": "test-app/app.py",
+      "line": 30,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use",
+      "severity": "ERROR",
+      "description": "Detected subprocess function 'call' with user controlled data. A malicious actor could leverage this to perform command injection. You may consider using 'shlex.escape()'.",
+      "file": "test-app/app.py",
+      "line": 30,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.lang.security.audit.subprocess-shell-true.subprocess-shell-true",
+      "severity": "ERROR",
+      "description": "Found 'subprocess' function 'call' with 'shell=True'. This is dangerous because this call will spawn the command using a shell process. Doing so propagates current shell settings and variables, which makes it much easier for a malicious actor to execute commands. Use 'shell=False' instead.",
+      "file": "test-app/app.py",
+      "line": 30,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.django.security.injection.code.user-eval.user-eval",
+      "severity": "WARNING",
+      "description": "Found user data in a call to 'eval'. This is extremely dangerous because it can enable an attacker to execute arbitrary remote code on the system. Instead, refactor your code to not use 'eval' and instead use a safe library for the specific functionality you need.",
+      "file": "test-app/app.py",
+      "line": 35,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.user-eval.eval-injection",
+      "severity": "ERROR",
+      "description": "Detected user data flowing into eval. This is code injection and should be avoided.",
+      "file": "test-app/app.py",
+      "line": 37,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.path-traversal-open.path-traversal-open",
+      "severity": "ERROR",
+      "description": "Found request data in a call to 'open'. Ensure the request data is validated or sanitized, otherwise it could result in path traversal attacks.",
+      "file": "test-app/app.py",
+      "line": 50,
+      "confidence": 1.0,
+      "confidence_tier": "High",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
+    },
+    {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.audit.debug-enabled.debug-enabled",
+      "severity": "WARNING",
+      "description": "Detected Flask app with debug=True. Do not deploy to production with this flag enabled as it will leak sensitive information. Instead, consider using Flask configuration variables or setting 'debug' using system environment variables.",
+      "file": "test-app/app.py",
+      "line": 54,
+      "confidence": 0.0,
+      "confidence_tier": "Noise",
+      "confidence_sample_size": 1,
+      "confidence_source": "rule"
     }
   ]
 }

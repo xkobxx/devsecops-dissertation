@@ -1,0 +1,154 @@
+# Requirements for callers:
+#   - `runs-on: ubuntu-latest` (or another Linux runner) -- Trivy and Gitleaks
+#     run as Docker container actions, which GitHub only supports on Linux.
+#   - Check out the target repo with `actions/checkout@v4` BEFORE this step --
+#     this action does not check out code itself, matching standard composite
+#     action convention.
+#   - Known limitation: invoking this action more than once in the same job
+#     will collide on the fixed "security-dashboard" artifact name. Use one
+#     invocation per job for now.
+#
+# Example:
+#   - uses: actions/checkout@v4
+#   - uses: <owner>/<repo>@<version>
+#     with:
+#       target: .
+#       fail-on: high
+name: 'DevSecOps Trust Gate'
+description: 'Run Bandit, Semgrep, pip-audit, Trivy and Gitleaks against any repo, aggregate findings into one gate and dashboard.'
+author: 'David Mensah'
+branding:
+  icon: 'shield'
+  color: 'green'
+
+inputs:
+  target:
+    description: 'Path to scan, relative to the repo root'
+    required: false
+    default: '.'
+  fail-on:
+    description: 'Minimum severity that fails the gate: critical | high | medium | low | none'
+    required: false
+    default: 'high'
+  license-key:
+    description: 'Paid license key. Unlocks confidence scoring (empirical precision per finding, ranked "act on these first" triage). Free tier runs fine without one.'
+    required: false
+    default: ''
+
+outputs:
+  findings-path:
+    description: 'Path to the unified findings.json produced by this run'
+    value: ${{ steps.aggregate.outputs.findings-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Create reports directory
+      shell: bash
+      run: mkdir -p reports
+
+    - name: Install SAST/SCA scanners
+      shell: bash
+      run: pip install bandit semgrep pip-audit cryptography
+
+    # inputs.target/fail-on are attacker-influenceable (any calling workflow
+    # sets them). GitHub Actions splices ${{ }} into run: scripts as literal
+    # text BEFORE bash parses them, so double-quoting does NOT stop command
+    # substitution embedded in the value. Passing through env: and expanding
+    # "$VAR" avoids re-parsing the value as shell syntax.
+    - name: Run Bandit
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: bandit -r "$TARGET" -f json -o reports/bandit_report.json || true
+
+    - name: Run Semgrep
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: semgrep --config=p/python --json --output reports/semgrep_report.json "$TARGET" || true
+
+    - name: Run pip-audit
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: |
+        req_file="$TARGET/requirements.txt"
+        if [ -f "$req_file" ]; then
+          pip-audit -r "$req_file" --format json -o reports/pip_audit_report.json || true
+        else
+          echo '{"dependencies":[]}' > reports/pip_audit_report.json
+        fi
+
+    - name: Run Trivy config scan
+      uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+      continue-on-error: true
+      with:
+        scan-type: config
+        scan-ref: ${{ inputs.target }}
+        format: json
+        output: reports/trivy_report.json
+        exit-code: '0'
+
+    - name: Run Gitleaks
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+      run: |
+        docker run --rm -v "$PWD":/repo ghcr.io/gitleaks/gitleaks:latest \
+          detect --source "/repo/$TARGET" --report-format json \
+          --report-path /repo/reports/gitleaks_report.json \
+          --exit-code 0 || true
+
+    - name: Aggregate findings and evaluate gate
+      id: aggregate
+      shell: bash
+      env:
+        TARGET: ${{ inputs.target }}
+        FAIL_ON: ${{ inputs.fail-on }}
+      run: |
+        set +e
+        python "${{ github.action_path }}/scripts/aggregate_results.py" \
+          --target "$TARGET" \
+          --fail-on "$FAIL_ON"
+        gate_exit=$?
+        set -e
+        echo "findings-path=reports/findings.json" >> "$GITHUB_OUTPUT"
+        exit $gate_exit
+
+    # Free tier stops here. A valid license unlocks confidence scoring;
+    # a missing/invalid/expired key just falls back to free tier silently
+    # (verify_license.py's own exit code communicates that) rather than
+    # failing the run.
+    - name: Check license
+      id: license
+      if: always()
+      shell: bash
+      continue-on-error: true
+      env:
+        LICENSE_KEY: ${{ inputs.license-key }}
+      run: python "${{ github.action_path }}/scripts/verify_license.py" --license-key "$LICENSE_KEY"
+
+    - name: Score findings (paid tier)
+      if: always() && steps.license.outcome == 'success'
+      shell: bash
+      run: |
+        python "${{ github.action_path }}/scripts/score_findings.py" \
+          --confidence-table "${{ github.action_path }}/confidence_table.json"
+
+    - name: Generate dashboard
+      if: always()
+      shell: bash
+      run: python "${{ github.action_path }}/scripts/generate_report.py"
+
+    - name: Upload dashboard artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-dashboard
+        path: reports/dashboard.html

@@ -32,3 +32,4 @@ Thumbs.db
 # Secrets / env
 .env
 .env.*
+license_signing_key.pem

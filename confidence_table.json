@@ -1,0 +1,134 @@
+{
+  "methodology": "Empirical precision per (tool, rule) from matching scanner findings against a hand-seeded ground truth (6 known vulnerabilities in a single fixture app), using +/-5-line proximity matching. Sample sizes are small -- treat entries with sample_size < 5 as directional, not statistically robust. Tools with no seeded vulnerabilities of their own type (pip-audit) are excluded rather than scored, since an empty ground truth would produce a misleading 0% precision. Known limitation: +/-5-line proximity matching can spuriously match an unrelated finding to a nearby seeded vuln in dense files -- verify any single-file benchmark result before publishing it externally.",
+  "rules": {
+    "Bandit:B404": {
+      "tool": "Bandit",
+      "rule_id": "B404",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Bandit:B105": {
+      "tool": "Bandit",
+      "rule_id": "B105",
+      "tp": 2,
+      "fp": 0,
+      "sample_size": 2,
+      "precision": 1.0
+    },
+    "Bandit:B608": {
+      "tool": "Bandit",
+      "rule_id": "B608",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Bandit:B602": {
+      "tool": "Bandit",
+      "rule_id": "B602",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Bandit:B307": {
+      "tool": "Bandit",
+      "rule_id": "B307",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Bandit:B201": {
+      "tool": "Bandit",
+      "rule_id": "B201",
+      "tp": 0,
+      "fp": 1,
+      "sample_size": 1,
+      "precision": 0.0
+    },
+    "Semgrep:python.flask.security.injection.tainted-sql-string.tainted-sql-string": {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.tainted-sql-string.tainted-sql-string",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Semgrep:python.flask.security.injection.subprocess-injection.subprocess-injection": {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.subprocess-injection.subprocess-injection",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Semgrep:python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use": {
+      "tool": "Semgrep",
+      "rule_id": "python.lang.security.dangerous-subprocess-use.dangerous-subprocess-use",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Semgrep:python.lang.security.audit.subprocess-shell-true.subprocess-shell-true": {
+      "tool": "Semgrep",
+      "rule_id": "python.lang.security.audit.subprocess-shell-true.subprocess-shell-true",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Semgrep:python.django.security.injection.code.user-eval.user-eval": {
+      "tool": "Semgrep",
+      "rule_id": "python.django.security.injection.code.user-eval.user-eval",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Semgrep:python.flask.security.injection.user-eval.eval-injection": {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.user-eval.eval-injection",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Semgrep:python.flask.security.injection.path-traversal-open.path-traversal-open": {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.injection.path-traversal-open.path-traversal-open",
+      "tp": 1,
+      "fp": 0,
+      "sample_size": 1,
+      "precision": 1.0
+    },
+    "Semgrep:python.flask.security.audit.debug-enabled.debug-enabled": {
+      "tool": "Semgrep",
+      "rule_id": "python.flask.security.audit.debug-enabled.debug-enabled",
+      "tp": 0,
+      "fp": 1,
+      "sample_size": 1,
+      "precision": 0.0
+    }
+  },
+  "tool_baseline": {
+    "Bandit": {
+      "tp": 6,
+      "fp": 1,
+      "sample_size": 7,
+      "precision": 0.857
+    },
+    "Semgrep": {
+      "tp": 7,
+      "fp": 1,
+      "sample_size": 8,
+      "precision": 0.875
+    }
+  },
+  "unscored_tools": [
+    "pip-audit"
+  ]
+}

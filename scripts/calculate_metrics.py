@@ -26,6 +26,7 @@ def get_expected_tools(vuln):
 def analyse_run(findings, tool):
     """Calculate TP, FP, FN, precision, recall, and F1 for one tool across one run."""
     expected = [v for v in known_vulns if tool in get_expected_tools(v)]
+    tool_findings = [f for f in findings if f.get('tool') == tool]
 
     tp = 0
     for vuln in expected:

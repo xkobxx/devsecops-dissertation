@@ -1,14 +1,18 @@
 """
-aggregate_results.py
+generate_report.py
 
-Parses scan reports from Bandit, Semgrep, ZAP, pip-audit, Trivy,
-and Gitleaks, normalises them into a unified findings.json, and
-evaluates the security gate condition.
+Reads the unified findings.json (optionally already scored by
+score_findings.py with confidence tiers) and renders a static HTML
+dashboard with summary stats, a confidence-ranked "act on these first"
+list, seeded-vulnerability detection rate, and a filterable findings table.
 """
 
+import html
 import json
 import os
 from collections import defaultdict
+
+esc = html.escape
 
 findings_path = 'reports/findings.json'
 seeded_path = 'test-app/seeded_vulnerabilities.json'
@@ -47,7 +51,19 @@ for tool in tools:
     counts = by_tool[tool]
     total = sum(counts.values())
     cells = ''.join(f'<td>{counts.get(s, 0)}</td>' for s in severities)
-    summary_rows += f'<tr><td><strong>{tool}</strong></td>{cells}<td>{total}</td></tr>'
+    summary_rows += f'<tr><td><strong>{esc(tool)}</strong></td>{cells}<td>{total}</td></tr>'
+
+CONFIDENCE_CLASS = {'High': 'conf-high', 'Likely': 'conf-likely', 'Noise': 'conf-noise', 'Unscored': 'conf-unscored'}
+
+
+def confidence_label(f):
+    tier = f.get('confidence_tier')
+    if not tier:
+        return 'Unscored', ''
+    conf = f.get('confidence')
+    label = tier if conf is None else f"{tier} ({round(conf * 100)}%)"
+    return label, CONFIDENCE_CLASS.get(tier, '')
+
 
 # Build findings table rows (all findings)
 finding_rows = ''
@@ -61,14 +77,16 @@ for f in findings:
         'WARNING': 'sev-medium',
         'LOW': 'sev-low',
     }.get(sev, '')
+    conf_label, conf_class = confidence_label(f)
     finding_rows += (
-        f'<tr data-tool="{f.get("tool","")}" data-sev="{sev}">'
-        f'<td>{f.get("tool","")}</td>'
-        f'<td class="{sev_class}">{sev}</td>'
-        f'<td>{f.get("rule_id","")}</td>'
-        f'<td>{f.get("description","")}</td>'
-        f'<td>{f.get("file","")}</td>'
-        f'<td>{f.get("line","") or ""}</td>'
+        f'<tr data-tool="{esc(f.get("tool",""))}" data-sev="{esc(sev)}" data-conf="{esc(f.get("confidence_tier","Unscored"))}">'
+        f'<td>{esc(f.get("tool",""))}</td>'
+        f'<td class="{sev_class}">{esc(sev)}</td>'
+        f'<td class="{conf_class}">{esc(conf_label)}</td>'
+        f'<td>{esc(f.get("rule_id",""))}</td>'
+        f'<td>{esc(f.get("description",""))}</td>'
+        f'<td>{esc(f.get("file",""))}</td>'
+        f'<td>{esc(str(f.get("line","") or ""))}</td>'
         f'</tr>'
     )
 
@@ -92,10 +110,10 @@ if seeded_vulns:
         status_class = 'detected' if is_detected else 'missed'
         seeded_rows += (
             f'<tr>'
-            f'<td>{vuln_id}</td>'
-            f'<td>{vuln_type}</td>'
-            f'<td>{v.get("severity","")}</td>'
-            f'<td>{detection_tool}</td>'
+            f'<td>{esc(str(vuln_id))}</td>'
+            f'<td>{esc(str(vuln_type))}</td>'
+            f'<td>{esc(str(v.get("severity","")))}</td>'
+            f'<td>{esc(str(detection_tool))}</td>'
             f'<td class="{status_class}">{status}</td>'
             f'</tr>'
         )
@@ -110,7 +128,33 @@ if seeded_vulns:
     </table>
     '''
 
-tool_options = ''.join(f'<option value="{t}">{t}</option>' for t in tools)
+tool_options = ''.join(f'<option value="{esc(t)}">{esc(t)}</option>' for t in tools)
+
+# Confidence-ranked "act on these first" section — only rendered when at
+# least one finding has been scored by score_findings.py.
+scored = [f for f in findings if f.get('confidence_tier')]
+triage_html = ''
+if scored:
+    high_conf = sorted(
+        (f for f in scored if f['confidence_tier'] == 'High'),
+        key=lambda f: -(f.get('confidence') or 0),
+    )
+    noise_count = sum(1 for f in scored if f['confidence_tier'] == 'Noise')
+    triage_rows = ''.join(
+        f'<tr><td>{esc(f.get("tool",""))}</td><td>{esc(f.get("rule_id",""))}</td>'
+        f'<td>{esc(f.get("description",""))}</td><td>{esc(f.get("file",""))}</td>'
+        f'<td>{esc(str(f.get("line","") or ""))}</td></tr>'
+        for f in high_conf
+    )
+    triage_html = f'''
+    <h2>Act On These First</h2>
+    <p><strong>{len(high_conf)}</strong> high-confidence finding(s), based on empirical accuracy per scanner rule.
+    {f"<strong>{noise_count}</strong> likely-noise finding(s) deprioritised." if noise_count else ""}</p>
+    <table>
+      <thead><tr><th>Tool</th><th>Rule ID</th><th>Description</th><th>File</th><th>Line</th></tr></thead>
+      <tbody>{triage_rows or "<tr><td colspan=5>No high-confidence findings.</td></tr>"}</tbody>
+    </table>
+    '''
 
 html = f'''<!DOCTYPE html>
 <html lang="en">
@@ -133,6 +177,10 @@ html = f'''<!DOCTYPE html>
   .sev-low {{ color: #27ae60; }}
   .detected {{ color: #27ae60; font-weight: bold; }}
   .missed {{ color: #c0392b; font-weight: bold; }}
+  .conf-high {{ color: #1a7a1a; font-weight: bold; }}
+  .conf-likely {{ color: #b8860b; font-weight: bold; }}
+  .conf-noise {{ color: #999; }}
+  .conf-unscored {{ color: #999; font-style: italic; }}
   .stats {{ display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 30px; }}
   .stat-card {{ background: #fff; border-radius: 8px; padding: 20px 28px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); text-align: center; min-width: 120px; }}
   .stat-card .num {{ font-size: 36px; font-weight: bold; color: #1a1a2e; }}
@@ -148,7 +196,7 @@ html = f'''<!DOCTYPE html>
 
 <div class="stats">
   <div class="stat-card"><div class="num">{len(findings)}</div><div class="label">Total Findings</div></div>
-  {"".join(f'<div class="stat-card"><div class="num">{sum(by_tool[t].values())}</div><div class="label">{t}</div></div>' for t in tools)}
+  {"".join(f'<div class="stat-card"><div class="num">{sum(by_tool[t].values())}</div><div class="label">{esc(t)}</div></div>' for t in tools)}
 </div>
 
 <h2>Findings by Tool & Severity</h2>
@@ -162,6 +210,8 @@ html = f'''<!DOCTYPE html>
   </thead>
   <tbody>{summary_rows}</tbody>
 </table>
+
+{triage_html}
 
 {seeded_html}
 
@@ -179,12 +229,21 @@ html = f'''<!DOCTYPE html>
       {"".join(f'<option value="{s}">{s}</option>' for s in severities)}
     </select>
   </label>
+  <label>Confidence:
+    <select id="filterConf" onchange="filterTable()">
+      <option value="">All</option>
+      <option value="High">High</option>
+      <option value="Likely">Likely</option>
+      <option value="Noise">Noise</option>
+      <option value="Unscored">Unscored</option>
+    </select>
+  </label>
   <label>Search:
     <input type="text" id="filterSearch" placeholder="keyword..." oninput="filterTable()">
   </label>
 </div>
 <table id="findingsTable">
-  <thead><tr><th>Tool</th><th>Severity</th><th>Rule ID</th><th>Description</th><th>File</th><th>Line</th></tr></thead>
+  <thead><tr><th>Tool</th><th>Severity</th><th>Confidence</th><th>Rule ID</th><th>Description</th><th>File</th><th>Line</th></tr></thead>
   <tbody>{finding_rows}</tbody>
 </table>
 
@@ -192,13 +251,15 @@ html = f'''<!DOCTYPE html>
 function filterTable() {{
   var tool = document.getElementById('filterTool').value.toLowerCase();
   var sev = document.getElementById('filterSev').value.toLowerCase();
+  var conf = document.getElementById('filterConf').value;
   var search = document.getElementById('filterSearch').value.toLowerCase();
   var rows = document.querySelectorAll('#findingsTable tbody tr');
   rows.forEach(function(row) {{
     var rowTool = (row.dataset.tool || '').toLowerCase();
     var rowSev = (row.dataset.sev || '').toLowerCase();
+    var rowConf = row.dataset.conf || '';
     var text = row.textContent.toLowerCase();
-    var show = (!tool || rowTool === tool) && (!sev || rowSev === sev) && (!search || text.includes(search));
+    var show = (!tool || rowTool === tool) && (!sev || rowSev === sev) && (!conf || rowConf === conf) && (!search || text.includes(search));
     row.style.display = show ? '' : 'none';
   }});
 }}

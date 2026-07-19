@@ -20,7 +20,7 @@ This tool doesn't replace your scanners — it aggregates the free ones you alre
 | Confidence score per finding (empirical precision, not a guess) | — | ✅ |
 | "Act on these first" ranked triage list | — | ✅ |
 
-Flat monthly pricing, not per-seat — one price regardless of team size. *(Marketplace listing not yet published — pricing TBD before launch.)*
+**$19/month flat, not per-seat** — one price regardless of team size. [Subscribe here](https://buy.stripe.com/3cIfZgaf2eTrb627pBb7y00) — you'll get your license key by email within 24 hours after checkout.
 
 ---
 

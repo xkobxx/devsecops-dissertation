@@ -34,7 +34,7 @@ jobs:
     runs-on: ubuntu-latest   # required: Trivy/Gitleaks run as Docker container actions (Linux only)
     steps:
       - uses: actions/checkout@v4
-      - uses: <owner>/<repo>@<version>
+      - uses: xkobxx/devsecops-dissertation@v1.0.0
         with:
           target: .
           fail-on: high

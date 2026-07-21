@@ -24,6 +24,16 @@ Your license key is emailed to you automatically right after checkout.
 
 ---
 
+## Why upgrade?
+
+Bandit and Semgrep will find real vulnerabilities in your code. They'll also bury them under false positives — this project's own measured numbers put Bandit at **57% precision** and Semgrep at **62.5%** (full methodology: [docs/RESEARCH.md](docs/RESEARCH.md)). Nearly half of what lands in your PR is noise, and someone still has to read every line to find the other half.
+
+The paid tier doesn't add a sixth scanner or a black-box "AI risk score." It scores the findings from the five scanners you already trust against disclosed, sample-sized precision data, and hands you a ranked "fix these first" list instead of an alphabetical wall of alerts.
+
+**If triaging false positives costs your team more than $19 a month in engineer time, this pays for itself on the first run.**
+
+---
+
 ## Quick Start
 
 ```yaml

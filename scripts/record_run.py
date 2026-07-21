@@ -6,7 +6,7 @@ from datetime import datetime
 def count_findings(findings, tool):
     return [f for f in findings if f.get('tool') == tool]
 
-def map_to_ground_truth(findings, tool, ground_truth_path='test-app/seeded_vulnerabilities.json'):
+def map_to_ground_truth(findings, tool, ground_truth_path='test_app/seeded_vulnerabilities.json'):
     with open(ground_truth_path) as f:
         gt = json.load(f)
     known = gt.get('vulnerabilities', [])
@@ -65,7 +65,7 @@ if __name__ == '__main__':
         'semgrep': semgrep,
         'combined': {
             'tp': len(set(
-                [v['id'] for v in json.load(open('test-app/seeded_vulnerabilities.json'))['vulnerabilities']
+                [v['id'] for v in json.load(open('test_app/seeded_vulnerabilities.json'))['vulnerabilities']
                  if any(f.get('line') and abs(f.get('line',0) - v.get('line',0)) <= 3
                         for f in findings if v.get('expected_tool','') in ('Bandit', 'Bandit/Semgrep', 'Semgrep'))]
             )),

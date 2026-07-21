@@ -59,7 +59,7 @@ The gate fails the build on any finding at or above `fail-on` severity (default 
 
 ### The confidence layer
 
-`confidence_table.json` is built from `scripts/build_confidence_table.py`, which matches historical scanner findings against a hand-seeded, fully-enumerated vulnerability fixture (`test-app/`) and computes real precision per `(tool, rule)`. Tools with no ground-truth coverage for their finding type (today: pip-audit, Trivy, Gitleaks) are excluded rather than scored — an empty ground truth would otherwise produce a fake 0% precision, and that's exactly the kind of unearned confidence number this project exists to avoid.
+`confidence_table.json` is built from `scripts/build_confidence_table.py`, which matches historical scanner findings against a hand-seeded, fully-enumerated vulnerability fixture (`test_app/`) and computes real precision per `(tool, rule)`. Tools with no ground-truth coverage for their finding type (today: pip-audit, Trivy, Gitleaks) are excluded rather than scored — an empty ground truth would otherwise produce a fake 0% precision, and that's exactly the kind of unearned confidence number this project exists to avoid.
 
 **Honesty, up front:** today's corpus is one small fixture with 6 seeded vulnerabilities. Per-rule sample sizes are tiny (often 1-3) — every table entry carries its own `sample_size` so this is visible rather than hidden. Treat published numbers as directional until the corpus grows. The matching method (±5-line proximity) can also spuriously match an unrelated finding to a nearby seeded vuln in dense files — a known, disclosed limitation, not a hidden one.
 
@@ -75,10 +75,10 @@ License keys are self-contained and verified offline (Ed25519 signature + expiry
 pip install -r requirements.txt
 brew install trivy        # macOS; see trivy docs for other platforms
 
-# Run the pipeline against test-app/ manually
-bandit -r test-app/ -f json -o reports/bandit_report.json
-semgrep --config=p/python --json --output reports/semgrep_report.json test-app/
-pip-audit -r test-app/requirements.txt --format json -o reports/pip_audit_report.json
+# Run the pipeline against test_app/ manually
+bandit -r test_app/ -f json -o reports/bandit_report.json
+semgrep --config=p/python --json --output reports/semgrep_report.json test_app/
+pip-audit -r test_app/requirements.txt --format json -o reports/pip_audit_report.json
 trivy config . --format json --output reports/trivy_report.json
 docker run --rm -v "$PWD":/repo ghcr.io/gitleaks/gitleaks:latest \
   detect --source /repo --report-format json \
@@ -123,7 +123,7 @@ Open `reports/dashboard.html` in a browser to see the results.
 ```
 devsecops-dissertation/
 ├── action.yml                       # The reusable composite GitHub Action
-├── test-app/
+├── test_app/
 │   ├── app.py                       # Vulnerable Flask app (6 seeded vulnerabilities)
 │   ├── seeded_vulnerabilities.json  # Ground truth — ships as the confidence-table corpus
 │   └── requirements.txt
@@ -148,7 +148,7 @@ devsecops-dissertation/
 
 ## The Seeded Vulnerability Fixture
 
-`test-app/app.py` has 6 deliberately seeded vulnerabilities — a fully-enumerated ground truth used both for the dissertation's precision/recall research and as the corpus behind `confidence_table.json`.
+`test_app/app.py` has 6 deliberately seeded vulnerabilities — a fully-enumerated ground truth used both for the dissertation's precision/recall research and as the corpus behind `confidence_table.json`.
 
 | ID | Vulnerability | CWE | Severity | Expected Tool |
 |----|--------------|-----|----------|---------------|
@@ -199,7 +199,7 @@ docker-compose down     # stop
 
 ## This Repo's Own CI
 
-`.github/workflows/devsecops.yml` runs the scanners directly against `test-app/` on every push to `main` — this is the dissertation's original research pipeline, kept separate from `action.yml` (the reusable product) so the two can evolve independently.
+`.github/workflows/devsecops.yml` runs the scanners directly against `test_app/` on every push to `main` — this is the dissertation's original research pipeline, kept separate from `action.yml` (the reusable product) so the two can evolve independently.
 
 ```
 sast-bandit ──────────────┐

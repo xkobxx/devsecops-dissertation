@@ -11,7 +11,7 @@ import json
 import os
 import math
 
-GROUND_TRUTH_PATH = 'test-app/seeded_vulnerabilities.json'
+GROUND_TRUTH_PATH = 'test_app/seeded_vulnerabilities.json'
 RUNS_DIR = 'results'
 NUM_RUNS = 5
 

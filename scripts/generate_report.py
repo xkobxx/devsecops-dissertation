@@ -15,7 +15,7 @@ from collections import defaultdict
 esc = html.escape
 
 findings_path = 'reports/findings.json'
-seeded_path = 'test-app/seeded_vulnerabilities.json'
+seeded_path = 'test_app/seeded_vulnerabilities.json'
 output_path = 'reports/dashboard.html'
 
 # Load findings

@@ -28,7 +28,7 @@ jobs:
 
       # || true so a noisy scan doesn't kill the run — we'll gate on severity later
       - name: Run Bandit scan
-        run: bandit -r test-app/ -f json -o reports/bandit_report.json || true
+        run: bandit -r test_app/ -f json -o reports/bandit_report.json || true
 
       - name: Upload Bandit report
         uses: actions/upload-artifact@v4
@@ -54,7 +54,7 @@ jobs:
         run: |
           semgrep --config=p/python --json \
             --output reports/semgrep_report.json \
-            test-app/ || true
+            test_app/ || true
 
       - name: Upload Semgrep report
         uses: actions/upload-artifact@v4
@@ -83,7 +83,7 @@ jobs:
       # Start Flask in the background and poll until it responds — avoids race conditions
       - name: Start Flask app
         run: |
-          cd test-app
+          cd test_app
           nohup python app.py > /tmp/flask.log 2>&1 &
           echo "Waiting for Flask to start..."
           for i in {1..15}; do
@@ -146,7 +146,7 @@ jobs:
         run: pip install pip-audit
 
       - name: Run pip-audit scan
-        run: pip-audit -r test-app/requirements.txt --format json -o reports/pip_audit_report.json || true
+        run: pip-audit -r test_app/requirements.txt --format json -o reports/pip_audit_report.json || true
 
       - name: Upload pip-audit report
         uses: actions/upload-artifact@v4

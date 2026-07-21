@@ -2,7 +2,7 @@
   "generated": "2026-05-09",
   "applications": [
     {
-      "app": "test-app",
+      "app": "test_app",
       "url": "http://localhost:5000",
       "scanner": "SAST",
       "total_known": 6,

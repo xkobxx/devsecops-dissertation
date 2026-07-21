@@ -3,7 +3,8 @@
 Running the pipeline directly, without the Action, for anyone hacking on this repo.
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirements.txt          # matplotlib/numpy/cryptography — imported by scripts/
+pip install bandit semgrep pip-audit     # CLI scanners — not imported, just invoked as subprocesses
 brew install trivy        # macOS; see trivy docs for other platforms
 
 # Run the pipeline against test_app/ manually

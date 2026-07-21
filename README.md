@@ -36,22 +36,40 @@ The paid tier doesn't add a sixth scanner or a black-box "AI risk score." It sco
 
 ## Quick Start
 
+No coding needed — just add one file to your repo through the GitHub website.
+
+**1. Open your repo on GitHub** and go to the **Actions** tab.
+
+**2. Click "New workflow"**, then choose **"set up a workflow yourself"** (a blank editor opens).
+
+**3. Name the file** `security.yml` — GitHub will place it at `.github/workflows/security.yml` for you.
+
+**4. Delete whatever's in the editor and paste this in:**
+
 ```yaml
-# .github/workflows/security.yml
 on: [push, pull_request]
 jobs:
   scan:
-    runs-on: ubuntu-latest   # required: Trivy/Gitleaks run as Docker container actions (Linux only)
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: xkobxx/devsecops-dissertation@v1.0.0
         with:
           target: .
           fail-on: high
-          # license-key: ${{ secrets.TRUST_GATE_LICENSE }}   # paid tier only
 ```
 
-That's it — no separate install step, no manual scanner invocations. The dashboard is uploaded as a build artifact (`security-dashboard`) on every run.
+**5. Click "Commit changes"** (top right), then confirm. That's it — you don't need to install anything, run anything locally, or touch a terminal.
+
+**6. See it run.** From now on, every time someone pushes code or opens a pull request, this runs automatically. Go to the **Actions** tab to watch it — a green check ✅ means nothing serious was found; a red ✗ means it found something at or above `high` severity and blocked the build.
+
+**7. View the results.** Click into a finished run, scroll to **Artifacts** at the bottom of the Summary page, and download **`security-dashboard`**. Unzip it and open `dashboard.html` in any browser — that's your report.
+
+That's the whole setup. Everything below is optional configuration for teams that want more control.
+
+---
+
+## Advanced configuration
 
 ### Inputs
 
@@ -81,10 +99,9 @@ Store your key as a repo secret (Settings → Secrets and variables → Actions)
 
 A missing, invalid, or expired key silently falls back to the free tier instead of failing the build.
 
-### Viewing results
+### Reading raw findings
 
-- **Dashboard**: every run uploads an HTML dashboard as the `security-dashboard` build artifact — download it from the workflow run's Summary page.
-- **Raw findings**: read the `findings-path` output (`reports/findings.json`) in a later step if you want to post-process results yourself, e.g.:
+Want to post-process results yourself instead of just reading the dashboard? Read the `findings-path` output (`reports/findings.json`) in a later step:
 
 ```yaml
       - uses: xkobxx/devsecops-dissertation@v1.0.0

@@ -26,15 +26,26 @@ jobs:
       - name: Install Bandit
         run: pip install bandit
 
-      # || true so a noisy scan doesn't kill the run — we'll gate on severity later
-      - name: Run Bandit scan
-        run: bandit -r test_app/ -f json -o reports/bandit_report.json || true
+      # This is what the gate sees — the project's own code, not the seeded fixture.
+      - name: Run Bandit scan (project code)
+        run: bandit -r scripts/ -f json -o reports/bandit_report.json || true
 
       - name: Upload Bandit report
         uses: actions/upload-artifact@v4
         with:
           name: bandit-report
           path: reports/bandit_report.json
+
+      # test_app/ is a deliberately vulnerable fixture used for the dissertation's
+      # precision/recall research (docs/RESEARCH.md) — informational only, never gates.
+      - name: Run Bandit scan (seeded research fixture)
+        run: bandit -r test_app/ -f json -o reports/bandit_seeded_report.json || true
+
+      - name: Upload Bandit seeded-fixture report
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-seeded-report
+          path: reports/bandit_seeded_report.json
 
   # --- Static Analysis: Semgrep ---
   # Semgrep is our second pair of eyes on the code — it catches patterns Bandit misses
@@ -49,18 +60,32 @@ jobs:
       - name: Install Semgrep
         run: pip install semgrep
 
-      # Same deal — || true keeps the pipeline alive; severity is enforced downstream
-      - name: Run Semgrep scan
+      # This is what the gate sees — the project's own code, not the seeded fixture.
+      - name: Run Semgrep scan (project code)
         run: |
           semgrep --config=p/python --json \
             --output reports/semgrep_report.json \
-            test_app/ || true
+            scripts/ || true
 
       - name: Upload Semgrep report
         uses: actions/upload-artifact@v4
         with:
           name: semgrep-report
           path: reports/semgrep_report.json
+
+      # test_app/ is a deliberately vulnerable fixture used for the dissertation's
+      # precision/recall research (docs/RESEARCH.md) — informational only, never gates.
+      - name: Run Semgrep scan (seeded research fixture)
+        run: |
+          semgrep --config=p/python --json \
+            --output reports/semgrep_seeded_report.json \
+            test_app/ || true
+
+      - name: Upload Semgrep seeded-fixture report
+        uses: actions/upload-artifact@v4
+        with:
+          name: semgrep-seeded-report
+          path: reports/semgrep_seeded_report.json
 
   # --- Dynamic Analysis: OWASP ZAP ---
   # ZAP actually fires HTTP requests at the running app, so we spin Flask up first,
@@ -145,14 +170,26 @@ jobs:
       - name: Install pip-audit
         run: pip install pip-audit
 
-      - name: Run pip-audit scan
-        run: pip-audit -r test_app/requirements.txt --format json -o reports/pip_audit_report.json || true
+      # This is what the gate sees — the project's own dependencies, not the seeded fixture's.
+      - name: Run pip-audit scan (project deps)
+        run: pip-audit -r requirements.txt --format json -o reports/pip_audit_report.json || true
 
       - name: Upload pip-audit report
         uses: actions/upload-artifact@v4
         with:
           name: pip-audit-report
           path: reports/pip_audit_report.json
+
+      # test_app/ is a deliberately vulnerable fixture used for the dissertation's
+      # precision/recall research (docs/RESEARCH.md) — informational only, never gates.
+      - name: Run pip-audit scan (seeded research fixture)
+        run: pip-audit -r test_app/requirements.txt --format json -o reports/pip_audit_seeded_report.json || true
+
+      - name: Upload pip-audit seeded-fixture report
+        uses: actions/upload-artifact@v4
+        with:
+          name: pip-audit-seeded-report
+          path: reports/pip_audit_seeded_report.json
 
   # --- Container / IaC Scan: Trivy ---
   # Trivy looks at our Dockerfiles and config files for misconfigurations —
@@ -205,9 +242,11 @@ jobs:
           path: reports/gitleaks_report.json
 
   # --- Security Gate ---
-  # This is the decision point. All scan reports land here and get fed into
-  # aggregate_results.py, which counts HIGH/CRITICAL findings. If the count is
-  # too high, the gate fails and the build is blocked. Nothing ships until it's clean.
+  # This is the decision point. Reports from the project's own code (not the
+  # seeded test_app/ fixture — that's research-only, see the *-seeded-report
+  # artifacts) land here and get fed into aggregate_results.py, which counts
+  # HIGH/CRITICAL findings. If the count is too high, the gate fails and the
+  # build is blocked. Nothing ships until it's clean.
   security-gate:
     name: Security Gate
     runs-on: ubuntu-latest

@@ -1,6 +1,9 @@
 """
 build_confidence_table.py
 
+PROPRIETARY -- not covered by this repository's MIT LICENSE. See
+LICENSE-COMMERCIAL.
+
 Build-time tool: matches a corpus of scanner findings (results/run_1/findings.json,
 from re-running the pipeline against test_app/, our fully-enumerated vulnerable
 fixture) against the seeded ground truth, and computes empirical precision per
@@ -94,6 +97,10 @@ def main():
     rules, tool_baseline, unscored_tools = build_table(CORPUS_PATH, seeded_vulns, tools_covered)
 
     output = {
+        '_license': (
+            "Proprietary data, not covered by this repository's MIT LICENSE. "
+            "See LICENSE-COMMERCIAL. Requires a valid subscription to use with score_findings.py."
+        ),
         'methodology': (
             f"Empirical precision per (tool, rule) from matching scanner findings against "
             f"a hand-seeded ground truth ({len(seeded_vulns)} known vulnerabilities in a "

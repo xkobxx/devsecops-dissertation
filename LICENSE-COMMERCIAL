@@ -1,0 +1,42 @@
+Commercial License — DevSecOps Trust Gate Confidence Scoring
+Copyright (c) 2026 David Mensah. All rights reserved.
+
+This license applies ONLY to the following files in this repository
+(the "Licensed Files"):
+
+  - scripts/score_findings.py
+  - scripts/build_confidence_table.py
+  - confidence_table.json
+
+Every other file in this repository is covered by the MIT License in
+LICENSE, not this file.
+
+The Licensed Files are source-available, not open source. You may:
+
+  - Read the Licensed Files for transparency, security review, and audit
+    purposes.
+  - Execute the Licensed Files as part of the DevSecOps Trust Gate GitHub
+    Action, only while presenting a valid, unexpired license key obtained
+    through an active paid subscription (see README.md).
+
+You may NOT, without prior written permission from the copyright holder:
+
+  - Use, copy, modify, merge, publish, distribute, sublicense, or sell the
+    Licensed Files or any derivative work based on them.
+  - Run the functionality of the Licensed Files without a valid, active
+    paid subscription.
+  - Remove, disable, or circumvent the license verification built into the
+    Licensed Files.
+
+THE LICENSED FILES ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR
+ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE LICENSED FILES OR
+THEIR USE.
+
+Commercial licensing inquiries: dave2shee2012@gmail.com
+
+Note: this is plain-language source-available licensing, not a substitute
+for legal review. If enforceability against a determined bad actor matters
+to you, have a lawyer review or replace this with an established license
+framework (e.g. Business Source License, Elastic License 2.0) before
+treating it as legally load-bearing.

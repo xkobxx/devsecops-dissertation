@@ -1,5 +1,10 @@
 MIT License
 
+NOTE: This license does NOT apply to scripts/score_findings.py,
+scripts/build_confidence_table.py, or confidence_table.json -- those files
+are proprietary and governed by LICENSE-COMMERCIAL instead. Every other
+file in this repository is covered by the MIT terms below.
+
 Copyright (c) 2026 David Mensah
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

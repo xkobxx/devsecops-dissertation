@@ -1,4 +1,5 @@
 {
+  "_license": "Proprietary data, not covered by this repository's MIT LICENSE. See LICENSE-COMMERCIAL. Requires a valid subscription to use with score_findings.py.",
   "methodology": "Empirical precision per (tool, rule) from matching scanner findings against a hand-seeded ground truth (6 known vulnerabilities in a single fixture app), using +/-5-line proximity matching. Sample sizes are small -- treat entries with sample_size < 5 as directional, not statistically robust. Tools with no seeded vulnerabilities of their own type (pip-audit) are excluded rather than scored, since an empty ground truth would produce a misleading 0% precision. Known limitation: +/-5-line proximity matching can spuriously match an unrelated finding to a nearby seeded vuln in dense files -- verify any single-file benchmark result before publishing it externally.",
   "rules": {
     "Bandit:B404": {

@@ -67,6 +67,8 @@ The gate fails the build on any finding at or above `fail-on` severity (default 
 
 License keys are self-contained and verified offline (Ed25519 signature + expiry check, no database, no server to run). `scripts/issue_license.py` is the seller-side tool that generates keys; it never runs inside the Action. A missing, invalid, or expired key just falls back to the free tier silently — it never fails your build.
 
+Enforcement is defense in depth, not just orchestration: `action.yml` only invokes `score_findings.py` after a successful license check, *and* `score_findings.py` independently verifies the license key itself before scoring anything. Running it directly, outside the Action, without a valid key does nothing.
+
 ---
 
 ## Local Development
@@ -216,7 +218,7 @@ The security gate fails the build on any HIGH/CRITICAL finding across every scan
 
 ## License
 
-MIT — see [LICENSE](LICENSE). The confidence-scoring feature is license-key gated (paid); the scanning, aggregation, and gate logic are free and open.
+MIT — see [LICENSE](LICENSE) — for everything except the confidence-scoring engine (`scripts/score_findings.py`, `scripts/build_confidence_table.py`, `confidence_table.json`), which is source-available but proprietary; see [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL). The scanning, aggregation, and gate logic are free and open; the confidence scoring requires an active paid subscription.
 
 ## GitHub Repository
 

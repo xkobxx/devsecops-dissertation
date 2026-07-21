@@ -53,6 +53,49 @@ jobs:
 
 That's it — no separate install step, no manual scanner invocations. The dashboard is uploaded as a build artifact (`security-dashboard`) on every run.
 
+### Inputs
+
+| Input | Required | Default | Description |
+|---|---|---|---|
+| `target` | No | `.` | Path to scan, relative to the repo root |
+| `fail-on` | No | `high` | Minimum severity that fails the gate: `critical` \| `high` \| `medium` \| `low` \| `none` |
+| `license-key` | No | *(empty)* | Paid license key. Unlocks confidence scoring. Omit for the free tier. |
+
+### Outputs
+
+| Output | Description |
+|---|---|
+| `findings-path` | Path to the unified `findings.json` produced by the run |
+
+### Using a license key (paid tier)
+
+Store your key as a repo secret (Settings → Secrets and variables → Actions) and pass it through:
+
+```yaml
+      - uses: xkobxx/devsecops-dissertation@v1.0.0
+        with:
+          target: .
+          fail-on: high
+          license-key: ${{ secrets.TRUST_GATE_LICENSE }}
+```
+
+A missing, invalid, or expired key silently falls back to the free tier instead of failing the build.
+
+### Viewing results
+
+- **Dashboard**: every run uploads an HTML dashboard as the `security-dashboard` build artifact — download it from the workflow run's Summary page.
+- **Raw findings**: read the `findings-path` output (`reports/findings.json`) in a later step if you want to post-process results yourself, e.g.:
+
+```yaml
+      - uses: xkobxx/devsecops-dissertation@v1.0.0
+        id: scan
+        with:
+          target: .
+      - run: cat "${{ steps.scan.outputs.findings-path }}"
+```
+
+> Only one invocation per job is supported — a second call in the same job collides on the fixed `security-dashboard` artifact name.
+
 ---
 
 ## How it works

@@ -4,6 +4,10 @@ A GitHub Action that runs Bandit, Semgrep, pip-audit, Trivy and Gitleaks against
 
 > **In plain English:** it's a metal detector that also tells you which alarms are real. Most SAST tools bury real vulnerabilities under a pile of false positives; this scores every finding against measured, disclosed accuracy data instead of asking you to trust it blindly.
 
+## [📊 See the live dashboard](https://xkobxx.github.io/devsecops-dissertation/)
+
+This repo dogfoods its own pipeline — the link above always shows the results from the latest push to `main`, no download required.
+
 ---
 
 ## What you get

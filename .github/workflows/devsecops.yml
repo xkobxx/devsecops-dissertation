@@ -7,6 +7,12 @@ name: DevSecOps Pipeline
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  pull-requests: write
+
 jobs:
   # --- Static Analysis: Bandit ---
   # Bandit reads through our Python source and flags anything that looks sketchy —
@@ -346,8 +352,86 @@ jobs:
       - name: Generate HTML dashboard
         run: python scripts/generate_report.py
 
-      - name: Upload dashboard
-        uses: actions/upload-artifact@v4
+      # Pages serves a directory, and we want the dashboard reachable at both the
+      # bare site URL and an explicit /dashboard.html — so ship it as both files.
+      - name: Prepare Pages site
+        run: |
+          mkdir -p pages_site
+          cp reports/dashboard.html pages_site/index.html
+          cp reports/dashboard.html pages_site/dashboard.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: dashboard
-          path: reports/dashboard.html
+          path: pages_site
+
+  # --- Publish Dashboard ---
+  # Deploys the dashboard built above to GitHub Pages, so there's one stable URL
+  # that always shows the latest run — no artifact zip to download.
+  deploy-pages:
+    name: Publish Dashboard to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [generate-dashboard]
+    if: always()
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # --- Link Dashboard on PR ---
+  # Drops (or updates) a single comment on the PR pointing at the live dashboard,
+  # so reviewers don't have to leave the PR to see scan results.
+  comment-dashboard-link:
+    name: Link Dashboard on PR
+    runs-on: ubuntu-latest
+    needs: [deploy-pages, security-gate]
+    if: always() && github.event_name == 'pull_request'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: Comment dashboard link on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const marker = '<!-- devsecops-dashboard-link -->';
+            const pageUrl = '${{ needs.deploy-pages.outputs.page_url }}';
+            const gatePassed = '${{ needs.security-gate.result }}' === 'success';
+            const body = [
+              marker,
+              '### DevSecOps Trust Gate',
+              '',
+              `Security gate: **${gatePassed ? 'passed' : 'failed'}**`,
+              '',
+              `[Open the live dashboard](${pageUrl})`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+            const existing = comments.find((c) => c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

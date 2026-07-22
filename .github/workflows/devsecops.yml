@@ -368,31 +368,32 @@ jobs:
   # --- Publish Dashboard ---
   # Deploys the dashboard built above to GitHub Pages, so there's one stable URL
   # that always shows the latest run — no artifact zip to download.
+  # push-only: the github-pages environment only allows deploys from main, and
+  # we don't want a PR branch's dashboard overwriting the live site anyway.
   deploy-pages:
     name: Publish Dashboard to GitHub Pages
     runs-on: ubuntu-latest
     needs: [generate-dashboard]
-    if: always()
+    if: always() && github.event_name == 'push'
     permissions:
       pages: write
       id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    outputs:
-      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
 
   # --- Link Dashboard on PR ---
-  # Drops (or updates) a single comment on the PR pointing at the live dashboard,
+  # Drops (or updates) a single comment on the PR pointing at the live dashboard
+  # for main (PRs don't get their own Pages deploy — see deploy-pages above),
   # so reviewers don't have to leave the PR to see scan results.
   comment-dashboard-link:
     name: Link Dashboard on PR
     runs-on: ubuntu-latest
-    needs: [deploy-pages, security-gate]
+    needs: [generate-dashboard, security-gate]
     if: always() && github.event_name == 'pull_request'
     permissions:
       pull-requests: write
@@ -402,11 +403,13 @@ jobs:
         with:
           script: |
             const marker = '<!-- devsecops-dashboard-link -->';
-            const pageUrl = '${{ needs.deploy-pages.outputs.page_url }}';
+            const pageUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/`;
             const gatePassed = '${{ needs.security-gate.result }}' === 'success';
             const body = [
               marker,
               '### DevSecOps Trust Gate',
+              '',
+              `_Dashboard reflects the latest run on \`main\` — merge this PR to update it._`,
               '',
               `Security gate: **${gatePassed ? 'passed' : 'failed'}**`,
               '',

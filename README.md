@@ -145,3 +145,5 @@ MIT — see [LICENSE](LICENSE) — for everything except the confidence-scoring 
 ## GitHub Repository
 
 **https://github.com/xkobxx/devsecops-dissertation**
+
+<!-- test: verifying dashboard PR comment automation, will revert -->

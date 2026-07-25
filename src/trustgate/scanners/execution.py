@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from importlib.metadata import PackageNotFoundError, version as package_version
 import json
 from pathlib import Path
+import shutil
 import subprocess
 from collections.abc import Sequence, Set
 
@@ -16,16 +17,51 @@ SCANNER_DISTRIBUTIONS = {
     "semgrep": "semgrep",
     "pip-audit": "pip-audit",
 }
+SCANNER_VERSION_COMMANDS = {
+    "bandit": ("bandit", "--version"),
+    "brakeman": ("brakeman", "--version"),
+    "checkov": ("checkov", "--version"),
+    "codeql-sarif": ("codeql", "version"),
+    "eslint-security": ("npx", "--no-install", "eslint", "--version"),
+    "gitleaks": ("gitleaks", "version"),
+    "gosec": ("gosec", "-version"),
+    "grype": ("grype", "version"),
+    "hadolint": ("hadolint", "--version"),
+    "osv-scanner": ("osv-scanner", "--version"),
+    "pip-audit": ("pip-audit", "--version"),
+    "semgrep": ("semgrep", "--version"),
+    "spotbugs": ("spotbugs", "-version"),
+    "syft": ("syft", "version"),
+    "trivy": ("trivy", "--version"),
+    "trufflehog": ("trufflehog", "--version"),
+    "zap": ("zap-api-scan.py", "--help"),
+}
 
 
 def detect_scanner_version(scanner: str) -> str | None:
     distribution = SCANNER_DISTRIBUTIONS.get(scanner)
-    if distribution is None:
+    if distribution is not None:
+        try:
+            return package_version(distribution)
+        except PackageNotFoundError:
+            pass
+    command = SCANNER_VERSION_COMMANDS.get(scanner)
+    if command is None or shutil.which(command[0]) is None:
         return None
     try:
-        return package_version(distribution)
-    except PackageNotFoundError:
+        completed = subprocess.run(
+            list(command),
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
         return None
+    output = (completed.stdout or completed.stderr).strip()
+    if completed.returncode != 0 or not output:
+        return None
+    return output.splitlines()[0][:256]
 
 
 def _as_text(output: str | bytes | None) -> str:
@@ -46,6 +82,7 @@ def execute_scanner(
     timeout_seconds: float,
     finding_exit_codes: Set[int],
     version: str | None = None,
+    report_from_stdout: bool = False,
 ) -> ScannerResult:
     """Run one scanner and persist complete execution-health evidence."""
 
@@ -54,6 +91,7 @@ def execute_scanner(
     logs_dir = logs_dir.resolve()
     logs_dir.mkdir(parents=True, exist_ok=True)
     metadata_path.parent.mkdir(parents=True, exist_ok=True)
+    report_path.parent.mkdir(parents=True, exist_ok=True)
     stdout_path = logs_dir / f"{scanner}.stdout.log"
     stderr_path = logs_dir / f"{scanner}.stderr.log"
     started_at = datetime.now(timezone.utc)
@@ -86,6 +124,13 @@ def execute_scanner(
     ended_at = datetime.now(timezone.utc)
     stdout_path.write_text(stdout, encoding="utf-8")
     stderr_path.write_text(stderr, encoding="utf-8")
+    if (
+        report_from_stdout
+        and not timed_out
+        and error is None
+        and exit_code in {0, *finding_exit_codes}
+    ):
+        report_path.write_text(stdout, encoding="utf-8")
     report_produced = report_path.is_file()
 
     if timed_out or error is not None:
@@ -167,6 +212,7 @@ def record_external_scanner(
 
 
 __all__ = [
+    "SCANNER_VERSION_COMMANDS",
     "detect_scanner_version",
     "execute_scanner",
     "record_external_scanner",

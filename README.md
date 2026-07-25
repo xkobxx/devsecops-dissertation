@@ -57,11 +57,23 @@ complete baseline.
 - A static, filterable HTML report.
 - Offline Ed25519 licence verification.
 - An installable `trustgate` CLI with aggregation and reporting commands.
+- A typed scanner-adapter SDK with registration, entry-point discovery,
+  applicability planning, isolated parsing, and 17 built-in integrations.
+- Deterministic repository detection and an explainable, per-package scan plan
+  with safe generated/vendor exclusions and explicit privacy declarations.
+- Conservative exact deduplication, multi-signal cross-scanner correlation, and
+  ancestry-aware corroboration with confidence limits.
 
 Severity handling, including unknown defaults and the audited Trivy CVSS
 fallback, is documented in `docs/SEVERITY_NORMALISATION.md`.
 Stable finding identity and cross-scanner dependency correlation are documented
 in `docs/FINGERPRINTS.md`.
+Adapter lifecycle and extension guidance are documented in
+`docs/ADAPTER_SDK.md`.
+Repository detection, overrides, dry-run behavior, and plan fields are
+documented in `docs/SCAN_PLANNING.md`.
+Finding consolidation, evidence ancestry, contradictions, and corroboration
+limits are documented in `docs/CORRELATION.md`.
 
 ## Install the CLI
 

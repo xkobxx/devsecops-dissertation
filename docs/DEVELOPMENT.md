@@ -66,6 +66,30 @@ have been produced by this boundary. For Gitleaks, pass both
 `--finding-exit-code 3` to the wrapper and `--exit-code 3` to Gitleaks; its
 default exit code `1` is ambiguous between leaks and execution errors.
 
+The adapter-aware equivalent selects the command, native report parser, timeout,
+health check, and applicability rule from the registered adapter:
+
+```bash
+trustgate adapter-list --target . --json
+trustgate adapter-run --scanner bandit --target src --reports-dir reports
+trustgate plan --target .
+trustgate plan --target . --format json --dry-run
+```
+
+See [ADAPTER_SDK.md](ADAPTER_SDK.md) for third-party registration, configuration,
+failure isolation, and test contracts.
+See [SCAN_PLANNING.md](SCAN_PLANNING.md) for repository signals, monorepo scan
+contexts, scanner overrides, and data-handling declarations.
+
+Run the focused consolidation contract tests with:
+
+```bash
+python -m unittest discover -s tests/unit/correlation -p "test_*.py"
+```
+
+See [CORRELATION.md](CORRELATION.md) for matching thresholds, evidence
+provenance, contradictions, and rule-ancestry configuration.
+
 The composite Action validates its environment inputs before scanner
 installation. The same boundary can be exercised locally:
 

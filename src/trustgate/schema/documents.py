@@ -8,6 +8,11 @@ import json
 from typing import Any, Iterable
 
 from trustgate.scanners.models import ScannerResult
+from trustgate.correlation import (
+    CorrelationConfig,
+    ScannerContradiction,
+    correlate_findings,
+)
 from trustgate.severity import normalise_scanner_severity
 
 from .validation import CURRENT_SCHEMA_VERSION, validate_instance
@@ -84,9 +89,16 @@ def build_scan_run(
     ref: str | None = None,
     commit: str | None = None,
     trigger: str = "local",
+    correlation_config: CorrelationConfig | None = None,
+    contradictions: Iterable[ScannerContradiction] = (),
 ) -> dict[str, Any]:
     """Build and validate one canonical scan-run document."""
 
+    findings = correlate_findings(
+        findings,
+        config=correlation_config,
+        contradictions=contradictions,
+    )
     for finding in findings:
         validate_instance("finding", finding)
     scanners = [_scanner_document(result) for result in scanner_results]

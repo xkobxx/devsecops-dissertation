@@ -4,10 +4,16 @@ from argparse import ArgumentParser
 from collections.abc import Sequence
 
 from trustgate import __version__
+from trustgate.adapters.cli import add_list_arguments as add_adapter_list_arguments
+from trustgate.adapters.cli import add_run_arguments as add_adapter_run_arguments
+from trustgate.adapters.cli import run_adapter
+from trustgate.adapters.cli import run_list as list_adapters
 from trustgate.aggregation import add_arguments as add_aggregation_arguments
 from trustgate.aggregation import run as run_aggregation
 from trustgate.benchmarks.cli import add_arguments as add_benchmark_arguments
 from trustgate.benchmarks.cli import run as run_benchmark
+from trustgate.planning.cli import add_arguments as add_plan_arguments
+from trustgate.planning.cli import run as run_plan
 from trustgate.reporting import add_arguments as add_reporting_arguments
 from trustgate.reporting import run as run_reporting
 from trustgate.scanners.cli import add_arguments as add_scanner_arguments
@@ -27,6 +33,24 @@ def build_parser() -> ArgumentParser:
         version=f"%(prog)s {__version__}",
     )
     commands = parser.add_subparsers(dest="command")
+    adapter_list = commands.add_parser(
+        "adapter-list",
+        help="List scanner adapters and repository applicability.",
+    )
+    add_adapter_list_arguments(adapter_list)
+    adapter_list.set_defaults(handler=list_adapters)
+    adapter_run = commands.add_parser(
+        "adapter-run",
+        help="Run an applicable scanner through its adapter lifecycle.",
+    )
+    add_adapter_run_arguments(adapter_run)
+    adapter_run.set_defaults(handler=run_adapter)
+    plan = commands.add_parser(
+        "plan",
+        help="Explain scanner selection and execution inputs without scanning.",
+    )
+    add_plan_arguments(plan)
+    plan.set_defaults(handler=run_plan)
     aggregate = commands.add_parser(
         "aggregate",
         help="Aggregate scanner reports and evaluate the legacy severity gate.",

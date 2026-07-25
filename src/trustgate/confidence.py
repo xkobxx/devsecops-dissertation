@@ -238,14 +238,41 @@ def build_confidence_components(
             decision_tier=decision_tier,
         )
         corroboration = "corroboration" in evidence_kinds
+        corroboration_record = finding.get("corroboration")
+        corroboration_bound = (
+            float(corroboration_record.get("conservative_bound"))
+            if isinstance(corroboration_record, dict)
+            and isinstance(
+                corroboration_record.get("conservative_bound"),
+                (int, float),
+            )
+            and int(
+                corroboration_record.get("independent_scanner_count") or 0
+            )
+            >= 2
+            else None
+        )
         validation = "manual_validation" in evidence_kinds
-        uplift = 0.05 if corroboration else 0.0
+        uplift = (
+            min(0.1, 0.1 * corroboration_bound)
+            if corroboration and corroboration_bound is not None
+            else 0.05
+            if corroboration
+            else 0.0
+        )
         uplift += 0.05 if validation else 0.0
         validity_estimate = min(1.0, estimate + uplift)
         validity_bound = min(validity_estimate, bound + uplift)
         validity_evidence = ["scanner-rule reliability"]
         if corroboration:
-            validity_evidence.append("independent scanner corroboration")
+            validity_evidence.append(
+                (
+                    "independent scanner corroboration "
+                    f"(conservative bound {corroboration_bound:.6f})"
+                    if corroboration_bound is not None
+                    else "independent scanner corroboration"
+                )
+            )
         if validation:
             validity_evidence.append("manual finding validation")
         validity = _component(

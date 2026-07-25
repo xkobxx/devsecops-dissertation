@@ -6,19 +6,17 @@ import argparse
 from datetime import datetime
 from pathlib import Path
 
+from trustgate.adapters.builtin.catalog import (
+    BUILTIN_ADAPTER_NAMES,
+    builtin_registry,
+)
+
 from .execution import execute_scanner, record_external_scanner
 
-SCANNER_NAMES = ("bandit", "semgrep", "pip-audit", "trivy", "gitleaks", "zap")
+SCANNER_NAMES = BUILTIN_ADAPTER_NAMES
 DEFAULT_FINDING_EXIT_CODES = {
-    "bandit": {1},
-    "semgrep": set(),
-    "pip-audit": {1},
-    "trivy": set(),
-    # Gitleaks defaults to 1 for both leaks and errors. Trust Gate invokes it
-    # with --exit-code 3 so a completed scan with leaks cannot be confused
-    # with a scanner failure.
-    "gitleaks": {3},
-    "zap": set(),
+    name: set(getattr(builtin_registry().get(name), "finding_exit_codes", ()))
+    for name in SCANNER_NAMES
 }
 
 

@@ -15,7 +15,25 @@ from urllib.parse import urlsplit
 
 FAIL_ON_VALUES = ("critical", "high", "medium", "low", "none")
 SCANNER_FAILURE_POLICIES = ("fail", "warn", "ignore")
-SCANNER_NAMES = ("bandit", "semgrep", "pip-audit", "trivy", "gitleaks")
+SCANNER_NAMES = (
+    "bandit",
+    "brakeman",
+    "checkov",
+    "codeql-sarif",
+    "eslint-security",
+    "gitleaks",
+    "gosec",
+    "grype",
+    "hadolint",
+    "osv-scanner",
+    "pip-audit",
+    "semgrep",
+    "spotbugs",
+    "syft",
+    "trivy",
+    "trufflehog",
+    "zap",
+)
 BOOLEAN_VALUES = ("false", "true")
 SEVERITY_BASES = ("normalised", "original")
 MAX_TIMEOUT_SECONDS = Decimal("3600")

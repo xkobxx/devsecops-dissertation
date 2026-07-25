@@ -38,6 +38,13 @@ Scanner reliability is never presented as exploitability probability. When no
 exploit-specific evidence exists, `exploitability_confidence` remains unscored
 even if rule reliability is high.
 
+Independent corroboration is ancestry-aware. A structured Beta-Binomial
+corroboration interval is stored on the finding, but the validity uplift is
+added only when at least two independent rule sources agree. Shared rule
+ancestry counts once. DAST and human confirmation remain separately visible and
+scanner agreement alone never populates exploitability confidence. See
+`docs/CORRELATION.md`.
+
 ## Conservative decisions
 
 The benchmark posterior mean is for display. Gate and prioritization decisions

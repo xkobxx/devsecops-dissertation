@@ -7,19 +7,19 @@ Last updated: 2026-07-25 on branch `codex/phase-0-repository-audit`.
 ## Status summary
 
 - Explicit PDF checkbox items: **964**
-- Validated complete: **195**
-- Remaining explicit checkbox items: **769**
+- Validated complete: **289**
+- Remaining explicit checkbox items: **675**
 - Derived final architecture/verification checks: **34** (tracked below but
   excluded from the PDF checkbox totals because the PDF presents them as an
   architecture flow and command requirements, not checkbox items)
-- Current work: **Phase 4.1 - Define the adapter interface**
+- Current work: **Phase 7.1 - Add advisory enrichment**
 
 Only validation-backed work is checked. Existing files or partial implementations are not marked complete merely because they resemble a deliverable.
 
 ## Active implementation queue
 
-1. Implement Phase 4.1 scanner adapter interface.
-2. Continue Phases 4-27 in the exact order below without skipping acceptance criteria.
+1. Implement Phase 7.1 advisory enrichment.
+2. Continue Phases 7-27 in the exact order below without skipping acceptance criteria.
 
 ## Complete ordered checklist
 
@@ -278,125 +278,128 @@ Only validation-backed work is checked. Existing files or partial implementation
 
 ### 4.1 Define the adapter interface
 
-- [ ] Implement a base adapter class. _(PDF p. 12)_
-- [ ] Add typed interfaces. _(PDF p. 12)_
-- [ ] Add adapter registration. _(PDF p. 12)_
-- [ ] Add adapter discovery. _(PDF p. 12)_
-- [ ] Add adapter configuration. _(PDF p. 12)_
-- [ ] Add adapter-level tests. _(PDF p. 12)_
-- [ ] Add adapter failure isolation. _(PDF p. 12)_
-- [ ] Add an adapter SDK guide. _(PDF p. 12)_
-- [ ] docs/ADAPTER_SDK.md _(PDF p. 13)_
-- [ ] A new scanner can be added without modifying the aggregator core. _(PDF p. 13)_
-- [ ] Broken adapters do not corrupt other results. _(PDF p. 13)_
+- [x] Implement a base adapter class. _(PDF p. 12)_
+- [x] Add typed interfaces. _(PDF p. 12)_
+- [x] Add adapter registration. _(PDF p. 12)_
+- [x] Add adapter discovery. _(PDF p. 12)_
+- [x] Add adapter configuration. _(PDF p. 12)_
+- [x] Add adapter-level tests. _(PDF p. 12)_
+- [x] Add adapter failure isolation. _(PDF p. 12)_
+- [x] Add an adapter SDK guide. _(PDF p. 12)_
+- [x] docs/ADAPTER_SDK.md _(PDF p. 13)_
+- [x] A new scanner can be added without modifying the aggregator core. _(PDF p. 13)_
+- [x] Broken adapters do not corrupt other results. _(PDF p. 13)_
 
 ### 4.2 Migrate existing scanners into adapters
 
-- [ ] Bandit _(PDF p. 13)_
-- [ ] Semgrep _(PDF p. 13)_
-- [ ] pip-audit _(PDF p. 13)_
-- [ ] Trivy _(PDF p. 13)_
-- [ ] Gitleaks _(PDF p. 13)_
-- [ ] OWASP ZAP _(PDF p. 13)_
-- [ ] Applicability detection _(PDF p. 13)_
-- [ ] Version detection _(PDF p. 13)_
-- [ ] Execution wrapper _(PDF p. 13)_
-- [ ] Timeout handling _(PDF p. 13)_
-- [ ] Health validation _(PDF p. 13)_
-- [ ] Parser _(PDF p. 13)_
-- [ ] Severity mapping _(PDF p. 13)_
-- [ ] Fingerprinting _(PDF p. 13)_
-- [ ] Test fixtures _(PDF p. 13)_
-- [ ] Error fixtures _(PDF p. 13)_
-- [ ] Malformed report fixtures _(PDF p. 13)_
-- [ ] All existing functionality uses adapters. _(PDF p. 13)_
-- [ ] No scanner-specific parsing remains inside the central aggregator. _(PDF p. 13)_
+- [x] Bandit _(PDF p. 13)_
+- [x] Semgrep _(PDF p. 13)_
+- [x] pip-audit _(PDF p. 13)_
+- [x] Trivy _(PDF p. 13)_
+- [x] Gitleaks _(PDF p. 13)_
+- [x] OWASP ZAP _(PDF p. 13)_
+- [x] Applicability detection _(PDF p. 13)_
+- [x] Version detection _(PDF p. 13)_
+- [x] Execution wrapper _(PDF p. 13)_
+- [x] Timeout handling _(PDF p. 13)_
+- [x] Health validation _(PDF p. 13)_
+- [x] Parser _(PDF p. 13)_
+- [x] Severity mapping _(PDF p. 13)_
+- [x] Fingerprinting _(PDF p. 13)_
+- [x] Test fixtures _(PDF p. 13)_
+- [x] Error fixtures _(PDF p. 13)_
+- [x] Malformed report fixtures _(PDF p. 13)_
+- [x] All existing functionality uses adapters. _(PDF p. 13)_
+- [x] No scanner-specific parsing remains inside the central aggregator. _(PDF p. 13)_
 
 ### 4.3 Add additional scanner integrations
 
-- [ ] OSV-Scanner _(PDF p. 13)_
-- [ ] Syft _(PDF p. 13)_
-- [ ] Grype _(PDF p. 13)_
-- [ ] Checkov or KICS _(PDF p. 13)_
-- [ ] Hadolint _(PDF p. 13)_
-- [ ] Gosec _(PDF p. 13)_
-- [ ] Brakeman _(PDF p. 14)_
-- [ ] SpotBugs or equivalent Java support _(PDF p. 14)_
-- [ ] JavaScript and TypeScript security scanning _(PDF p. 14)_
-- [ ] TruffleHog as an optional secret-validation source _(PDF p. 14)_
-- [ ] CodeQL SARIF import _(PDF p. 14)_
-- [ ] Each integration has documented applicability. _(PDF p. 14)_
-- [ ] Unsupported repositories do not run irrelevant scanners. _(PDF p. 14)_
-- [ ] New adapters pass the common adapter test suite. _(PDF p. 14)_
+- [x] OSV-Scanner _(PDF p. 13)_
+- [x] Syft _(PDF p. 13)_
+- [x] Grype _(PDF p. 13)_
+- [x] Checkov or KICS _(PDF p. 13)_
+- [x] Hadolint _(PDF p. 13)_
+- [x] Gosec _(PDF p. 13)_
+- [x] Brakeman _(PDF p. 14)_
+- [x] SpotBugs or equivalent Java support _(PDF p. 14)_
+- [x] JavaScript and TypeScript security scanning _(PDF p. 14)_
+- [x] TruffleHog as an optional secret-validation source _(PDF p. 14)_
+- [x] CodeQL SARIF import _(PDF p. 14)_
+- [x] Each integration has documented applicability. _(PDF p. 14)_
+- [x] Unsupported repositories do not run irrelevant scanners. _(PDF p. 14)_
+- [x] New adapters pass the common adapter test suite. _(PDF p. 14)_
 
 ## Phase 5 - Add intelligent repository detection
 
 ### 5.1 Build repository context detection
 
-- [ ] Languages _(PDF p. 14)_
-- [ ] Frameworks _(PDF p. 14)_
-- [ ] Package managers _(PDF p. 14)_
-- [ ] Lock files _(PDF p. 14)_
-- [ ] Build systems _(PDF p. 14)_
-- [ ] Container files _(PDF p. 14)_
-- [ ] Kubernetes files _(PDF p. 14)_
-- [ ] Terraform files _(PDF p. 14)_
-- [ ] CloudFormation files _(PDF p. 14)_
-- [ ] OpenAPI specifications _(PDF p. 14)_
-- [ ] Test directories _(PDF p. 14)_
-- [ ] Generated files _(PDF p. 14)_
-- [ ] Vendored dependencies _(PDF p. 14)_
-- [ ] Monorepo packages _(PDF p. 14)_
-- [ ] Runtime and development dependencies _(PDF p. 14)_
-- [ ] The scan plan accurately explains why each scanner was selected. _(PDF p. 14)_
-- [ ] Generated and vendored files can be excluded safely. _(PDF p. 14)_
-- [ ] Monorepos generate per-package scan contexts. _(PDF p. 14)_
+- [x] Languages _(PDF p. 14)_
+- [x] Frameworks _(PDF p. 14)_
+- [x] Package managers _(PDF p. 14)_
+- [x] Lock files _(PDF p. 14)_
+- [x] Build systems _(PDF p. 14)_
+- [x] Container files _(PDF p. 14)_
+- [x] Kubernetes files _(PDF p. 14)_
+- [x] Terraform files _(PDF p. 14)_
+- [x] CloudFormation files _(PDF p. 14)_
+- [x] OpenAPI specifications _(PDF p. 14)_
+- [x] Test directories _(PDF p. 14)_
+- [x] Generated files _(PDF p. 14)_
+- [x] Vendored dependencies _(PDF p. 14)_
+- [x] Monorepo packages _(PDF p. 14)_
+- [x] Runtime and development dependencies _(PDF p. 14)_
+- [x] The scan plan accurately explains why each scanner was selected. _(PDF p. 14)_
+- [x] Generated and vendored files can be excluded safely. _(PDF p. 14)_
+- [x] Monorepos generate per-package scan contexts. _(PDF p. 14)_
 
 ### 5.2 Generate an explicit scan plan
 
-- [ ] Add trustgate plan. _(PDF p. 15)_
-- [ ] Add --dry-run. _(PDF p. 15)_
-- [ ] Add JSON and human-readable output. _(PDF p. 15)_
-- [ ] Allow users to override automatic detection. _(PDF p. 15)_
-- [ ] Validate conflicting configuration. _(PDF p. 15)_
-- [ ] Users can inspect the complete scan plan before execution. _(PDF p. 15)_
-- [ ] Automatic decisions are transparent. _(PDF p. 15)_
+- [x] Add trustgate plan. _(PDF p. 15)_
+- [x] Add --dry-run. _(PDF p. 15)_
+- [x] Add JSON and human-readable output. _(PDF p. 15)_
+- [x] Allow users to override automatic detection. _(PDF p. 15)_
+- [x] Validate conflicting configuration. _(PDF p. 15)_
+- [x] Users can inspect the complete scan plan before execution. _(PDF p. 15)_
+- [x] Automatic decisions are transparent. _(PDF p. 15)_
 
 ## Phase 6 - Deduplicate and correlate findings
 
 ### 6.1 Implement exact deduplication
 
-- [ ] Merge repeated findings from the same scanner. _(PDF p. 15)_
-- [ ] Handle repeated locations. _(PDF p. 15)_
-- [ ] Preserve occurrence counts. _(PDF p. 15)_
-- [ ] Preserve all raw evidence references. _(PDF p. 15)_
+- [x] Merge repeated findings from the same scanner. _(PDF p. 15)_
+- [x] Handle repeated locations. _(PDF p. 15)_
+- [x] Preserve occurrence counts. _(PDF p. 15)_
+- [x] Preserve all raw evidence references. _(PDF p. 15)_
 
 ### 6.2 Implement cross-scanner correlation
 
-- [ ] CWE _(PDF p. 15)_
-- [ ] File _(PDF p. 15)_
-- [ ] Symbol _(PDF p. 15)_
-- [ ] Source _(PDF p. 15)_
-- [ ] Sink _(PDF p. 15)_
-- [ ] Code region _(PDF p. 15)_
-- [ ] Dependency _(PDF p. 15)_
-- [ ] CVE _(PDF p. 15)_
-- [ ] Infrastructure resource _(PDF p. 15)_
-- [ ] Secret fingerprint _(PDF p. 15)_
-- [ ] Bandit and Semgrep reports of the same SQL injection become one consolidated issue. _(PDF p. 16)_
-- [ ] Supporting evidence from both scanners remains available. _(PDF p. 16)_
-- [ ] Unrelated findings are not incorrectly merged. _(PDF p. 16)_
+- [x] CWE _(PDF p. 15)_
+- [x] File _(PDF p. 15)_
+- [x] Symbol _(PDF p. 15)_
+- [x] Source _(PDF p. 15)_
+- [x] Sink _(PDF p. 15)_
+- [x] Code region _(PDF p. 15)_
+- [x] Dependency _(PDF p. 15)_
+- [x] CVE _(PDF p. 15)_
+- [x] Infrastructure resource _(PDF p. 15)_
+- [x] Secret fingerprint _(PDF p. 15)_
+- [x] Bandit and Semgrep reports of the same SQL injection become one consolidated issue. _(PDF p. 16)_
+- [x] Supporting evidence from both scanners remains available. _(PDF p. 16)_
+- [x] Unrelated findings are not incorrectly merged. _(PDF p. 16)_
+
+Validated derived scanner-agreement fields: `supporting_scanners`,
+`contradicting_scanners`, `agreement_strength`, and `correlation_reason`.
 
 ### 6.3 Add evidence-weighted corroboration
 
-- [ ] Increase finding-validity confidence when independent scanners agree. _(PDF p. 16)_
-- [ ] Avoid double-counting scanners using the same rule source. _(PDF p. 16)_
-- [ ] Track shared rule ancestry where known. _(PDF p. 16)_
-- [ ] Record DAST confirmation separately. _(PDF p. 16)_
-- [ ] Record human confirmation separately. _(PDF p. 16)_
-- [ ] Add confidence limits to corroboration calculations. _(PDF p. 16)_
-- [ ] Corroboration logic is documented and tested. _(PDF p. 16)_
-- [ ] Scanner agreement does not automatically imply exploitability. _(PDF p. 16)_
+- [x] Increase finding-validity confidence when independent scanners agree. _(PDF p. 16)_
+- [x] Avoid double-counting scanners using the same rule source. _(PDF p. 16)_
+- [x] Track shared rule ancestry where known. _(PDF p. 16)_
+- [x] Record DAST confirmation separately. _(PDF p. 16)_
+- [x] Record human confirmation separately. _(PDF p. 16)_
+- [x] Add confidence limits to corroboration calculations. _(PDF p. 16)_
+- [x] Corroboration logic is documented and tested. _(PDF p. 16)_
+- [x] Scanner agreement does not automatically imply exploitability. _(PDF p. 16)_
 
 ## Phase 7 - Add threat-intelligence enrichment
 
@@ -1268,15 +1271,15 @@ Only validation-backed work is checked. Existing files or partial implementation
 ## Required final architecture outcome
 
 - [ ] Repository checkout
-- [ ] Repository context detection
-- [ ] Transparent scan plan
-- [ ] Applicable scanner adapters
+- [x] Repository context detection
+- [x] Transparent scan plan
+- [x] Applicable scanner adapters
 - [ ] Scanner-health validation
 - [ ] Raw report preservation
 - [ ] Schema validation
 - [ ] Finding normalisation
 - [ ] Stable fingerprinting
-- [ ] Deduplication and correlation
+- [x] Deduplication and correlation
 - [ ] Threat-intelligence enrichment
 - [ ] Reachability analysis
 - [ ] Evidence and confidence calculation

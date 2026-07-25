@@ -30,6 +30,10 @@ temporary file followed by an atomic replacement.
 
 The scan-run `findings` array remains available to report consumers. Scanner
 health is now under `scanners`, and aggregate counts are under `summary`.
+Before publication, findings are exactly deduplicated and conservatively
+correlated. Optional Phase 6 fields preserve occurrence locations, all raw
+evidence references, source finding IDs, scanner agreement, match reasons, and
+bounded corroboration evidence. See `docs/CORRELATION.md`.
 
 ## Raw reports and normalisation evidence
 
@@ -121,6 +125,10 @@ Phase 3 adds six optional confidence-component fields so existing `1.0.0`
 findings remain valid. When confidence scoring runs, all six are published
 together and each component object is fully required and validated. See
 `docs/CONFIDENCE_METHODOLOGY.md`.
+
+Phase 6 adds optional correlation and provenance fields to the backward-
+compatible `1.0.0` contract. Parser findings without these fields remain valid;
+canonical scan-run construction populates them before publication.
 
 ## Packaging
 

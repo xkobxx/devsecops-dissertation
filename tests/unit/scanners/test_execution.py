@@ -71,6 +71,26 @@ class ScannerExecutionTests(unittest.TestCase):
             self.assertEqual(result.exit_code, 1)
             self.assertTrue(result.healthy)
 
+    def test_stdout_can_be_persisted_as_the_native_report(self) -> None:
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            report = workspace / "grype.json"
+
+            result = execute_scanner(
+                scanner="grype",
+                command=[sys.executable, "-c", "print('{\"matches\": []}')"],
+                report_path=report,
+                metadata_path=workspace / "execution.json",
+                logs_dir=workspace / "logs",
+                timeout_seconds=5,
+                finding_exit_codes=set(),
+                version="1.0.0",
+                report_from_stdout=True,
+            )
+
+            self.assertEqual(result.state, ScannerState.CLEAN)
+            self.assertEqual(json.loads(report.read_text()), {"matches": []})
+
     def test_crash_is_failed_even_if_it_writes_a_report(self) -> None:
         with TemporaryDirectory() as directory:
             workspace = Path(directory)

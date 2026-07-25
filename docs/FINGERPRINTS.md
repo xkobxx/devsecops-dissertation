@@ -51,6 +51,12 @@ being merged. The scanner name is excluded from the correlation fingerprint but
 included in `finding_id`, so two scanners can correlate without becoming the
 same scanner-specific record.
 
+Fingerprint equality is one correlation input, not the whole Phase 6
+consolidation policy. `trustgate.correlation` uses conservative multi-signal
+matching for scanner rules whose versioned fingerprints differ, and emits a
+`correlation-v1:sha256` cluster identity. See `docs/CORRELATION.md` for the
+thresholds and non-merging controls.
+
 ## Migration
 
 `trustgate.schema.migrate_fingerprint(finding, repository_root=...)` upgrades a

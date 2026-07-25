@@ -13,6 +13,151 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
 
 class TrustGateAggregateTests(unittest.TestCase):
+    def test_cli_consolidates_bandit_and_semgrep_sql_injection_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            (workspace / "app.py").write_text(
+                "query = request.args['q']\ncursor.execute(query)\n",
+                encoding="utf-8",
+            )
+            reports = workspace / "reports"
+            reports.mkdir()
+            (reports / "bandit_report.json").write_text(
+                json.dumps(
+                    {
+                        "results": [
+                            {
+                                "test_id": "B608",
+                                "issue_severity": "MEDIUM",
+                                "issue_text": "Possible SQL injection.",
+                                "filename": "app.py",
+                                "line_number": 42,
+                                "issue_cwe": {"id": 89},
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            (reports / "semgrep_report.json").write_text(
+                json.dumps(
+                    {
+                        "results": [
+                            {
+                                "check_id": "python.lang.security.sqli",
+                                "path": "app.py",
+                                "start": {"line": 44},
+                                "end": {"line": 44},
+                                "extra": {
+                                    "severity": "ERROR",
+                                    "message": "SQL injection.",
+                                    "metadata": {"cwe": ["CWE-89"]},
+                                },
+                            }
+                        ]
+                    }
+                ),
+                encoding="utf-8",
+            )
+            output = reports / "findings.json"
+            environment = os.environ.copy()
+            environment["PYTHONPATH"] = str(REPOSITORY_ROOT / "src")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustgate",
+                    "aggregate",
+                    "--target",
+                    str(workspace),
+                    "--reports-dir",
+                    str(reports),
+                    "--output",
+                    str(output),
+                    "--required-scanner",
+                    "bandit",
+                    "--required-scanner",
+                    "semgrep",
+                    "--fail-on",
+                    "none",
+                ],
+                cwd=workspace,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            scan_run = json.loads(output.read_text(encoding="utf-8"))
+            validate_instance("scan-run", scan_run)
+            self.assertEqual(scan_run["summary"]["total_findings"], 1)
+            issue = scan_run["findings"][0]
+            self.assertEqual(
+                issue["supporting_scanners"],
+                ["Bandit", "Semgrep"],
+            )
+            self.assertEqual(len(issue["raw_evidence_references"]), 2)
+            self.assertGreater(
+                issue["corroboration"]["conservative_bound"],
+                0,
+            )
+            self.assertIn("Aggregated 2 total findings.", completed.stdout)
+
+    def test_registered_adapter_report_is_aggregated_without_core_parser_code(self):
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            (workspace / "Dockerfile").write_text(
+                "FROM scratch\nWORKDIR relative\n", encoding="utf-8"
+            )
+            reports = workspace / "reports"
+            reports.mkdir()
+            (reports / "hadolint_report.json").write_text(
+                json.dumps(
+                    [{
+                        "code": "DL3000",
+                        "level": "warning",
+                        "message": "Use absolute WORKDIR.",
+                        "file": "Dockerfile",
+                        "line": 2,
+                    }]
+                ),
+                encoding="utf-8",
+            )
+            output = reports / "findings.json"
+            environment = os.environ.copy()
+            environment["PYTHONPATH"] = str(REPOSITORY_ROOT / "src")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustgate",
+                    "aggregate",
+                    "--target",
+                    str(workspace),
+                    "--reports-dir",
+                    str(reports),
+                    "--output",
+                    str(output),
+                    "--required-scanner",
+                    "hadolint",
+                    "--fail-on",
+                    "none",
+                ],
+                cwd=workspace,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            scan_run = json.loads(output.read_text(encoding="utf-8"))
+            self.assertEqual(scan_run["summary"]["total_findings"], 1)
+            self.assertEqual(scan_run["findings"][0]["scanner"], "hadolint")
+
     def test_cli_redaction_publishes_a_safe_scanner_report_view(self):
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)

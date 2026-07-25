@@ -2,6 +2,32 @@
 
 ## How It Works
 
+Scanner integrations live under `src/trustgate/adapters/`. The typed
+`ScannerAdapter` lifecycle owns applicability, preparation, command execution,
+health validation, native parsing, normalization, fingerprinting, and cleanup.
+`AdapterRegistry` loads built-ins and the `trustgate.adapters` entry-point group;
+discovery and parser failures are isolated per adapter.
+
+Before execution, `trustgate.repository` creates a deterministic local inventory
+of technologies, manifests, dependencies, infrastructure, generated paths,
+vendored paths, and monorepo packages. `trustgate.planning` converts that
+inventory and the adapter registry into explainable scanner decisions with
+per-package targets, outputs, timeouts, override provenance, and privacy
+declarations. See [SCAN_PLANNING.md](SCAN_PLANNING.md).
+
+After parsing, `trustgate.correlation` deduplicates exact same-scanner repeats,
+then performs conservative complete-link clustering across independent adapters.
+It preserves every location, source finding ID, evidence object, and raw report.
+Rule ancestry prevents dependent scanners from being double counted, while DAST
+and human confirmation remain distinct. See
+[CORRELATION.md](CORRELATION.md).
+
+The central `trustgate.aggregation` package contains no scanner-specific parser
+implementation. It resolves the catalogue and invokes adapters, retaining
+compatibility exports for the original parser function names. See
+[ADAPTER_SDK.md](ADAPTER_SDK.md) for the extension contract and
+[SCANNER_COMPATIBILITY.md](SCANNER_COMPATIBILITY.md) for applicability.
+
 ```
 checkout → Bandit/Semgrep/pip-audit/Trivy/Gitleaks (health-aware execution)
          → aggregate_results.py   validates adapters and publishes canonical scan-run/policy JSON
@@ -63,8 +89,11 @@ devsecops-dissertation/
 │   ├── benchmarks/                  # Versioned matching, metrics, and publication checks
 │   ├── cli/                         # Product command-line interface
 │   ├── confidence.py                # Separate non-circular confidence concepts
+│   ├── correlation/                 # Deduplication and evidence corroboration
 │   ├── licensing/                   # Offline licence verification and seller tooling
+│   ├── planning/                    # Deterministic, explainable scan plans
 │   ├── reporting/                   # Static dashboard generation
+│   ├── repository/                  # Technology and monorepo context detection
 │   ├── schema/                      # Schema validation, builders and migrations
 │   ├── security/                    # Workflow input, path and URL validation
 │   └── scoring/                     # Proprietary source layer, excluded from community wheel

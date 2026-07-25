@@ -302,6 +302,91 @@
           "$ref": "#/$defs/rawReportReference"
         }
       ]
+    },
+    "occurrence_count": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "locations": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/findingLocation"
+      }
+    },
+    "raw_evidence_references": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/rawReportReference"
+      }
+    },
+    "source_finding_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "supporting_scanners": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "contradicting_scanners": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "agreement_strength": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "correlation_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_signals": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "cwe",
+          "file",
+          "symbol",
+          "source",
+          "sink",
+          "code_region",
+          "dependency",
+          "cve",
+          "infrastructure_resource",
+          "secret_fingerprint"
+        ]
+      }
+    },
+    "corroboration": {
+      "$ref": "#/$defs/corroboration"
+    },
+    "code_region_hash": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "infrastructure_resource": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "secret_fingerprint": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "rule_ancestry": {
+      "$ref": "#/$defs/nullableNonEmptyString"
     }
   },
   "$defs": {
@@ -571,6 +656,141 @@
         },
         "scanner_finding_id": {
           "$ref": "#/$defs/nullableNonEmptyString"
+        }
+      }
+    },
+    "findingLocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "file",
+        "start_line",
+        "end_line",
+        "symbol"
+      ],
+      "properties": {
+        "file": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "start_line": {
+          "$ref": "#/$defs/nullableLine"
+        },
+        "end_line": {
+          "$ref": "#/$defs/nullableLine"
+        },
+        "symbol": {
+          "$ref": "#/$defs/nullableString"
+        }
+      }
+    },
+    "sharedRuleAncestry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ancestry",
+        "scanners"
+      ],
+      "properties": {
+        "ancestry": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scanners": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "corroboration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "method",
+        "methodology_version",
+        "independent_scanner_count",
+        "independent_sources",
+        "shared_rule_ancestry",
+        "dast_confirmations",
+        "human_confirmations",
+        "supporting_evidence_count",
+        "contradicting_evidence_count",
+        "estimate",
+        "conservative_bound",
+        "confidence_interval",
+        "explanation"
+      ],
+      "properties": {
+        "method": {
+          "const": "beta-binomial-independent-evidence"
+        },
+        "methodology_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "independent_scanner_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "independent_sources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "shared_rule_ancestry": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/sharedRuleAncestry"
+          }
+        },
+        "dast_confirmations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "human_confirmations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/evidence"
+          }
+        },
+        "supporting_evidence_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "contradicting_evidence_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "estimate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "conservative_bound": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence_interval": {
+          "$ref": "#/$defs/confidenceInterval"
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
         }
       }
     }

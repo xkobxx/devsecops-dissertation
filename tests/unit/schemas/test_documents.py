@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta, timezone
 import unittest
 
+from trustgate.correlation import CorrelationConfig, ScannerContradiction
 from trustgate.scanners.models import ParserStatus, ScannerResult, ScannerState
 from trustgate.schema import validate_instance
 from trustgate.schema.documents import build_policy_result, build_scan_run
@@ -61,6 +62,89 @@ class CanonicalDocumentTests(unittest.TestCase):
         self.assertEqual(scan_run["scanners"][0]["scanner_version"], "1.125.0")
         self.assertTrue(scan_run["scanners"][0]["healthy"])
         self.assertNotIn("version", scan_run["scanners"][0])
+
+    def test_scan_run_consolidates_duplicate_and_cross_scanner_findings(self) -> None:
+        semgrep = valid_finding()
+        semgrep_repeat = valid_finding()
+        semgrep_repeat["start_line"] = 44
+        semgrep_repeat["end_line"] = 44
+        semgrep_repeat["raw_report_reference"] = {
+            "path": "reports/semgrep-repeat.json",
+            "sha256": "1" * 64,
+            "scanner_finding_id": "repeat",
+        }
+        bandit = valid_finding()
+        bandit.update(
+            {
+                "scanner": "bandit",
+                "rule_id": "B608",
+                "finding_id": "finding-bandit",
+                "fingerprint": "v2:sha256:" + "b" * 64,
+                "start_line": 43,
+                "end_line": 43,
+                "raw_report_reference": {
+                    "path": "reports/bandit.json",
+                    "sha256": "b" * 64,
+                    "scanner_finding_id": "B608:43",
+                },
+            }
+        )
+
+        scan_run = build_scan_run(
+            target=".",
+            findings=[semgrep, semgrep_repeat, bandit],
+            scanner_results=[scanner_result(ScannerState.FINDINGS)],
+        )
+
+        self.assertEqual(scan_run["summary"]["total_findings"], 1)
+        self.assertEqual(len(scan_run["findings"]), 1)
+        issue = scan_run["findings"][0]
+        self.assertEqual(issue["occurrence_count"], 3)
+        self.assertEqual(issue["supporting_scanners"], ["bandit", "semgrep"])
+        self.assertEqual(len(issue["raw_evidence_references"]), 3)
+
+    def test_scan_run_accepts_ancestry_and_contradiction_evidence(self) -> None:
+        semgrep = valid_finding()
+        bandit = valid_finding()
+        bandit.update(
+            {
+                "scanner": "bandit",
+                "rule_id": "B608",
+                "finding_id": "finding-bandit",
+                "fingerprint": "v2:sha256:" + "b" * 64,
+                "raw_report_reference": {
+                    "path": "reports/bandit.json",
+                    "sha256": "b" * 64,
+                    "scanner_finding_id": "B608",
+                },
+            }
+        )
+
+        scan_run = build_scan_run(
+            target=".",
+            findings=[semgrep, bandit],
+            scanner_results=[scanner_result(ScannerState.FINDINGS)],
+            correlation_config=CorrelationConfig(
+                rule_ancestry={
+                    "semgrep:python.lang.security.audit.sqli": "shared/sql",
+                    "bandit:B608": "shared/sql",
+                }
+            ),
+            contradictions=[
+                ScannerContradiction(
+                    scanner="review-tool",
+                    finding_identity=str(bandit["fingerprint"]),
+                    reason="Sanitizer observed.",
+                )
+            ],
+        )
+
+        issue = scan_run["findings"][0]
+        self.assertEqual(
+            issue["corroboration"]["independent_scanner_count"],
+            1,
+        )
+        self.assertEqual(issue["contradicting_scanners"], ["review-tool"])
 
     def test_required_scanner_failure_produces_failed_scan_and_policy(self) -> None:
         scan_run = build_scan_run(

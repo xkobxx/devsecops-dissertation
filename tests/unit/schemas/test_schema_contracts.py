@@ -67,6 +67,23 @@ OPTIONAL_CONFIDENCE_FIELDS = {
     "overall_decision_confidence",
 }
 
+OPTIONAL_CORRELATION_FIELDS = {
+    "occurrence_count",
+    "locations",
+    "raw_evidence_references",
+    "source_finding_ids",
+    "supporting_scanners",
+    "contradicting_scanners",
+    "agreement_strength",
+    "correlation_reason",
+    "correlation_signals",
+    "corroboration",
+    "code_region_hash",
+    "infrastructure_resource",
+    "secret_fingerprint",
+    "rule_ancestry",
+}
+
 
 def load_schema(name: str) -> dict[str, object]:
     with (SCHEMA_DIRECTORY / name).open(encoding="utf-8") as handle:
@@ -193,7 +210,11 @@ class SchemaContractTests(unittest.TestCase):
     def test_finding_schema_contains_every_roadmap_field(self) -> None:
         self.assertEqual(
             set(FINDING_SCHEMA["properties"]),
-            FINDING_FIELDS | OPTIONAL_CONFIDENCE_FIELDS,
+            (
+                FINDING_FIELDS
+                | OPTIONAL_CONFIDENCE_FIELDS
+                | OPTIONAL_CORRELATION_FIELDS
+            ),
         )
         self.assertEqual(set(FINDING_SCHEMA["required"]), FINDING_FIELDS)
 
@@ -242,6 +263,37 @@ class SchemaContractTests(unittest.TestCase):
         self.assertEqual(
             list(validator(FINDING_SCHEMA).iter_errors(instance)),
             [],
+        )
+
+    def test_correlation_provenance_and_agreement_fields_validate(self) -> None:
+        from trustgate.correlation import correlate_findings
+
+        first = valid_finding()
+        second = deepcopy(first)
+        second.update(
+            {
+                "scanner": "bandit",
+                "rule_id": "B608",
+                "finding_id": "finding-bandit",
+                "fingerprint": "v2:sha256:" + "b" * 64,
+                "start_line": 44,
+                "end_line": 44,
+                "raw_report_reference": {
+                    "path": "reports/bandit.json",
+                    "sha256": "b" * 64,
+                    "scanner_finding_id": "B608:44",
+                },
+            }
+        )
+
+        correlated = correlate_findings([first, second])[0]
+
+        self.assertEqual(
+            list(validator(FINDING_SCHEMA).iter_errors(correlated)),
+            [],
+        )
+        self.assertTrue(
+            OPTIONAL_CORRELATION_FIELDS.issubset(FINDING_SCHEMA["properties"])
         )
 
     def test_scan_run_validates_and_resolves_finding_reference(self) -> None:

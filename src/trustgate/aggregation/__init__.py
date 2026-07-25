@@ -880,7 +880,19 @@ def parse_trivy(
     repository_root: str | os.PathLike[str] | None = None,
 ) -> list[dict[str, Any]]:
     report_path = Path(path)
-    _, results = _mapping_with_list(_load_json(report_path), "Results", "Trivy")
+    report = _load_json(report_path)
+    if (
+        isinstance(report, dict)
+        and "Results" not in report
+        and report.get("SchemaVersion") == 2
+        and isinstance(report.get("Trivy"), dict)
+        and isinstance(report["Trivy"].get("Version"), str)
+        and isinstance(report.get("ArtifactName"), str)
+        and isinstance(report.get("ArtifactType"), str)
+    ):
+        results: list[Any] = []
+    else:
+        _, results = _mapping_with_list(report, "Results", "Trivy")
     legacy_findings = []
     for result_index, result in enumerate(results):
         if not isinstance(result, dict):

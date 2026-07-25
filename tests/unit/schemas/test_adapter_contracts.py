@@ -173,6 +173,25 @@ class AdapterSchemaContractTests(unittest.TestCase):
             "Original misconfiguration description.",
         )
 
+    def test_trivy_clean_v2_report_may_omit_empty_results(self) -> None:
+        findings = parse_trivy(
+            self._report(
+                "trivy-clean.json",
+                {
+                    "SchemaVersion": 2,
+                    "Trivy": {"Version": "0.69.3"},
+                    "ReportID": "019f98c8-26fc-77db-8e88-85d1856ee8d1",
+                    "CreatedAt": "2026-07-25T10:18:01.85251675Z",
+                    "ArtifactID": "sha256:d7e6c5bb84c83fa7fb2a02f205311fa",
+                    "ArtifactName": ".",
+                    "ArtifactType": "repository",
+                    "Metadata": {},
+                },
+            )
+        )
+
+        self.assertEqual(findings, [])
+
     def test_gitleaks_findings_validate(self) -> None:
         findings = parse_gitleaks(
             self._report(

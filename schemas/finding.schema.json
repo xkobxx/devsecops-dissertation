@@ -1,0 +1,491 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/finding.schema.json",
+  "title": "Trust Gate Finding",
+  "description": "Canonical, audit-ready representation of one security finding.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "finding_id",
+    "fingerprint",
+    "scanner",
+    "scanner_version",
+    "rule_id",
+    "rule_version",
+    "category",
+    "cwe",
+    "cve",
+    "ghsa",
+    "osv",
+    "title",
+    "description",
+    "original_severity",
+    "normalised_severity",
+    "severity_reason",
+    "confidence",
+    "confidence_method",
+    "confidence_sample_size",
+    "confidence_interval",
+    "file",
+    "start_line",
+    "end_line",
+    "symbol",
+    "source",
+    "sink",
+    "data_flow",
+    "dependency",
+    "dependency_scope",
+    "reachability",
+    "environment",
+    "introduced_commit",
+    "first_seen",
+    "last_seen",
+    "status",
+    "evidence",
+    "remediation",
+    "raw_report_reference"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "description": "Semantic version of this finding contract."
+    },
+    "finding_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "fingerprint": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "scanner": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "scanner_version": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "rule_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "rule_version": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "cwe": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^CWE-[1-9][0-9]*$"
+      }
+    },
+    "cve": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"
+      }
+    },
+    "ghsa": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^GHSA-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}-[A-Za-z0-9]{4}$"
+      }
+    },
+    "osv": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 128
+      }
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "description": {
+      "type": "string"
+    },
+    "original_severity": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "normalised_severity": {
+      "$ref": "#/$defs/severity"
+    },
+    "severity_reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "confidence": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1
+    },
+    "confidence_method": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "confidence_sample_size": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "confidence_interval": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/confidenceInterval"
+        }
+      ]
+    },
+    "file": {
+      "$ref": "#/$defs/nullableString"
+    },
+    "start_line": {
+      "$ref": "#/$defs/nullableLine"
+    },
+    "end_line": {
+      "$ref": "#/$defs/nullableLine"
+    },
+    "symbol": {
+      "$ref": "#/$defs/nullableString"
+    },
+    "source": {
+      "$ref": "#/$defs/nullableString"
+    },
+    "sink": {
+      "$ref": "#/$defs/nullableString"
+    },
+    "data_flow": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dataFlowStep"
+      }
+    },
+    "dependency": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/dependency"
+        }
+      ]
+    },
+    "dependency_scope": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "runtime",
+        "development",
+        "test",
+        "build",
+        "optional",
+        "unknown",
+        null
+      ]
+    },
+    "reachability": {
+      "type": "string",
+      "enum": [
+        "reachable",
+        "potentially_reachable",
+        "unreachable",
+        "unknown",
+        "not_applicable"
+      ]
+    },
+    "environment": {
+      "type": "object",
+      "description": "Execution-environment attributes. Values are deliberately limited to JSON scalar data.",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "integer",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "introduced_commit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-fA-F]{7,64}$"
+    },
+    "first_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "last_seen": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "open",
+        "acknowledged",
+        "suppressed",
+        "resolved",
+        "false_positive",
+        "accepted_risk"
+      ]
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "remediation": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/remediation"
+        }
+      ]
+    },
+    "raw_report_reference": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/rawReportReference"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nullableNonEmptyString": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "nullableLine": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 1
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info",
+        "unknown"
+      ]
+    },
+    "confidenceInterval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "lower",
+        "upper",
+        "confidence_level"
+      ],
+      "properties": {
+        "lower": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "upper": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "confidence_level": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 1
+        }
+      }
+    },
+    "dataFlowStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "order",
+        "kind",
+        "file",
+        "line",
+        "symbol",
+        "description"
+      ],
+      "properties": {
+        "order": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "source",
+            "propagation",
+            "sink"
+          ]
+        },
+        "file": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "line": {
+          "$ref": "#/$defs/nullableLine"
+        },
+        "symbol": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "description": {
+          "$ref": "#/$defs/nullableString"
+        }
+      }
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "ecosystem",
+        "purl",
+        "direct"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        },
+        "ecosystem": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        },
+        "purl": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        },
+        "direct": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "summary",
+        "reference",
+        "excerpt"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "reference": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "excerpt": {
+          "$ref": "#/$defs/nullableString"
+        }
+      }
+    },
+    "remediation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary",
+        "guidance",
+        "references"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "guidance": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "references": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    },
+    "rawReportReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "scanner_finding_id"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "scanner_finding_id": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        }
+      }
+    }
+  }
+}

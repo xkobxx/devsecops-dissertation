@@ -18,7 +18,7 @@
 //                            itself: if this secret leaks, rotate the
 //                            keypair and re-issue every outstanding license.
 //   RESEND_API_KEY           resend.com API key for sending the email
-//   RESEND_FROM_ADDRESS      e.g. "DevSecOps Trust Gate <billing@yourdomain.com>"
+//   RESEND_FROM_ADDRESS      e.g. "Trust Gate <billing@yourdomain.com>"
 
 import Stripe from 'stripe';
 import crypto from 'node:crypto';
@@ -69,7 +69,7 @@ async function sendLicenseEmail(toEmail, licenseKey, expiresISO) {
     body: JSON.stringify({
       from: process.env.RESEND_FROM_ADDRESS,
       to: toEmail,
-      subject: 'Your DevSecOps Trust Gate license key',
+      subject: 'Your Trust Gate license key',
       text: `Thanks for subscribing -- renews ${expiresISO}.\n\n` +
         `Add this as a repo secret (e.g. TRUST_GATE_LICENSE) and reference it in your workflow:\n\n  license-key: \${{ secrets.TRUST_GATE_LICENSE }}\n\n` +
         `Your key:\n${licenseKey}\n\nQuestions? Just reply to this email.`,

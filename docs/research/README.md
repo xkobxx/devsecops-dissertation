@@ -1,10 +1,16 @@
-# Research Methodology
+# Dissertation research methodology
+
+> This document describes a historical dissertation experiment. Its fixture,
+> results, and confidence table are not a current production benchmark and must
+> not be presented as general scanner accuracy.
 
 The confidence-scoring engine (the paid feature) and the dissertation's own precision/recall research share the same ground truth. This doc covers both.
 
 ## The Seeded Vulnerability Fixture
 
-`test_app/app.py` has 6 deliberately seeded vulnerabilities — a fully-enumerated ground truth used both for the dissertation's precision/recall research and as the corpus behind `confidence_table.json`.
+`benchmarks/fixtures/python/flask_vulnerable/app.py` has 6 deliberately seeded
+vulnerabilities - a fully-enumerated ground truth used both for the dissertation's
+precision/recall research and as the corpus behind `confidence_table.json`.
 
 | ID | Vulnerability | CWE | Severity | Expected Tool |
 |----|--------------|-----|----------|---------------|

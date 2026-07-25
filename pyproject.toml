@@ -1,7 +1,37 @@
+[build-system]
+requires = ["setuptools==82.0.1"]
+build-backend = "setuptools.build_meta"
+
 [project]
-name = "devsecops-dissertation"
+name = "trustgate"
 version = "0.1.0"
-dependencies = ["flask"]
+description = "A local-first application-security decision platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "David Mensah" },
+]
+dependencies = [
+  "cryptography==49.0.0",
+  "jsonschema==4.25.1",
+]
+
+[project.scripts]
+trustgate = "trustgate.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+exclude = ["trustgate.scoring*"]
+
+[tool.setuptools.data-files]
+"share/trustgate/schemas" = [
+  "schemas/finding.schema.json",
+  "schemas/policy-result.schema.json",
+  "schemas/registry.json",
+  "schemas/scan-run.schema.json",
+]
 
 [tool.vercel]
-entrypoint = "test_app.app:app"
+entrypoint = "benchmarks.fixtures.python.flask_vulnerable.app:app"

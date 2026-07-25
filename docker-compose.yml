@@ -1,6 +1,6 @@
 services:
   dvwa:
-    image: vulnerables/web-dvwa
+    image: vulnerables/web-dvwa@sha256:dae203fe11646a86937bf04db0079adef295f426da68a92b40e3b181f337daa7 # latest resolved 2026-07-24
     ports:
       - "8081:80"
     environment:
@@ -9,7 +9,7 @@ services:
       - dvwa-db
 
   dvwa-db:
-    image: mariadb:10.1
+    image: mariadb@sha256:1205b21b713812a6ba9fb59df206017dc06976fe68e172fbc6d153d7a4e13dfe # 10.1
     environment:
       - MYSQL_ROOT_PASSWORD=dvwa
       - MYSQL_DATABASE=dvwa
@@ -17,12 +17,12 @@ services:
       - MYSQL_PASSWORD=dvwa
 
   juiceshop:
-    image: bkimminich/juice-shop
+    image: bkimminich/juice-shop@sha256:cd58d79c5cb4d82f22fbaf616f9ff43bbd04ba630cd6b448a9ed99cf652fcebf # v20.1.1
     ports:
       - "3000:3000"
 
   webgoat:
-    image: webgoat/goatandwolf
+    image: webgoat/goatandwolf@sha256:7b469c3153aed04298c1f978cfda8a7d5d3789d67577f7d57c7772e58a6de8a3 # v8.2.2
     ports:
       - "8080:8080"
       - "9090:9090"

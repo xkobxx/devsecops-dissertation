@@ -1,5 +1,5 @@
 {
-  "application": "test_app",
+  "application": "flask_vulnerable",
   "total_vulnerabilities": 6,
   "vulnerabilities": [
     {

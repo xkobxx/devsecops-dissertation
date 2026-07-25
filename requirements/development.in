@@ -1,3 +1,8 @@
+# Build, test, research-analysis and benchmark-fixture dependencies.
+setuptools==82.0.1
+wheel==0.47.0
+matplotlib==3.10.8
+numpy==2.3.2
 flask==3.1.1
 flask-sqlalchemy==3.1.1
 flask-migrate==4.0.5

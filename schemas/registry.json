@@ -1,0 +1,24 @@
+{
+  "registry_version": "1.0.0",
+  "current_version": "1.0.0",
+  "schemas": {
+    "finding": {
+      "1.0.0": {
+        "file": "finding.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/finding.schema.json"
+      }
+    },
+    "scan-run": {
+      "1.0.0": {
+        "file": "scan-run.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/scan-run.schema.json"
+      }
+    },
+    "policy-result": {
+      "1.0.0": {
+        "file": "policy-result.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/policy-result.schema.json"
+      }
+    }
+  }
+}

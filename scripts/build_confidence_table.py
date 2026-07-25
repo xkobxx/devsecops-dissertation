@@ -5,7 +5,7 @@ PROPRIETARY -- not covered by this repository's MIT LICENSE. See
 LICENSE-COMMERCIAL.
 
 Build-time tool: matches a corpus of scanner findings (results/run_1/findings.json,
-from re-running the pipeline against test_app/, our fully-enumerated vulnerable
+from re-running the pipeline against the deliberately vulnerable Flask benchmark
 fixture) against the seeded ground truth, and computes empirical precision per
 (tool, rule_id). The output feeds score_findings.py's runtime lookup.
 
@@ -17,7 +17,7 @@ directional, not a statistically robust benchmark, until the corpus grows.
 
 import json
 
-GROUND_TRUTH_PATH = 'test_app/seeded_vulnerabilities.json'
+GROUND_TRUTH_PATH = 'benchmarks/fixtures/python/flask_vulnerable/seeded_vulnerabilities.json'
 CORPUS_PATH = 'results/run_1/findings.json'
 OUTPUT_PATH = 'confidence_table.json'
 LINE_TOLERANCE = 5

@@ -1,0 +1,3 @@
+# Direct runtime dependencies for the community Trust Gate package.
+cryptography==49.0.0
+jsonschema==4.25.1

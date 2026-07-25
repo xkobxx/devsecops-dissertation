@@ -1,0 +1,346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/scan-run.schema.json",
+  "title": "Trust Gate Scan Run",
+  "description": "Canonical record of one Trust Gate scan and the health of every configured scanner.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "status",
+    "started_at",
+    "ended_at",
+    "duration_seconds",
+    "target",
+    "repository",
+    "ref",
+    "commit",
+    "trigger",
+    "scanners",
+    "findings",
+    "summary",
+    "errors"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "description": "Semantic version of this scan-run contract."
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "complete",
+        "partial",
+        "failed"
+      ]
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "target": {
+      "type": "string",
+      "minLength": 1
+    },
+    "repository": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "ref": {
+      "$ref": "#/$defs/nullableNonEmptyString"
+    },
+    "commit": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[0-9a-fA-F]{7,64}$"
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "local",
+        "push",
+        "pull_request",
+        "schedule",
+        "manual",
+        "api",
+        "unknown"
+      ]
+    },
+    "scanners": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scannerResult"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "finding.schema.json"
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    },
+    "errors": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/runError"
+      }
+    }
+  },
+  "$defs": {
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "nullableNonEmptyString": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "minLength": 1
+    },
+    "severityCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info",
+        "unknown"
+      ],
+      "properties": {
+        "critical": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scannerStateCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CLEAN",
+        "FINDINGS",
+        "FAILED_SCANNER",
+        "PARTIAL",
+        "SKIPPED"
+      ],
+      "properties": {
+        "CLEAN": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "FINDINGS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "FAILED_SCANNER": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "PARTIAL": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SKIPPED": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scannerResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scanner",
+        "scanner_version",
+        "state",
+        "healthy",
+        "required",
+        "started_at",
+        "ended_at",
+        "duration_seconds",
+        "exit_code",
+        "timed_out",
+        "report_path",
+        "report_produced",
+        "parser_status",
+        "stdout_path",
+        "stderr_path",
+        "finding_count",
+        "error"
+      ],
+      "properties": {
+        "scanner": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "scanner_version": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "CLEAN",
+            "FINDINGS",
+            "FAILED_SCANNER",
+            "PARTIAL",
+            "SKIPPED"
+          ]
+        },
+        "healthy": {
+          "type": "boolean"
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "started_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "ended_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "duration_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "exit_code": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "timed_out": {
+          "type": "boolean"
+        },
+        "report_path": {
+          "type": "string"
+        },
+        "report_produced": {
+          "type": "boolean"
+        },
+        "parser_status": {
+          "type": "string",
+          "enum": [
+            "NOT_RUN",
+            "SUCCESS",
+            "FAILED"
+          ]
+        },
+        "stdout_path": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "stderr_path": {
+          "$ref": "#/$defs/nullableString"
+        },
+        "finding_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error": {
+          "$ref": "#/$defs/nullableString"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "total_findings",
+        "required_scanners",
+        "healthy_scanners",
+        "severity_counts",
+        "scanner_state_counts"
+      ],
+      "properties": {
+        "total_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "required_scanners": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "healthy_scanners": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "severity_counts": {
+          "$ref": "#/$defs/severityCounts"
+        },
+        "scanner_state_counts": {
+          "$ref": "#/$defs/scannerStateCounts"
+        }
+      }
+    },
+    "runError": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "code",
+        "message",
+        "scanner",
+        "detail"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        },
+        "scanner": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        },
+        "detail": {
+          "$ref": "#/$defs/nullableString"
+        }
+      }
+    }
+  }
+}

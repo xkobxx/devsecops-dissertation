@@ -1,0 +1,238 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/policy-result.schema.json",
+  "title": "Trust Gate Policy Result",
+  "description": "Canonical, explainable result of evaluating one policy against a scan run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy_result_id",
+    "run_id",
+    "policy_name",
+    "policy_version",
+    "evaluated_at",
+    "outcome",
+    "reason",
+    "fail_on",
+    "scanner_failure_policy",
+    "matched_finding_ids",
+    "finding_counts",
+    "scanner_state_counts",
+    "waivers",
+    "metadata"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0",
+      "description": "Semantic version of this policy-result contract."
+    },
+    "policy_result_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "policy_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "policy_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "evaluated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "pass",
+        "fail",
+        "warn",
+        "error"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "minLength": 1
+    },
+    "fail_on": {
+      "type": "string",
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info",
+        "none"
+      ]
+    },
+    "scanner_failure_policy": {
+      "type": "string",
+      "enum": [
+        "fail",
+        "warn",
+        "ignore"
+      ]
+    },
+    "matched_finding_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "finding_counts": {
+      "$ref": "#/$defs/severityCounts"
+    },
+    "scanner_state_counts": {
+      "$ref": "#/$defs/scannerStateCounts"
+    },
+    "waivers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/waiver"
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "description": "Policy-engine metadata. Values are deliberately limited to JSON scalar data.",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "integer",
+          "boolean",
+          "null"
+        ]
+      }
+    }
+  },
+  "$defs": {
+    "nullableString": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "severityCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info",
+        "unknown"
+      ],
+      "properties": {
+        "critical": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "high": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "medium": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "low": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "info": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "unknown": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "scannerStateCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "CLEAN",
+        "FINDINGS",
+        "FAILED_SCANNER",
+        "PARTIAL",
+        "SKIPPED"
+      ],
+      "properties": {
+        "CLEAN": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "FINDINGS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "FAILED_SCANNER": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "PARTIAL": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SKIPPED": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "waiver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "waiver_id",
+        "finding_id",
+        "reason",
+        "approved_by",
+        "expires_at"
+      ],
+      "properties": {
+        "waiver_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "finding_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "approved_by": {
+          "type": "string",
+          "minLength": 1
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

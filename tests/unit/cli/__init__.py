@@ -1,0 +1,1 @@
+"""Trust Gate CLI tests."""

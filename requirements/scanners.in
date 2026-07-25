@@ -1,0 +1,7 @@
+# Python-based scanners used by the composite Action and CI workflow.
+bandit==1.9.4
+semgrep==1.165.0
+pip-audit==2.10.1
+
+# License verification is needed by the composite Action after scanning.
+cryptography==49.0.0

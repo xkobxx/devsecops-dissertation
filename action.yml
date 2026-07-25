@@ -1,7 +1,8 @@
 # Requirements for callers:
 #   - `runs-on: ubuntu-latest` (or another Linux runner) -- Trivy and Gitleaks
 #     run as Docker container actions, which GitHub only supports on Linux.
-#   - Check out the target repo with `actions/checkout@v4` BEFORE this step --
+#   - Check out the target repo with the immutable checkout reference shown
+#     below BEFORE this step --
 #     this action does not check out code itself, matching standard composite
 #     action convention.
 #   - Known limitation: invoking this action more than once in the same job
@@ -9,13 +10,13 @@
 #     invocation per job for now.
 #
 # Example:
-#   - uses: actions/checkout@v4
+#   - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 #   - uses: xkobxx/devsecops-dissertation@v1.0.0
 #     with:
 #       target: .
 #       fail-on: high
-name: 'DevSecOps Trust Gate'
-description: 'Run Bandit, Semgrep, pip-audit, Trivy and Gitleaks against any repo, aggregate findings into one gate and dashboard.'
+name: 'Trust Gate'
+description: 'Python-first security scanning with Bandit, Semgrep, pip-audit, Trivy and Gitleaks, plus legacy aggregation and reporting.'
 author: 'David Mensah'
 branding:
   icon: 'shield'
@@ -23,13 +24,33 @@ branding:
 
 inputs:
   target:
-    description: 'Path to scan, relative to the repo root'
+    description: 'Existing path to scan, relative to and contained within the checked-out workspace'
     required: false
     default: '.'
   fail-on:
     description: 'Minimum severity that fails the gate: critical | high | medium | low | none'
     required: false
     default: 'high'
+  scanner-failure-policy:
+    description: 'Required scanner failure handling: fail | warn | ignore'
+    required: false
+    default: 'fail'
+  severity-basis:
+    description: 'Severity used for policy decisions: normalised | original'
+    required: false
+    default: 'normalised'
+  optional-scanners:
+    description: 'Comma-separated scanners that may be absent: bandit, semgrep, pip-audit, trivy, gitleaks'
+    required: false
+    default: ''
+  scanner-timeout-seconds:
+    description: 'Maximum execution time for each command-based scanner; greater than 0 and at most 3600'
+    required: false
+    default: '300'
+  redact-sensitive-content:
+    description: 'Create redacted scanner-report views while retaining originals separately for audit'
+    required: false
+    default: 'false'
   license-key:
     description: 'Paid license key. Unlocks confidence scoring (empirical precision per finding, ranked "act on these first" triage). Free tier runs fine without one.'
     required: false
@@ -37,16 +58,34 @@ inputs:
 
 outputs:
   findings-path:
-    description: 'Path to the unified findings.json produced by this run'
+    description: 'Path to the validated canonical scan-run JSON produced by this run'
     value: ${{ steps.aggregate.outputs.findings-path }}
+  policy-result-path:
+    description: 'Path to the validated policy-result JSON produced by this run'
+    value: ${{ steps.aggregate.outputs.policy-result-path }}
 
 runs:
   using: 'composite'
   steps:
     - name: Set up Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
       with:
         python-version: '3.11'
+
+    - name: Validate Action inputs
+      id: validate
+      shell: bash
+      env:
+        TRUSTGATE_TARGET: ${{ inputs.target }}
+        TRUSTGATE_FAIL_ON: ${{ inputs.fail-on }}
+        TRUSTGATE_SCANNER_FAILURE_POLICY: ${{ inputs.scanner-failure-policy }}
+        TRUSTGATE_SEVERITY_BASIS: ${{ inputs.severity-basis }}
+        TRUSTGATE_OPTIONAL_SCANNERS: ${{ inputs.optional-scanners }}
+        TRUSTGATE_SCANNER_TIMEOUT: ${{ inputs.scanner-timeout-seconds }}
+        TRUSTGATE_REDACT_SENSITIVE_CONTENT: ${{ inputs.redact-sensitive-content }}
+        TRUSTGATE_ARTIFACT_NAME: security-dashboard
+        TRUSTGATE_LICENSE_KEY: ${{ inputs.license-key }}
+      run: python "${{ github.action_path }}/scripts/validate_inputs.py" action
 
     - name: Create reports directory
       shell: bash
@@ -54,7 +93,9 @@ runs:
 
     - name: Install SAST/SCA scanners
       shell: bash
-      run: pip install bandit semgrep pip-audit cryptography
+      run: >-
+        python -m pip install --require-hashes
+        -r "${{ github.action_path }}/requirements/scanners.lock"
 
     # inputs.target/fail-on are attacker-influenceable (any calling workflow
     # sets them). GitHub Actions splices ${{ }} into run: scripts as literal
@@ -63,62 +104,142 @@ runs:
     # "$VAR" avoids re-parsing the value as shell syntax.
     - name: Run Bandit
       shell: bash
+      continue-on-error: true
       env:
-        TARGET: ${{ inputs.target }}
-      run: bandit -r "$TARGET" -f json -o reports/bandit_report.json || true
+        TARGET: ${{ steps.validate.outputs.target }}
+        SCANNER_TIMEOUT: ${{ steps.validate.outputs.scanner-timeout-seconds }}
+      run: |
+        python "${{ github.action_path }}/scripts/run_scanner.py" \
+          --scanner bandit \
+          --report reports/bandit_report.json \
+          --timeout "$SCANNER_TIMEOUT" \
+          -- bandit -r "$TARGET" -f json -o reports/bandit_report.json
 
     - name: Run Semgrep
       shell: bash
+      continue-on-error: true
       env:
-        TARGET: ${{ inputs.target }}
-      run: semgrep --config=p/python --json --output reports/semgrep_report.json "$TARGET" || true
+        TARGET: ${{ steps.validate.outputs.target }}
+        SCANNER_TIMEOUT: ${{ steps.validate.outputs.scanner-timeout-seconds }}
+      run: |
+        python "${{ github.action_path }}/scripts/run_scanner.py" \
+          --scanner semgrep \
+          --report reports/semgrep_report.json \
+          --timeout "$SCANNER_TIMEOUT" \
+          -- semgrep --config=p/python --json \
+          --output reports/semgrep_report.json "$TARGET"
 
     - name: Run pip-audit
       shell: bash
+      continue-on-error: true
       env:
-        TARGET: ${{ inputs.target }}
+        TARGET: ${{ steps.validate.outputs.target }}
+        SCANNER_TIMEOUT: ${{ steps.validate.outputs.scanner-timeout-seconds }}
       run: |
         req_file="$TARGET/requirements.txt"
         if [ -f "$req_file" ]; then
-          pip-audit -r "$req_file" --format json -o reports/pip_audit_report.json || true
+          scanner_command=(
+            pip-audit -r "$req_file" --format json
+            -o reports/pip_audit_report.json
+          )
         else
-          echo '{"dependencies":[]}' > reports/pip_audit_report.json
+          scanner_command=(
+            python -c
+            'from pathlib import Path; Path("reports/pip_audit_report.json").write_text("{\"dependencies\":[]}", encoding="utf-8")'
+          )
         fi
+        python "${{ github.action_path }}/scripts/run_scanner.py" \
+          --scanner pip-audit \
+          --report reports/pip_audit_report.json \
+          --timeout "$SCANNER_TIMEOUT" \
+          -- "${scanner_command[@]}"
+
+    - name: Start Trivy timing
+      shell: bash
+      run: python -c 'from datetime import datetime, timezone; print(datetime.now(timezone.utc).isoformat())' > reports/trivy_started_at.txt
 
     - name: Run Trivy config scan
+      id: trivy
       uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
       continue-on-error: true
       with:
+        version: v0.69.3
         scan-type: config
-        scan-ref: ${{ inputs.target }}
+        scan-ref: ${{ steps.validate.outputs.target }}
         format: json
         output: reports/trivy_report.json
         exit-code: '0'
 
-    - name: Run Gitleaks
+    - name: Record Trivy health
+      if: always()
       shell: bash
       env:
-        TARGET: ${{ inputs.target }}
+        TRIVY_OUTCOME: ${{ steps.trivy.outcome }}
       run: |
-        docker run --rm -v "$PWD":/repo ghcr.io/gitleaks/gitleaks:latest \
+        python "${{ github.action_path }}/scripts/record_scanner.py" \
+          --scanner trivy \
+          --report reports/trivy_report.json \
+          --metadata reports/trivy_execution.json \
+          --started-at "$(cat reports/trivy_started_at.txt)" \
+          --outcome "$TRIVY_OUTCOME" \
+          --version 0.69.3
+
+    - name: Run Gitleaks
+      shell: bash
+      continue-on-error: true
+      env:
+        TARGET: ${{ steps.validate.outputs.target }}
+        SCANNER_TIMEOUT: ${{ steps.validate.outputs.scanner-timeout-seconds }}
+      run: |
+        # Gitleaks v8.30.1
+        python "${{ github.action_path }}/scripts/run_scanner.py" \
+          --scanner gitleaks \
+          --report reports/gitleaks_report.json \
+          --timeout "$SCANNER_TIMEOUT" \
+          --finding-exit-code 3 \
+          --version 8.30.1 \
+          -- docker run --rm -v "$PWD":/repo \
+          ghcr.io/gitleaks/gitleaks@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
           detect --source "/repo/$TARGET" --report-format json \
           --report-path /repo/reports/gitleaks_report.json \
-          --exit-code 0 || true
+          --exit-code 3
 
     - name: Aggregate findings and evaluate gate
       id: aggregate
+      if: always()
       shell: bash
       env:
-        TARGET: ${{ inputs.target }}
-        FAIL_ON: ${{ inputs.fail-on }}
+        TARGET: ${{ steps.validate.outputs.target }}
+        FAIL_ON: ${{ steps.validate.outputs.fail-on }}
+        SCANNER_FAILURE_POLICY: ${{ steps.validate.outputs.scanner-failure-policy }}
+        SEVERITY_BASIS: ${{ steps.validate.outputs.severity-basis }}
+        OPTIONAL_SCANNERS: ${{ steps.validate.outputs.optional-scanners }}
+        REDACT_SENSITIVE_CONTENT: ${{ steps.validate.outputs.redact-sensitive-content }}
       run: |
+        optional_args=()
+        redaction_args=()
+        if [ -n "$OPTIONAL_SCANNERS" ]; then
+          IFS=',' read -r -a optional_scanners <<< "$OPTIONAL_SCANNERS"
+          for scanner in "${optional_scanners[@]}"; do
+            optional_args+=(--optional-scanner "$scanner")
+          done
+        fi
+        if [ "$REDACT_SENSITIVE_CONTENT" = "true" ]; then
+          redaction_args+=(--redact-sensitive-content)
+        fi
         set +e
         python "${{ github.action_path }}/scripts/aggregate_results.py" \
           --target "$TARGET" \
-          --fail-on "$FAIL_ON"
+          --fail-on "$FAIL_ON" \
+          --scanner-failure-policy "$SCANNER_FAILURE_POLICY" \
+          --severity-basis "$SEVERITY_BASIS" \
+          --require-execution-metadata \
+          "${redaction_args[@]}" \
+          "${optional_args[@]}"
         gate_exit=$?
         set -e
         echo "findings-path=reports/findings.json" >> "$GITHUB_OUTPUT"
+        echo "policy-result-path=reports/policy-result.json" >> "$GITHUB_OUTPUT"
         exit $gate_exit
 
     # Free tier stops here. A valid license unlocks confidence scoring;
@@ -151,7 +272,19 @@ runs:
 
     - name: Upload dashboard artifact
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
       with:
-        name: security-dashboard
-        path: reports/dashboard.html
+        name: ${{ steps.validate.outputs.artifact-name }}
+        path: |
+          reports/dashboard.html
+          reports/findings.json
+          reports/policy-result.json
+          reports/redacted/
+
+    - name: Upload raw scanner evidence
+      if: always()
+      uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      with:
+        name: ${{ steps.validate.outputs.artifact-name }}-raw-evidence
+        path: reports/raw/
+        if-no-files-found: ignore

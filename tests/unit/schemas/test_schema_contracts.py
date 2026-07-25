@@ -58,6 +58,15 @@ FINDING_FIELDS = {
     "raw_report_reference",
 }
 
+OPTIONAL_CONFIDENCE_FIELDS = {
+    "scanner_rule_reliability",
+    "finding_validity_confidence",
+    "reachability_confidence",
+    "exploitability_confidence",
+    "remediation_confidence",
+    "overall_decision_confidence",
+}
+
 
 def load_schema(name: str) -> dict[str, object]:
     with (SCHEMA_DIRECTORY / name).open(encoding="utf-8") as handle:
@@ -182,7 +191,10 @@ class SchemaContractTests(unittest.TestCase):
         self.assertEqual(len({schema["$id"] for schema in schemas}), len(schemas))
 
     def test_finding_schema_contains_every_roadmap_field(self) -> None:
-        self.assertEqual(set(FINDING_SCHEMA["properties"]), FINDING_FIELDS)
+        self.assertEqual(
+            set(FINDING_SCHEMA["properties"]),
+            FINDING_FIELDS | OPTIONAL_CONFIDENCE_FIELDS,
+        )
         self.assertEqual(set(FINDING_SCHEMA["required"]), FINDING_FIELDS)
 
     def test_complete_finding_validates(self) -> None:
@@ -210,6 +222,27 @@ class SchemaContractTests(unittest.TestCase):
         instance["unexpected"] = "not part of the contract"
 
         self.assertTrue(validator(FINDING_SCHEMA).is_valid(instance) is False)
+
+    def test_separate_confidence_components_validate(self) -> None:
+        instance = valid_finding()
+        component = {
+            "estimate": 0.75,
+            "conservative_bound": 0.5,
+            "sample_size": 20,
+            "method": "example",
+            "methodology_version": "1.0.0",
+            "evidence": ["labelled benchmark"],
+            "explanation": "Example component.",
+            "maturity": "Directional",
+            "decision_tier": "Directional",
+        }
+        for field in OPTIONAL_CONFIDENCE_FIELDS:
+            instance[field] = deepcopy(component)
+
+        self.assertEqual(
+            list(validator(FINDING_SCHEMA).iter_errors(instance)),
+            [],
+        )
 
     def test_scan_run_validates_and_resolves_finding_reference(self) -> None:
         scanner_counts = zero_scanner_state_counts()

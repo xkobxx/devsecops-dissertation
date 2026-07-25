@@ -8,6 +8,7 @@ from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
 
+from trustgate.benchmarks.statistics import posterior_precision
 from trustgate.schema import validate_instance
 from trustgate.scoring.legacy import main
 
@@ -48,10 +49,7 @@ class ScoringPublicationTests(unittest.TestCase):
                 json.dumps(
                     {
                         "rules": {
-                            "Bandit:B608": {
-                                "precision": 0.75,
-                                "sample_size": 20,
-                            }
+                            "Bandit:B608": posterior_precision(15, 5)
                         },
                         "tool_baseline": {},
                     }
@@ -73,9 +71,24 @@ class ScoringPublicationTests(unittest.TestCase):
             scored = json.loads(findings_path.read_text(encoding="utf-8"))
             validate_instance("scan-run", scored)
             finding = scored["findings"][0]
-            self.assertEqual(finding["confidence"], 0.75)
+            self.assertEqual(finding["confidence"], 0.727273)
             self.assertEqual(finding["confidence_sample_size"], 20)
-            self.assertEqual(finding["confidence_method"], "rule")
+            self.assertEqual(
+                finding["confidence_method"],
+                "rule:beta-binomial:1.0.0",
+            )
+            for component in (
+                "scanner_rule_reliability",
+                "finding_validity_confidence",
+                "reachability_confidence",
+                "exploitability_confidence",
+                "remediation_confidence",
+                "overall_decision_confidence",
+            ):
+                self.assertIn(component, finding)
+            self.assertIsNone(
+                finding["exploitability_confidence"]["estimate"]
+            )
             self.assertNotIn("confidence_tier", finding)
 
 

@@ -1,0 +1,114 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_id": "flask-vulnerable",
+  "benchmark_version": "1.0.0",
+  "methodology": {
+    "matching_version": "1.0.0",
+    "confidence_version": "1.0.0",
+    "prior": {
+      "alpha": 1.0,
+      "beta": 1.0
+    },
+    "confidence_level": 0.95,
+    "displayed_estimate": "posterior_mean",
+    "gating_estimate": "lower_credible_bound"
+  },
+  "dataset": {
+    "path": "benchmarks/datasets/flask-vulnerable-v1.json",
+    "version": "1.0.0",
+    "sha256": "34d8d98136329eb66b6e012ca79f9899a3075f9eedb1fcb6c7b0d78686e0b6e9"
+  },
+  "ground_truth": {
+    "path": "benchmarks/ground_truth/flask-vulnerable-v1.json",
+    "version": "1.0.0",
+    "sha256": "3470cb13d9fd6d4dbdfe1a7629af0d7eef08c4fa675e7d3bc98cdf9bfa1125ec"
+  },
+  "configuration": {
+    "path": "benchmarks/configurations/scanner-suite-v1.json",
+    "version": "1.0.0",
+    "sha256": "738ae2be67422a5a23d3640253af8a6cc4925836f090a58cc5cbbb795edc8b28"
+  },
+  "rules": {
+    "path": "benchmarks/configurations/scanner-rules-v1.json",
+    "version": "1.0.0",
+    "sha256": "17c1cd12040c3a4a400918f104706f5e9500bdf0a207003608c4eb53ee49dca4"
+  },
+  "adjudications": {
+    "path": "benchmarks/ground_truth/flask-vulnerable-v1.adjudications.json",
+    "version": "1.0.0",
+    "sha256": "bc8158a026c50c29d3337e598aa6826c86da960e4bac45ac0f5978f3e90bc7e1"
+  },
+  "runs": [
+    {
+      "run_id": "historical-run-1",
+      "path": "benchmarks/results/flask-vulnerable-v1/run-1/findings.json",
+      "sha256": "bcb0e17b5e49f78a431d29de89aadd98c831badf45e45cc652d7a4cecffee262",
+      "commit": "ec393289e0efc527e3ece36e4685f73dce5cb05e",
+      "recorded_at": "2026-05-09T06:01:23Z",
+      "statistically_independent": true,
+      "scanner_versions": {
+        "Bandit": "1.9.4",
+        "Semgrep": "1.165.0"
+      }
+    },
+    {
+      "run_id": "historical-run-2",
+      "path": "benchmarks/results/flask-vulnerable-v1/run-2/findings.json",
+      "sha256": "bcb0e17b5e49f78a431d29de89aadd98c831badf45e45cc652d7a4cecffee262",
+      "commit": "ec393289e0efc527e3ece36e4685f73dce5cb05e",
+      "recorded_at": "2026-05-09T06:04:35Z",
+      "statistically_independent": false,
+      "duplicate_of": "historical-run-1",
+      "scanner_versions": {
+        "Bandit": "1.9.4",
+        "Semgrep": "1.165.0"
+      }
+    },
+    {
+      "run_id": "historical-run-3",
+      "path": "benchmarks/results/flask-vulnerable-v1/run-3/findings.json",
+      "sha256": "bcb0e17b5e49f78a431d29de89aadd98c831badf45e45cc652d7a4cecffee262",
+      "commit": "ec393289e0efc527e3ece36e4685f73dce5cb05e",
+      "recorded_at": "2026-05-09T06:12:45Z",
+      "statistically_independent": false,
+      "duplicate_of": "historical-run-1",
+      "scanner_versions": {
+        "Bandit": "1.9.4",
+        "Semgrep": "1.165.0"
+      }
+    },
+    {
+      "run_id": "historical-run-4",
+      "path": "benchmarks/results/flask-vulnerable-v1/run-4/findings.json",
+      "sha256": "bcb0e17b5e49f78a431d29de89aadd98c831badf45e45cc652d7a4cecffee262",
+      "commit": "ec393289e0efc527e3ece36e4685f73dce5cb05e",
+      "recorded_at": "2026-05-09T06:23:55Z",
+      "statistically_independent": false,
+      "duplicate_of": "historical-run-1",
+      "scanner_versions": {
+        "Bandit": "1.9.4",
+        "Semgrep": "1.165.0"
+      }
+    },
+    {
+      "run_id": "historical-run-5",
+      "path": "benchmarks/results/flask-vulnerable-v1/run-5/findings.json",
+      "sha256": "bcb0e17b5e49f78a431d29de89aadd98c831badf45e45cc652d7a4cecffee262",
+      "commit": "ec393289e0efc527e3ece36e4685f73dce5cb05e",
+      "recorded_at": "2026-05-09T06:28:28Z",
+      "statistically_independent": false,
+      "duplicate_of": "historical-run-1",
+      "scanner_versions": {
+        "Bandit": "1.9.4",
+        "Semgrep": "1.165.0"
+      }
+    }
+  ],
+  "metrics_path": "benchmarks/reports/flask-vulnerable-v1.metrics.json",
+  "confidence_path": "benchmarks/reports/flask-vulnerable-v1.confidence.json",
+  "generated_documents": [
+    "README.md",
+    "benchmarks/README.md",
+    "docs/research/README.md"
+  ]
+}

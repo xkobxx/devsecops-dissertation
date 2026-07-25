@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "configuration_id": "python-sast-suite",
+  "configuration_version": "1.0.0",
+  "dataset_id": "flask-vulnerable",
+  "dataset_version": "1.0.0",
+  "scanners": [
+    {
+      "name": "Bandit",
+      "version": "1.9.4",
+      "command": "bandit -r TARGET -f json -o OUTPUT",
+      "ruleset": "bandit-default-v1"
+    },
+    {
+      "name": "Semgrep",
+      "version": "1.165.0",
+      "command": "semgrep --config=p/python --json --output OUTPUT TARGET",
+      "ruleset": "semgrep-python-v1"
+    }
+  ]
+}

@@ -161,6 +161,24 @@
         }
       ]
     },
+    "scanner_rule_reliability": {
+      "$ref": "#/$defs/confidenceComponent"
+    },
+    "finding_validity_confidence": {
+      "$ref": "#/$defs/confidenceComponent"
+    },
+    "reachability_confidence": {
+      "$ref": "#/$defs/confidenceComponent"
+    },
+    "exploitability_confidence": {
+      "$ref": "#/$defs/confidenceComponent"
+    },
+    "remediation_confidence": {
+      "$ref": "#/$defs/confidenceComponent"
+    },
+    "overall_decision_confidence": {
+      "$ref": "#/$defs/confidenceComponent"
+    },
     "file": {
       "$ref": "#/$defs/nullableString"
     },
@@ -341,6 +359,75 @@
           "type": "number",
           "exclusiveMinimum": 0,
           "maximum": 1
+        }
+      }
+    },
+    "confidenceComponent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "estimate",
+        "conservative_bound",
+        "sample_size",
+        "method",
+        "methodology_version",
+        "evidence",
+        "explanation",
+        "maturity",
+        "decision_tier"
+      ],
+      "properties": {
+        "estimate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "conservative_bound": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "sample_size": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "methodology_version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1
+        },
+        "maturity": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "decision_tier": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

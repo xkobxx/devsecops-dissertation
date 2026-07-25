@@ -6,6 +6,8 @@ import sys
 import tempfile
 import unittest
 
+from trustgate.benchmarks.statistics import posterior_precision
+from trustgate.confidence import build_confidence_components
 from trustgate.schema import migrate_scan_run
 
 
@@ -149,6 +151,130 @@ class ReportingWrapperTests(unittest.TestCase):
             self.assertIn("Bandit", rendered)
             self.assertIn("MEDIUM", rendered)
             self.assertIn(">18</td>", rendered)
+
+    def test_report_displays_every_confidence_component_and_reason(self):
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            scan_run = migrate_scan_run(
+                {
+                    "target": ".",
+                    "total": 1,
+                    "findings": [
+                        {
+                            "tool": "Bandit",
+                            "rule_id": "B608",
+                            "severity": "MEDIUM",
+                            "description": "Canonical finding.",
+                            "file": "app.py",
+                            "line": 18,
+                            "reachability": "reachable",
+                        }
+                    ],
+                }
+            )
+            finding = scan_run["findings"][0]
+            components = build_confidence_components(
+                finding,
+                posterior_precision(8, 2),
+            )
+            finding.update(components)
+            finding["confidence"] = components[
+                "overall_decision_confidence"
+            ]["estimate"]
+            findings = workspace / "findings.json"
+            findings.write_text(json.dumps(scan_run), encoding="utf-8")
+            dashboard = workspace / "dashboard.html"
+            environment = os.environ.copy()
+            environment["PYTHONPATH"] = str(REPOSITORY_ROOT / "src")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustgate",
+                    "report",
+                    "--input",
+                    str(findings),
+                    "--output",
+                    str(dashboard),
+                    "--no-benchmark-ground-truth",
+                ],
+                cwd=workspace,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            rendered = dashboard.read_text(encoding="utf-8")
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            for label in (
+                "Scanner rule reliability",
+                "Finding validity",
+                "Reachability",
+                "Exploitability",
+                "Remediation",
+                "Overall decision",
+            ):
+                self.assertIn(label, rendered)
+            self.assertIn(
+                "Scanner reliability is not exploitability evidence",
+                rendered,
+            )
+
+    def test_dashboard_reads_accuracy_from_the_canonical_metrics_artifact(self):
+        with tempfile.TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            findings = workspace / "findings.json"
+            findings.write_text(
+                json.dumps(
+                    {
+                        "target": ".",
+                        "total": 0,
+                        "findings": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            dashboard = workspace / "dashboard.html"
+            environment = os.environ.copy()
+            environment["PYTHONPATH"] = str(REPOSITORY_ROOT / "src")
+
+            completed = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "trustgate",
+                    "report",
+                    "--input",
+                    str(findings),
+                    "--output",
+                    str(dashboard),
+                    "--benchmark-ground-truth",
+                    str(
+                        REPOSITORY_ROOT
+                        / "benchmarks/ground_truth/flask-vulnerable-v1.json"
+                    ),
+                    "--benchmark-metrics",
+                    str(
+                        REPOSITORY_ROOT
+                        / "benchmarks/reports/flask-vulnerable-v1.metrics.json"
+                    ),
+                ],
+                cwd=workspace,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+            rendered = dashboard.read_text(encoding="utf-8")
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            self.assertIn("flask-vulnerable v1.0.0", rendered)
+            self.assertGreaterEqual(rendered.count(">80%</span>"), 3)
+            self.assertIn('<div class="matrix-val">12</div>', rendered)
+            self.assertIn('<div class="matrix-val">3</div>', rendered)
+            self.assertIn('<div class="matrix-val">2</div>', rendered)
 
 
 if __name__ == "__main__":

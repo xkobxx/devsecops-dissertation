@@ -10,7 +10,8 @@ Bandit and Semgrep:
 - unvalidated redirect; and
 - path traversal.
 
-The expected findings are recorded in `seeded_vulnerabilities.json`.
+The versioned expected findings are recorded in
+`benchmarks/ground_truth/flask-vulnerable-v1.json`.
 
 Safety rules:
 

@@ -4,16 +4,10 @@ Trust Gate legacy confidence scoring.
 PROPRIETARY -- not covered by this repository's MIT LICENSE. See
 LICENSE-COMMERCIAL. Requires a valid, unexpired license key to run.
 
-Runtime tool: joins each finding in findings.json against confidence_table.json
-(built by build_confidence_table.py) and attaches a confidence score + tier, so
-a team can act on the findings likely to be real and deprioritise likely noise.
-
-Tiering:
-  High    -- confidence >= 0.7
-  Likely  -- 0.3 <= confidence < 0.7
-  Noise   -- confidence < 0.3
-  Unscored -- the tool has no ground-truth coverage in confidence_table.json
-              (today: pip-audit, Trivy, Gitleaks) -- shown as-is, not scored.
+Runtime tool: joins each finding against the generated, versioned confidence
+artifact and attaches six explainable confidence concepts. The displayed value
+is the posterior mean; prioritisation uses the lower credible bound and sample
+maturity. Small samples remain Experimental or Directional.
 
 A rule with no direct entry falls back to its tool's overall baseline
 precision; every finding carries the sample_size and source ('rule' vs
@@ -31,6 +25,8 @@ import argparse
 import json
 import sys
 
+from trustgate.benchmarks.statistics import posterior_precision
+from trustgate.confidence import build_confidence_components
 from trustgate.licensing import verify
 from trustgate.schema import migrate_scan_run, write_validated_json
 
@@ -42,7 +38,11 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(description='Attach confidence scores/tiers to findings.json.')
     parser.add_argument('--input', default='reports/findings.json', help='findings.json to score')
     parser.add_argument('--output', default=None, help='Where to write the scored findings (default: overwrite --input)')
-    parser.add_argument('--confidence-table', default='confidence_table.json', help='Path to confidence_table.json')
+    parser.add_argument(
+        '--confidence-table',
+        default='benchmarks/reports/flask-vulnerable-v1.confidence.json',
+        help='Path to the generated benchmark confidence artifact',
+    )
     parser.add_argument('--license-key', default='', help='Required: a valid license key for this paid feature')
     return parser.parse_args(argv)
 
@@ -55,29 +55,72 @@ def tier_for(confidence):
     return 'Noise'
 
 
+def _reliability_score(entry):
+    if not entry:
+        return None
+    if "displayed_estimate" in entry and "gating_estimate" in entry:
+        return entry
+    true_positives = entry.get("tp")
+    false_positives = entry.get("fp")
+    if (
+        isinstance(true_positives, int)
+        and not isinstance(true_positives, bool)
+        and isinstance(false_positives, int)
+        and not isinstance(false_positives, bool)
+    ):
+        return posterior_precision(true_positives, false_positives)
+    precision = entry.get("precision")
+    sample_size = entry.get("sample_size")
+    if not isinstance(precision, (int, float)) or isinstance(precision, bool):
+        return None
+    if not isinstance(sample_size, int) or isinstance(sample_size, bool):
+        sample_size = 0
+    estimated_true = round(float(precision) * sample_size)
+    return posterior_precision(
+        estimated_true,
+        max(0, sample_size - estimated_true),
+    )
+
+
 def score_finding(finding, rules, tool_baseline):
     tool = finding.get('scanner', finding.get('tool'))
     key = f"{tool}:{finding.get('rule_id')}"
 
     if key in rules:
-        entry = rules[key]
-        return {
-            'confidence': entry['precision'],
-            'confidence_sample_size': entry['sample_size'],
-            'confidence_method': 'rule',
-        }
-    if tool in tool_baseline:
-        entry = tool_baseline[tool]
-        return {
-            'confidence': entry['precision'],
-            'confidence_sample_size': entry['sample_size'],
-            'confidence_method': 'tool_baseline',
-        }
+        source = 'rule'
+        reliability = _reliability_score(rules[key])
+    elif tool in tool_baseline:
+        source = 'tool_baseline'
+        reliability = _reliability_score(tool_baseline[tool])
+    else:
+        source = 'unscored'
+        reliability = None
+    components = build_confidence_components(finding, reliability)
+    overall = components["overall_decision_confidence"]
+    interval = (
+        reliability.get("interval")
+        if reliability is not None
+        else None
+    )
     return {
-        'confidence': None,
-        'confidence_sample_size': None,
-        'confidence_method': 'unscored',
+        'confidence': overall["estimate"],
+        'confidence_sample_size': overall["sample_size"],
+        'confidence_method': (
+            f"{source}:beta-binomial:{reliability['methodology_version']}"
+            if reliability is not None
+            else 'unscored'
+        ),
+        'confidence_interval': interval,
+        **components,
     }
+
+
+def decision_tier(finding):
+    component = finding.get("overall_decision_confidence")
+    if isinstance(component, dict):
+        return str(component.get("decision_tier") or "Unscored")
+    confidence = finding.get("confidence")
+    return "Unscored" if confidence is None else tier_for(confidence)
 
 
 def main(argv=None):
@@ -106,25 +149,37 @@ def main(argv=None):
     data['findings'] = findings
     write_validated_json(output_path, data, schema_name='scan-run')
 
-    counts = {'High': 0, 'Likely': 0, 'Noise': 0, 'Unscored': 0}
+    counts = {
+        'High': 0,
+        'Likely': 0,
+        'Noise': 0,
+        'Experimental': 0,
+        'Directional': 0,
+        'Unscored': 0,
+    }
     for finding in findings:
-        confidence = finding['confidence']
-        tier = 'Unscored' if confidence is None else tier_for(confidence)
+        tier = decision_tier(finding)
+        if tier not in counts:
+            tier = 'Unscored'
         counts[tier] += 1
 
     print(f"Scored {len(findings)} findings -> {output_path}")
-    print(f"  High: {counts['High']}  Likely: {counts['Likely']}  Noise: {counts['Noise']}  Unscored: {counts['Unscored']}")
+    print(
+        "  "
+        + "  ".join(
+            f"{tier}: {count}"
+            for tier, count in counts.items()
+        )
+    )
     print("Act on these first:")
     for finding in sorted(
         findings,
         key=lambda f: (
-            tier_for(f['confidence']) != 'High'
-            if f['confidence'] is not None
-            else True,
+            decision_tier(f) != 'High',
             -(f['confidence'] or 0),
         ),
     ):
-        if finding['confidence'] is None or tier_for(finding['confidence']) != 'High':
+        if decision_tier(finding) != 'High':
             break
         print(
             f"  [{finding['scanner']}] {finding.get('rule_id')} - "

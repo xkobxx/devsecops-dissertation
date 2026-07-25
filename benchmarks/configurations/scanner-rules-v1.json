@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "ruleset_version": "1.0.0",
+  "rulesets": {
+    "bandit-default-v1": {
+      "scanner": "Bandit",
+      "configuration": "default Bandit Python rules"
+    },
+    "semgrep-python-v1": {
+      "scanner": "Semgrep",
+      "configuration": "Semgrep Registry p/python rules as resolved by Semgrep 1.165.0"
+    }
+  },
+  "matching_policy": {
+    "version": "1.0.0",
+    "line_proximity_is_identity": false,
+    "accepted_identity_signals": [
+      "vulnerability_id",
+      "scanner_rule_and_file",
+      "file_symbol_and_cwe",
+      "source_and_sink",
+      "code_region_hash",
+      "manual_adjudication"
+    ],
+    "ambiguous_matches": "exclude_until_adjudicated"
+  }
+}

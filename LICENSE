@@ -1,9 +1,10 @@
 MIT License
 
 NOTE: This license does NOT apply to src/trustgate/scoring/,
-scripts/build_confidence_table.py, or confidence_table.json -- those files are
-proprietary and governed by LICENSE-COMMERCIAL instead. Every other file in this
-repository is covered by the MIT terms below.
+scripts/build_confidence_table.py, or
+benchmarks/reports/flask-vulnerable-v1.confidence.json -- those files are
+proprietary and governed by LICENSE-COMMERCIAL instead. Every other file in
+this repository is covered by the MIT terms below.
 
 Copyright (c) 2026 David Mensah
 

@@ -26,6 +26,14 @@ Versioning as described in `docs/VERSIONING.md`.
 - Deterministic versioned source archives, SHA-256 manifests, and keyless
   Sigstore release signatures.
 - CycloneDX product SBOMs plus published SLSA provenance and SBOM attestations.
+- Versioned canonical finding, scan-run, and policy-result schemas with
+  migrations, raw-evidence preservation, severity normalization, and stable
+  fingerprints.
+- A hashed benchmark manifest, explainable multi-signal matching, manual
+  adjudication, Beta-Binomial credible intervals, calibration metrics, and
+  generated benchmark publications.
+- Six separate, report-visible confidence concepts with an acyclic dependency
+  model and conservative-bound decisions.
 
 ### Changed
 
@@ -39,9 +47,11 @@ Versioning as described in `docs/VERSIONING.md`.
 - Missing or malformed required scanner reports now fail the gate by default.
 - Composite Action scanner crashes and timeouts can no longer become clean
   results through broad shell error suppression.
+- Byte-identical benchmark runs no longer inflate statistical maturity, and
+  contradictory generated precision figures block release publication.
 
 ### Security
 
 - Private signing keys created by the seller tool now use mode `0600`.
-- The current fail-open scanner/report behaviour is documented as a release
-  blocker; remediation remains scheduled for Phase 1.
+- Required scanner failures, malformed reports, unsafe workflow inputs, and
+  inconsistent benchmark publications now fail closed.

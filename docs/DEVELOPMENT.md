@@ -29,7 +29,8 @@ docker run --rm -v "$PWD":/repo \
   --report-path /repo/reports/gitleaks_report.json --exit-code 3
 
 python scripts/aggregate_results.py            # → validated findings.json + policy-result.json
-python scripts/build_confidence_table.py       # → confidence_table.json (rebuild after changing the fixture)
+trustgate benchmark --write                    # → canonical metrics, confidence data, and generated docs
+trustgate benchmark --check                    # fail if any published consumer is inconsistent
 python scripts/score_findings.py               # → adds confidence fields to findings.json (paid-tier logic)
 python scripts/generate_report.py              # → reports/dashboard.html
 ```
@@ -42,6 +43,11 @@ The packaged equivalent of the aggregation command is:
 trustgate aggregate --reports-dir reports --output reports/findings.json --fail-on high
 trustgate report --input reports/findings.json --output reports/dashboard.html
 ```
+
+The report reads benchmark accuracy only from
+`benchmarks/reports/flask-vulnerable-v1.metrics.json`; it never derives
+precision or false negatives from confidence tiers. See
+`docs/BENCHMARK_METHODOLOGY.md`.
 
 Run an individual scanner through the health-aware execution boundary:
 

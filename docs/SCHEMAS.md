@@ -112,10 +112,15 @@ returned as defensive copies, making migration idempotent.
 
 ## Null and absent values
 
-Canonical finding fields are required. Scanner data that is genuinely
+Phase 2 canonical finding fields are required. Scanner data that is genuinely
 unavailable is represented by the field’s documented `null` value or an empty
 collection. An absent required field therefore indicates an invalid adapter or
 document, not “no data”.
+
+Phase 3 adds six optional confidence-component fields so existing `1.0.0`
+findings remain valid. When confidence scoring runs, all six are published
+together and each component object is fully required and validated. See
+`docs/CONFIDENCE_METHODOLOGY.md`.
 
 ## Packaging
 

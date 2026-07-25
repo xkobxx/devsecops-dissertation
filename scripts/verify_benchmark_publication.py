@@ -1,4 +1,4 @@
-"""Regenerate confidence data from the canonical benchmark metrics."""
+"""Fail closed when benchmark metrics or generated consumers are inconsistent."""
 
 from pathlib import Path
 import sys
@@ -12,4 +12,4 @@ from trustgate.cli import main  # noqa: E402
 
 
 if __name__ == "__main__":
-    raise SystemExit(main(["benchmark", "--write", *sys.argv[1:]]))
+    raise SystemExit(main(["benchmark", "--check", *sys.argv[1:]]))

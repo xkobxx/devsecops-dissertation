@@ -1,139 +1,135 @@
-"""
-aggregate_results.py
+"""Generate research charts from the canonical benchmark metrics artifact."""
 
-Visualises the results from the security scanning tools.
-"""
+from __future__ import annotations
+
+import argparse
 import json
-import os
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import numpy as np
+from pathlib import Path
 
-os.makedirs('reports/charts', exist_ok=True)
 
-# ── Data ──────────────────────────────────────────────────────────────
-tools    = ['Bandit', 'Semgrep', 'Combined']
-precision = [0.571, 0.625, 0.750]
-recall    = [0.800, 1.000, 1.000]
-f1        = [0.666, 0.769, 0.857]
-fp_counts = [3,     3,     4    ]
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Render charts from generated Trust Gate benchmark metrics."
+    )
+    parser.add_argument(
+        "--metrics",
+        default="benchmarks/reports/flask-vulnerable-v1.metrics.json",
+    )
+    parser.add_argument(
+        "--output-dir",
+        default="benchmarks/reports/charts",
+    )
+    return parser.parse_args()
 
-colours = ['#2E86AB', '#A23B72', '#3BB273']
 
-# ── Chart 1: Precision, Recall, F1 grouped bar chart ─────────────────
-fig, ax = plt.subplots(figsize=(10, 6))
-x   = np.arange(len(tools))
-w   = 0.25
+def main() -> int:
+    args = parse_args()
+    import matplotlib
 
-bars_p = ax.bar(x - w,   precision, w, label='Precision', color='#2E86AB', edgecolor='white')
-bars_r = ax.bar(x,       recall,    w, label='Recall',    color='#A23B72', edgecolor='white')
-bars_f = ax.bar(x + w,   f1,        w, label='F1 Score',  color='#3BB273', edgecolor='white')
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    import numpy as np
 
-for bars in [bars_p, bars_r, bars_f]:
-    for bar in bars:
-        h = bar.get_height()
-        ax.annotate(f'{h:.3f}',
-                    xy=(bar.get_x() + bar.get_width() / 2, h),
-                    xytext=(0, 4), textcoords='offset points',
-                    ha='center', va='bottom', fontsize=9)
+    metrics_path = Path(args.metrics)
+    metrics = json.loads(metrics_path.read_text(encoding="utf-8"))
+    tools = sorted(metrics["tools"])
+    output = Path(args.output_dir)
+    output.mkdir(parents=True, exist_ok=True)
+    colours = ["#2E86AB", "#A23B72", "#3BB273", "#F59E0B"]
 
-ax.set_xlabel('Tool', fontsize=12)
-ax.set_ylabel('Score', fontsize=12)
-ax.set_title('Figure 1: Precision, Recall, and F1 Score by Tool', fontsize=13, fontweight='bold')
-ax.set_xticks(x)
-ax.set_xticklabels(tools, fontsize=11)
-ax.set_ylim(0, 1.15)
-ax.legend(fontsize=10)
-ax.yaxis.grid(True, linestyle='--', alpha=0.6)
-ax.set_axisbelow(True)
-plt.tight_layout()
-plt.savefig('reports/charts/chart1_precision_recall_f1.png', dpi=150)
-plt.close()
-print("Chart 1 saved.")
+    x = np.arange(len(tools))
+    width = 0.25
+    figure, axis = plt.subplots(figsize=(10, 6))
+    for offset, key, label, colour in (
+        (-width, "precision", "Precision", "#2E86AB"),
+        (0, "recall", "Recall", "#A23B72"),
+        (width, "f1", "F1", "#3BB273"),
+    ):
+        values = [metrics["tools"][tool][key] for tool in tools]
+        bars = axis.bar(x + offset, values, width, label=label, color=colour)
+        axis.bar_label(bars, fmt="%.3f", padding=3)
+    axis.set_xticks(x, tools)
+    axis.set_ylim(0, 1.15)
+    axis.set_ylabel("Score")
+    axis.set_title("Precision, recall, and F1 by scanner")
+    axis.legend()
+    figure.tight_layout()
+    figure.savefig(output / "precision-recall-f1.png", dpi=150)
+    plt.close(figure)
 
-# ── Chart 2: Confusion matrix values (TP / FP / FN) ──────────────────
-tp = [4, 5, 6]
-fp = [3, 3, 4]
-fn = [1, 0, 0]
+    figure, axes = plt.subplots(1, len(tools), figsize=(5 * len(tools), 4))
+    axes = np.atleast_1d(axes)
+    for axis, tool in zip(axes, tools, strict=True):
+        result = metrics["tools"][tool]
+        matrix = np.array(
+            [
+                [result["true_positives"], result["false_positives"]],
+                [result["false_negatives"], 0],
+            ]
+        )
+        axis.imshow(matrix, cmap="Blues")
+        for row in range(2):
+            for column in range(2):
+                axis.text(
+                    column,
+                    row,
+                    str(matrix[row, column]),
+                    ha="center",
+                    va="center",
+                )
+        axis.set_xticks([0, 1], ["TP", "FP"])
+        axis.set_yticks([0, 1], ["Detected", "Missed"])
+        axis.set_title(tool)
+    figure.tight_layout()
+    figure.savefig(output / "confusion-counts.png", dpi=150)
+    plt.close(figure)
 
-fig, axes = plt.subplots(1, 3, figsize=(12, 5))
-tool_labels = ['Bandit', 'Semgrep', 'Combined']
-data_sets   = zip(tool_labels, tp, fp, fn, colours)
+    ground_truth_ids = sorted(
+        {
+            identifier
+            for tool in tools
+            for identifier in (
+                metrics["tools"][tool]["matched_ground_truth_ids"]
+                + metrics["tools"][tool]["missed_ground_truth_ids"]
+            )
+        }
+    )
+    figure, axis = plt.subplots(figsize=(12, 5))
+    width = 0.8 / max(len(tools), 1)
+    x = np.arange(len(ground_truth_ids))
+    for index, tool in enumerate(tools):
+        detected = set(metrics["tools"][tool]["matched_ground_truth_ids"])
+        values = [1 if identifier in detected else 0 for identifier in ground_truth_ids]
+        axis.bar(
+            x + (index - (len(tools) - 1) / 2) * width,
+            values,
+            width,
+            label=tool,
+            color=colours[index % len(colours)],
+        )
+    axis.set_xticks(x, ground_truth_ids)
+    axis.set_yticks([0, 1], ["Missed", "Detected"])
+    axis.set_title("Ground-truth detection by scanner")
+    axis.legend()
+    figure.tight_layout()
+    figure.savefig(output / "ground-truth-detection.png", dpi=150)
+    plt.close(figure)
 
-for ax, (tool, t, f_p, f_n, col) in zip(axes, data_sets):
-    matrix = np.array([[t, f_p], [f_n, 0]])
-    labels = [['TP', 'FP'], ['FN', 'TN*']]
-    im = ax.imshow(matrix, cmap='Blues', vmin=0, vmax=6)
-    for i in range(2):
-        for j in range(2):
-            ax.text(j, i, f'{labels[i][j]}\n{matrix[i, j]}',
-                    ha='center', va='center', fontsize=14, fontweight='bold',
-                    color='white' if matrix[i, j] > 3 else 'black')
-    ax.set_xticks([0, 1])
-    ax.set_yticks([0, 1])
-    ax.set_xticklabels(['Predicted\nPositive', 'Predicted\nNegative'], fontsize=9)
-    ax.set_yticklabels(['Actual\nPositive', 'Actual\nNegative'], fontsize=9)
-    ax.set_title(f'{tool}', fontsize=12, fontweight='bold')
+    figure, axis = plt.subplots(figsize=(7, 5))
+    false_positives = [
+        metrics["tools"][tool]["false_positives"] for tool in tools
+    ]
+    bars = axis.bar(tools, false_positives, color=colours[: len(tools)])
+    axis.bar_label(bars, padding=3)
+    axis.set_ylabel("False-positive findings")
+    axis.set_title("False-positive findings by scanner")
+    figure.tight_layout()
+    figure.savefig(output / "false-positives.png", dpi=150)
+    plt.close(figure)
 
-fig.suptitle('Figure 2: Confusion Matrices by Tool (TN* not applicable for SAST)',
-             fontsize=11, fontweight='bold', y=1.02)
-plt.tight_layout()
-plt.savefig('reports/charts/chart2_confusion_matrices.png', dpi=150, bbox_inches='tight')
-plt.close()
-print("Chart 2 saved.")
+    print(f"Generated 4 charts from {metrics_path} in {output}.")
+    return 0
 
-# ── Chart 3: Detection rate per vulnerability ─────────────────────────
-vuln_ids = ['VULN-001\nHardcoded\nCreds', 'VULN-002\nSQL\nInjection',
-            'VULN-003\nCmd\nInjection', 'VULN-004\nCode\nInjection',
-            'VULN-005\nUnvalidated\nRedirect', 'VULN-006\nPath\nTraversal']
 
-bandit_det  = [1, 1, 1, 1, 0, 0]
-semgrep_det = [0, 1, 1, 1, 1, 1]
-combined    = [1, 1, 1, 1, 1, 1]
-
-x   = np.arange(len(vuln_ids))
-w   = 0.25
-fig, ax = plt.subplots(figsize=(13, 6))
-
-ax.bar(x - w,  bandit_det,  w, label='Bandit',   color='#2E86AB', edgecolor='white')
-ax.bar(x,      semgrep_det, w, label='Semgrep',  color='#A23B72', edgecolor='white')
-ax.bar(x + w,  combined,    w, label='Combined', color='#3BB273', edgecolor='white')
-
-ax.set_xlabel('Vulnerability', fontsize=11)
-ax.set_ylabel('Detected (1 = Yes, 0 = No)', fontsize=11)
-ax.set_title('Figure 3: Per-Vulnerability Detection by Tool', fontsize=13, fontweight='bold')
-ax.set_xticks(x)
-ax.set_xticklabels(vuln_ids, fontsize=8)
-ax.set_ylim(0, 1.3)
-ax.set_yticks([0, 1])
-ax.legend(fontsize=10)
-ax.yaxis.grid(True, linestyle='--', alpha=0.5)
-ax.set_axisbelow(True)
-plt.tight_layout()
-plt.savefig('reports/charts/chart3_per_vuln_detection.png', dpi=150)
-plt.close()
-print("Chart 3 saved.")
-
-# ── Chart 4: False positive count per tool ────────────────────────────
-fig, ax = plt.subplots(figsize=(7, 5))
-bars = ax.bar(tools, fp_counts, color=colours, edgecolor='white', width=0.4)
-for bar in bars:
-    h = bar.get_height()
-    ax.text(bar.get_x() + bar.get_width() / 2, h + 0.05, str(int(h)),
-            ha='center', va='bottom', fontsize=12, fontweight='bold')
-ax.set_xlabel('Tool', fontsize=12)
-ax.set_ylabel('False Positive Count', fontsize=12)
-ax.set_title('Figure 4: False Positive Count by Tool', fontsize=13, fontweight='bold')
-ax.set_ylim(0, 6)
-ax.yaxis.grid(True, linestyle='--', alpha=0.6)
-ax.set_axisbelow(True)
-plt.tight_layout()
-plt.savefig('reports/charts/chart4_false_positives.png', dpi=150)
-plt.close()
-print("Chart 4 saved.")
-
-print("\nAll charts saved to reports/charts/")
-print("Files: chart1_precision_recall_f1.png, chart2_confusion_matrices.png,")
-print("       chart3_per_vuln_detection.png, chart4_false_positives.png")
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_id": "flask-vulnerable",
+  "dataset_version": "1.0.0",
+  "name": "Trust Gate Flask vulnerable fixture",
+  "language": "python",
+  "fixture_root": "benchmarks/fixtures/python/flask_vulnerable",
+  "files": [
+    {
+      "path": "benchmarks/fixtures/python/flask_vulnerable/app.py",
+      "sha256": "cefce62168478653d78d416bc3f7b2ce98fdb82a2067286f18d7cf76f3543995"
+    },
+    {
+      "path": "benchmarks/fixtures/python/flask_vulnerable/requirements.txt",
+      "sha256": "dc78b9063abeff06fb1ce69265fcafc4b94598ff7ba41d270f1ac3c3fd55a26a"
+    }
+  ],
+  "ground_truth": "benchmarks/ground_truth/flask-vulnerable-v1.json",
+  "ground_truth_version": "1.0.0",
+  "purpose": "A deliberately vulnerable fixture used to exercise benchmark methodology. It is not production code."
+}

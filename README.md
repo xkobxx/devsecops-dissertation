@@ -27,11 +27,10 @@ ordered implementation work and acceptance status are tracked in
 Other important limitations:
 
 - SAST and dependency discovery are Python-first.
-- Finding fingerprints currently use a transitional legacy algorithm; stable,
-  line-change-resistant fingerprints are scheduled for Phase 2.4.
-- SARIF, SBOM, VEX, differential gating, and policy-as-code are not implemented.
+- SARIF, VEX, differential gating, and policy-as-code are not implemented.
 - Confidence data comes from one small, deliberately vulnerable fixture and is
-  experimental rather than statistically suitable for gating.
+  Directional rather than statistically mature; decisions use its conservative
+  lower credible bound.
 - The Stripe licence webhook is an undeployed design sketch.
 
 See [docs/audits/REPOSITORY_AUDIT.md](docs/audits/REPOSITORY_AUDIT.md) for the
@@ -47,6 +46,11 @@ complete baseline.
 - Versioned canonical finding, scan-run, and policy-result JSON contracts.
 - Schema validation before atomic JSON publication.
 - Backward-compatible migration for historical unversioned findings and scan runs.
+- Stable, versioned finding fingerprints and cross-scanner correlation.
+- Versioned benchmark manifests with generated, consistency-checked metrics.
+- Explainable multi-signal matching and manual adjudication for ambiguous labels.
+- Beta-Binomial precision intervals, calibration metrics, and separate confidence
+  components.
 - Explicit scanner health for missing and malformed reports.
 - Health-aware scanner execution with configurable timeouts and separate logs.
 - Configurable severity threshold gating.
@@ -161,6 +165,18 @@ Published historical precision figures must not be interpreted as general scanne
 accuracy or current production confidence. The five recorded runs are
 byte-identical, and most rule-level confidence samples contain only one finding.
 
+<!-- trustgate:benchmark-metrics:start -->
+> Generated from the versioned benchmark manifest. Do not edit this block.
+
+| Tool | Precision | Recall | F1 | Posterior precision | 95% credible interval | Conservative bound | Maturity | n |
+|---|---:|---:|---:|---:|---:|---:|---|---:|
+| Bandit | 0.714 | 0.800 | 0.755 | 0.667 | 0.349–0.915 | 0.349 | Directional | 7 |
+| Semgrep | 0.875 | 0.800 | 0.836 | 0.800 | 0.518–0.972 | 0.518 | Directional | 8 |
+
+Methodology `1.0.0` uses a Beta(1, 1) prior. Displayed confidence is the posterior mean; decisions use the 95% lower credible bound.
+4 byte-identical repeat run(s) are retained for provenance but excluded as independent statistical samples.
+<!-- trustgate:benchmark-metrics:end -->
+
 ## Repository map
 
 ```text
@@ -178,6 +194,8 @@ action.yml           reusable composite Action
 - [Local development](docs/DEVELOPMENT.md)
 - [Scanner compatibility](docs/SCANNER_COMPATIBILITY.md)
 - [Dependency update process](docs/DEPENDENCY_UPDATES.md)
+- [Benchmark methodology](docs/BENCHMARK_METHODOLOGY.md)
+- [Confidence methodology](docs/CONFIDENCE_METHODOLOGY.md)
 - [Implementation roadmap status](docs/ROADMAP_STATUS.md)
 - [Migration guide](docs/MIGRATION.md)
 - [Versioning policy](docs/VERSIONING.md)
@@ -188,7 +206,8 @@ action.yml           reusable composite Action
 
 The community package and core scanning/aggregation code are MIT licensed. The
 confidence-scoring source under `src/trustgate/scoring/`,
-`scripts/build_confidence_table.py`, and `confidence_table.json` are
+`scripts/build_confidence_table.py`, and the generated
+`benchmarks/reports/flask-vulnerable-v1.confidence.json` artifact are
 source-available under [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL) and are excluded
 from the community wheel.
 

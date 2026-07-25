@@ -262,7 +262,7 @@ runs:
         LICENSE_KEY: ${{ inputs.license-key }}
       run: |
         python "${{ github.action_path }}/scripts/score_findings.py" \
-          --confidence-table "${{ github.action_path }}/confidence_table.json" \
+          --confidence-table "${{ github.action_path }}/benchmarks/reports/flask-vulnerable-v1.confidence.json" \
           --license-key "$LICENSE_KEY"
 
     - name: Generate dashboard

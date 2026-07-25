@@ -8,7 +8,10 @@ from typing import Any
 
 DEFAULT_FINDINGS_PATH = "reports/findings.json"
 DEFAULT_BENCHMARK_PATH = (
-    "benchmarks/fixtures/python/flask_vulnerable/seeded_vulnerabilities.json"
+    "benchmarks/ground_truth/flask-vulnerable-v1.json"
+)
+DEFAULT_BENCHMARK_METRICS_PATH = (
+    "benchmarks/reports/flask-vulnerable-v1.metrics.json"
 )
 DEFAULT_OUTPUT_PATH = "reports/dashboard.html"
 
@@ -35,6 +38,14 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Generate a product report without benchmark metrics",
     )
+    parser.add_argument(
+        "--benchmark-metrics",
+        default=DEFAULT_BENCHMARK_METRICS_PATH,
+        help=(
+            "Generated benchmark metrics artifact "
+            f"(default: {DEFAULT_BENCHMARK_METRICS_PATH})"
+        ),
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -49,9 +60,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 def run(args: argparse.Namespace) -> int:
     benchmark_path = "" if args.no_benchmark_ground_truth else args.benchmark_ground_truth
+    metrics_path = "" if args.no_benchmark_ground_truth else args.benchmark_metrics
     values = {
         "TRUSTGATE_FINDINGS_PATH": args.input,
         "TRUSTGATE_BENCHMARK_PATH": benchmark_path,
+        "TRUSTGATE_BENCHMARK_METRICS_PATH": metrics_path,
         "TRUSTGATE_REPORT_PATH": args.output,
     }
     previous: dict[str, Any] = {key: os.environ.get(key) for key in values}
@@ -75,6 +88,7 @@ def main(argv: list[str] | None = None) -> int:
 
 __all__ = [
     "DEFAULT_BENCHMARK_PATH",
+    "DEFAULT_BENCHMARK_METRICS_PATH",
     "DEFAULT_FINDINGS_PATH",
     "DEFAULT_OUTPUT_PATH",
     "add_arguments",

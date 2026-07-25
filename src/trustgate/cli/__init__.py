@@ -6,6 +6,8 @@ from collections.abc import Sequence
 from trustgate import __version__
 from trustgate.aggregation import add_arguments as add_aggregation_arguments
 from trustgate.aggregation import run as run_aggregation
+from trustgate.benchmarks.cli import add_arguments as add_benchmark_arguments
+from trustgate.benchmarks.cli import run as run_benchmark
 from trustgate.reporting import add_arguments as add_reporting_arguments
 from trustgate.reporting import run as run_reporting
 from trustgate.scanners.cli import add_arguments as add_scanner_arguments
@@ -37,6 +39,12 @@ def build_parser() -> ArgumentParser:
     )
     add_reporting_arguments(report)
     report.set_defaults(handler=run_reporting)
+    benchmark = commands.add_parser(
+        "benchmark",
+        help="Generate or verify versioned benchmark publications.",
+    )
+    add_benchmark_arguments(benchmark)
+    benchmark.set_defaults(handler=run_benchmark)
     scanner_run = commands.add_parser(
         "scanner-run",
         help="Run one scanner and persist authoritative health metadata.",

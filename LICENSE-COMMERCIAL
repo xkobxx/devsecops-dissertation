@@ -6,7 +6,7 @@ This license applies ONLY to the following files and directories in this reposit
 
   - src/trustgate/scoring/
   - scripts/build_confidence_table.py
-  - confidence_table.json
+  - benchmarks/reports/flask-vulnerable-v1.confidence.json
 
 Every other file in this repository is covered by the MIT License in
 LICENSE, not this file.

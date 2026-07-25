@@ -7,16 +7,19 @@ Last updated: 2026-07-25 on branch `codex/phase-0-repository-audit`.
 ## Status summary
 
 - Explicit PDF checkbox items: **964**
-- Validated complete: **151**
-- Remaining explicit checkbox items: **813**
-- Current work: **Phase 3.1 - Create one source of truth for benchmarks**
+- Validated complete: **195**
+- Remaining explicit checkbox items: **769**
+- Derived final architecture/verification checks: **34** (tracked below but
+  excluded from the PDF checkbox totals because the PDF presents them as an
+  architecture flow and command requirements, not checkbox items)
+- Current work: **Phase 4.1 - Define the adapter interface**
 
 Only validation-backed work is checked. Existing files or partial implementations are not marked complete merely because they resemble a deliverable.
 
 ## Active implementation queue
 
-1. Implement Phase 3.1 benchmark sources of truth.
-2. Continue Phases 3-27 in the exact order below without skipping acceptance criteria.
+1. Implement Phase 4.1 scanner adapter interface.
+2. Continue Phases 4-27 in the exact order below without skipping acceptance criteria.
 
 ## Complete ordered checklist
 
@@ -217,59 +220,59 @@ Only validation-backed work is checked. Existing files or partial implementation
 
 ### 3.1 Create one source of truth for benchmarks
 
-- [ ] Remove manually duplicated metrics. _(PDF p. 9)_
-- [ ] Generate README metrics from benchmark artefacts. _(PDF p. 9)_
-- [ ] Generate documentation tables automatically. _(PDF p. 9)_
-- [ ] Version every benchmark dataset. _(PDF p. 9)_
-- [ ] Version scanner configurations. _(PDF p. 9)_
-- [ ] Version scanner rules. _(PDF p. 9)_
-- [ ] Store benchmark run metadata. _(PDF p. 9)_
-- [ ] Store the exact commit used for each result. _(PDF p. 9)_
-- [ ] Store the calculation method. _(PDF p. 9)_
-- [ ] Prevent publication when metrics are inconsistent. _(PDF p. 10)_
-- [ ] README, dashboard and research documents use the same generated metrics. _(PDF p. 10)_
-- [ ] Contradictory precision figures cannot be released. _(PDF p. 10)_
+- [x] Remove manually duplicated metrics. _(PDF p. 9)_
+- [x] Generate README metrics from benchmark artefacts. _(PDF p. 9)_
+- [x] Generate documentation tables automatically. _(PDF p. 9)_
+- [x] Version every benchmark dataset. _(PDF p. 9)_
+- [x] Version scanner configurations. _(PDF p. 9)_
+- [x] Version scanner rules. _(PDF p. 9)_
+- [x] Store benchmark run metadata. _(PDF p. 9)_
+- [x] Store the exact commit used for each result. _(PDF p. 9)_
+- [x] Store the calculation method. _(PDF p. 9)_
+- [x] Prevent publication when metrics are inconsistent. _(PDF p. 10)_
+- [x] README, dashboard and research documents use the same generated metrics. _(PDF p. 10)_
+- [x] Contradictory precision figures cannot be released. _(PDF p. 10)_
 
 ### 3.2 Replace proximity-only ground-truth matching
 
-- [ ] Stop relying solely on plus-or-minus-five-line matching. _(PDF p. 10)_
-- [ ] Match by vulnerability ID where fixtures support it. _(PDF p. 10)_
-- [ ] Match by file and symbol. _(PDF p. 10)_
-- [ ] Match by CWE. _(PDF p. 10)_
-- [ ] Match by source and sink. _(PDF p. 10)_
-- [ ] Match by code-region hash. _(PDF p. 10)_
-- [ ] Support manual adjudication. _(PDF p. 10)_
-- [ ] Record the matching reason. _(PDF p. 10)_
-- [ ] Record ambiguous matches. _(PDF p. 10)_
-- [ ] Require review before ambiguous results affect published metrics. _(PDF p. 10)_
-- [ ] Dense files do not produce accidental true-positive matches. _(PDF p. 10)_
-- [ ] Every benchmark match is explainable. _(PDF p. 10)_
-- [ ] Ambiguous matches are excluded until adjudicated. _(PDF p. 10)_
+- [x] Stop relying solely on plus-or-minus-five-line matching. _(PDF p. 10)_
+- [x] Match by vulnerability ID where fixtures support it. _(PDF p. 10)_
+- [x] Match by file and symbol. _(PDF p. 10)_
+- [x] Match by CWE. _(PDF p. 10)_
+- [x] Match by source and sink. _(PDF p. 10)_
+- [x] Match by code-region hash. _(PDF p. 10)_
+- [x] Support manual adjudication. _(PDF p. 10)_
+- [x] Record the matching reason. _(PDF p. 10)_
+- [x] Record ambiguous matches. _(PDF p. 10)_
+- [x] Require review before ambiguous results affect published metrics. _(PDF p. 10)_
+- [x] Dense files do not produce accidental true-positive matches. _(PDF p. 10)_
+- [x] Every benchmark match is explainable. _(PDF p. 10)_
+- [x] Ambiguous matches are excluded until adjudicated. _(PDF p. 10)_
 
 ### 3.3 Implement statistically valid confidence
 
-- [ ] Implement posterior precision calculation. _(PDF p. 11)_
-- [ ] Implement confidence or credible intervals. _(PDF p. 11)_
-- [ ] Add sample-size maturity levels. _(PDF p. 11)_
-- [ ] Prevent small samples from receiving high-confidence classification. _(PDF p. 11)_
-- [ ] Add calibration-quality indicators. _(PDF p. 11)_
-- [ ] Track false negatives as well as false positives. _(PDF p. 11)_
-- [ ] Calculate precision, recall, F1, Brier score and calibration error. _(PDF p. 11)_
-- [ ] Include methodology version in every score. _(PDF p. 11)_
-- [ ] A rule with one true positive and zero false positives is not labelled “high confidence.” _(PDF p. 11)_
-- [ ] Every score includes sample size and interval. _(PDF p. 11)_
-- [ ] Gate decisions use the conservative bound. _(PDF p. 11)_
-- [ ] Statistical tests cover edge cases. _(PDF p. 11)_
+- [x] Implement posterior precision calculation. _(PDF p. 11)_
+- [x] Implement confidence or credible intervals. _(PDF p. 11)_
+- [x] Add sample-size maturity levels. _(PDF p. 11)_
+- [x] Prevent small samples from receiving high-confidence classification. _(PDF p. 11)_
+- [x] Add calibration-quality indicators. _(PDF p. 11)_
+- [x] Track false negatives as well as false positives. _(PDF p. 11)_
+- [x] Calculate precision, recall, F1, Brier score and calibration error. _(PDF p. 11)_
+- [x] Include methodology version in every score. _(PDF p. 11)_
+- [x] A rule with one true positive and zero false positives is not labelled “high confidence.” _(PDF p. 11)_
+- [x] Every score includes sample size and interval. _(PDF p. 11)_
+- [x] Gate decisions use the conservative bound. _(PDF p. 11)_
+- [x] Statistical tests cover edge cases. _(PDF p. 11)_
 
 ### 3.4 Separate confidence concepts
 
-- [ ] Define each confidence type. _(PDF p. 11)_
-- [ ] Define which evidence affects each type. _(PDF p. 11)_
-- [ ] Prevent circular calculations. _(PDF p. 11)_
-- [ ] Display each component in reports. _(PDF p. 11)_
-- [ ] Do not hide them behind one unexplained score. _(PDF p. 11)_
-- [ ] Users can see why a decision was made. _(PDF p. 12)_
-- [ ] Scanner reliability is not presented as exploitability probability. _(PDF p. 12)_
+- [x] Define each confidence type. _(PDF p. 11)_
+- [x] Define which evidence affects each type. _(PDF p. 11)_
+- [x] Prevent circular calculations. _(PDF p. 11)_
+- [x] Display each component in reports. _(PDF p. 11)_
+- [x] Do not hide them behind one unexplained score. _(PDF p. 11)_
+- [x] Users can see why a decision was made. _(PDF p. 12)_
+- [x] Scanner reliability is not presented as exploitability probability. _(PDF p. 12)_
 
 ## Phase 4 - Build the scanner adapter system
 

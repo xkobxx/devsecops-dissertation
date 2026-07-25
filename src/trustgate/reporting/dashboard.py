@@ -17,7 +17,11 @@ esc = html.escape
 findings_path = os.environ.get('TRUSTGATE_FINDINGS_PATH', 'reports/findings.json')
 seeded_path = os.environ.get(
     'TRUSTGATE_BENCHMARK_PATH',
-    'benchmarks/fixtures/python/flask_vulnerable/seeded_vulnerabilities.json',
+    'benchmarks/ground_truth/flask-vulnerable-v1.json',
+)
+benchmark_metrics_path = os.environ.get(
+    'TRUSTGATE_BENCHMARK_METRICS_PATH',
+    'benchmarks/reports/flask-vulnerable-v1.metrics.json',
 )
 output_path = os.environ.get('TRUSTGATE_REPORT_PATH', 'reports/dashboard.html')
 
@@ -48,6 +52,9 @@ def finding_line(finding):
 
 
 def finding_confidence_tier(finding):
+    overall = finding.get('overall_decision_confidence')
+    if isinstance(overall, dict) and overall.get('decision_tier'):
+        return str(overall['decision_tier'])
     tier = finding.get('confidence_tier')
     if tier:
         return tier
@@ -68,6 +75,13 @@ if os.path.exists(seeded_path):
         raw = json.load(f)
         seeded_vulns = raw.get('vulnerabilities', raw) if isinstance(raw, dict) else raw
 
+benchmark_metrics = {}
+if os.path.exists(benchmark_metrics_path):
+    with open(benchmark_metrics_path) as f:
+        loaded_metrics = json.load(f)
+        if isinstance(loaded_metrics, dict):
+            benchmark_metrics = loaded_metrics
+
 # Summary stats by tool
 by_tool = defaultdict(lambda: defaultdict(int))
 for finding in findings:
@@ -78,13 +92,33 @@ for finding in findings:
 tools = sorted(by_tool.keys())
 severities = ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW', 'WARNING', 'ERROR', 'UNKNOWN']
 
-CONFIDENCE_CLASS = {'High': 'conf-high', 'Likely': 'conf-likely', 'Noise': 'conf-noise', 'Unscored': 'conf-unscored'}
+CONFIDENCE_CLASS = {
+    'High': 'conf-high',
+    'Likely': 'conf-likely',
+    'Noise': 'conf-noise',
+    'Experimental': 'conf-unscored',
+    'Directional': 'conf-likely',
+    'Evidence-based': 'conf-likely',
+    'Unscored': 'conf-unscored',
+}
 
 
 def confidence_label(f):
     tier = finding_confidence_tier(f)
-    conf = f.get('confidence')
+    overall = f.get('overall_decision_confidence')
+    conf = (
+        overall.get('estimate')
+        if isinstance(overall, dict)
+        else f.get('confidence')
+    )
+    bound = (
+        overall.get('conservative_bound')
+        if isinstance(overall, dict)
+        else None
+    )
     label = tier if conf is None else f"{tier} ({round(conf * 100)}%)"
+    if bound is not None:
+        label += f"; gate {round(bound * 100)}%"
     return label, CONFIDENCE_CLASS.get(tier, '')
 
 
@@ -93,12 +127,15 @@ tool_options = ''.join(f'<option value="{esc(t)}">{esc(t)}</option>' for t in to
 # ── Detection stats ────────────────────────────
 detected = 0
 seeded_vuln_detection = {}  # per-vuln detection status
+metric_matched_ids = {
+    identifier
+    for result in (benchmark_metrics.get('tools') or {}).values()
+    if isinstance(result, dict)
+    for identifier in result.get('matched_ground_truth_ids') or []
+}
 if seeded_vulns:
     for v in seeded_vulns:
-        detection_tool = v.get('expected_tool', '')
-        is_detected = any(
-            finding_tool(finding) in detection_tool for finding in findings
-        )
+        is_detected = v.get('id') in metric_matched_ids
         seeded_vuln_detection[v.get('id', '')] = is_detected
         if is_detected:
             detected += 1
@@ -113,16 +150,23 @@ noise_count = sum(
     1 for f in scored if finding_confidence_tier(f) == 'Noise'
 )
 
-# ── Accuracy metrics ──────────────────────────
-tp = high_conf_count
-fp = noise_count
-fn = 0  # ponytail: no ground-truth for unseeded; set 0
+# ── Accuracy metrics: generated benchmark artifact only ─────────────
+benchmark_overall = benchmark_metrics.get('overall') or {}
+tp = int(benchmark_overall.get('true_positives') or 0)
+fp = int(benchmark_overall.get('false_positives') or 0)
+fn = int(benchmark_overall.get('false_negatives') or 0)
 tn = 0
 
-precision = round(tp / (tp + fp) * 100) if (tp + fp) > 0 else 0
-recall_pct = rate  # detection rate = recall on seeded set
-f1_score = round(2 * precision * recall_pct / (precision + recall_pct)) if (precision + recall_pct) > 0 else 0
-noise_pct = round(fp / len(findings) * 100) if findings else 0
+precision = round(float(benchmark_overall.get('precision') or 0) * 100)
+recall_pct = round(float(benchmark_overall.get('recall') or 0) * 100)
+f1_score = round(float(benchmark_overall.get('f1') or 0) * 100)
+noise_pct = round(fp / (tp + fp) * 100) if (tp + fp) else 0
+benchmark_source_label = (
+    f"{benchmark_metrics.get('benchmark_id')} "
+    f"v{benchmark_metrics.get('benchmark_version')}"
+    if benchmark_metrics
+    else "No generated benchmark artifact loaded"
+)
 
 # ── Redesigned CSS ────────────────────────────
 css = '''<link rel="preconnect" href="https://fonts.googleapis.com">
@@ -265,6 +309,10 @@ css = '''<link rel="preconnect" href="https://fonts.googleapis.com">
   tbody tr:last-child td{border-bottom:none}
   tbody tr{transition:background .1s}
   tbody tr:hover{background:var(--gray-50)}
+  details summary{cursor:pointer;color:var(--blue);font-weight:600}
+  .confidence-components{min-width:320px;margin-top:var(--s-2)}
+  .confidence-components dt{font-weight:700;color:var(--gray-900);margin-top:var(--s-2)}
+  .confidence-components dd{margin-left:0;color:var(--gray-500);line-height:1.4}
   .clamp-1{
     display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
     overflow:hidden;text-overflow:ellipsis;max-width:280px;
@@ -410,6 +458,46 @@ for tool in tools:
 
 
 # ── Findings table rows ───────────────────────
+CONFIDENCE_COMPONENT_LABELS = (
+    ('scanner_rule_reliability', 'Scanner rule reliability'),
+    ('finding_validity_confidence', 'Finding validity'),
+    ('reachability_confidence', 'Reachability'),
+    ('exploitability_confidence', 'Exploitability'),
+    ('remediation_confidence', 'Remediation'),
+    ('overall_decision_confidence', 'Overall decision'),
+)
+
+
+def confidence_components_html(finding):
+    rows = []
+    for field, label in CONFIDENCE_COMPONENT_LABELS:
+        component = finding.get(field)
+        if not isinstance(component, dict):
+            value = 'Unscored'
+            explanation = 'No component evidence is available.'
+        else:
+            estimate = component.get('estimate')
+            bound = component.get('conservative_bound')
+            value = (
+                'Unscored'
+                if estimate is None
+                else f"{round(float(estimate) * 100)}%"
+            )
+            if bound is not None:
+                value += f" (gate {round(float(bound) * 100)}%)"
+            explanation = str(component.get('explanation') or '')
+        rows.append(
+            f'<dt>{esc(label)}</dt>'
+            f'<dd><strong>{esc(value)}</strong> — {esc(explanation)}</dd>'
+        )
+    return (
+        '<details><summary>Why?</summary>'
+        '<dl class="confidence-components">'
+        + ''.join(rows)
+        + '</dl></details>'
+    )
+
+
 finding_rows = ''
 for f in findings:
     sev = finding_severity(f)
@@ -426,6 +514,7 @@ for f in findings:
         f'<td class="{conf_class}">{esc(conf_label)}</td>'
         f'<td><span class="tag-mono">{esc(rule_short)}</span></td>'
         f'<td class="clamp-2">{esc(f.get("description",""))}</td>'
+        f'<td>{confidence_components_html(f)}</td>'
         f'<td class="text-muted-mono">{esc(f.get("file",""))}</td>'
         f'<td style="text-align:right;font-weight:600;color:var(--gray-900)">{esc(str(line or ""))}</td>'
         f'</tr>'
@@ -439,7 +528,9 @@ if seeded_vulns:
     for v in vulns_list:
         vuln_id = v.get('id', '')
         vuln_type = v.get('type', '')
-        detection_tool = v.get('expected_tool', '')
+        detection_tool = ' / '.join(
+            v.get('expected_tools') or [v.get('expected_tool', '')]
+        )
         is_detected = seeded_vuln_detection.get(vuln_id, False)
         status = 'Detected' if is_detected else 'Missed'
         status_class = 'detected' if is_detected else ''
@@ -575,7 +666,7 @@ html = f'''<!DOCTYPE html>
   <div class="card">
     <div class="card-head">
       <h2 class="card-title">Seeded Vulnerability Detection</h2>
-      <p class="card-subtitle">Ground truth validation</p>
+      <p class="card-subtitle">{esc(benchmark_source_label)}</p>
     </div>
     <div class="card-body">
       <div class="donut-container">
@@ -600,7 +691,7 @@ html = f'''<!DOCTYPE html>
   <div class="card">
     <div class="card-head">
       <h2 class="card-title">Accuracy Metrics</h2>
-      <p class="card-subtitle">Precision, Recall &amp; F1</p>
+      <p class="card-subtitle">Generated from {esc(benchmark_source_label)}</p>
     </div>
     <div class="card-body">
       <div class="chart-area">
@@ -715,6 +806,8 @@ html = f'''<!DOCTYPE html>
         <option value="High">High</option>
         <option value="Likely">Likely</option>
         <option value="Noise">Noise</option>
+        <option value="Experimental">Experimental</option>
+        <option value="Directional">Directional</option>
         <option value="Unscored">Unscored</option>
       </select>
     </div>
@@ -730,7 +823,7 @@ html = f'''<!DOCTYPE html>
   </div>
   <div class="table-scroll" style="max-height:500px">
   <table id="findingsTable">
-    <thead><tr><th>Tool</th><th>Severity</th><th>Confidence</th><th>Rule ID</th><th>Description</th><th>File</th><th style="text-align:right">Line</th></tr></thead>
+    <thead><tr><th>Tool</th><th>Severity</th><th>Confidence</th><th>Rule ID</th><th>Description</th><th>Confidence evidence</th><th>File</th><th style="text-align:right">Line</th></tr></thead>
     <tbody>{finding_rows}</tbody>
   </table>
   </div>

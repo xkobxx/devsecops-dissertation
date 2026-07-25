@@ -88,6 +88,18 @@ dependencies = ["cryptography"]
 
         self.assertEqual(validate_repository(root), [])
 
+    def test_development_lock_includes_linux_sqlalchemy_runtime(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        development_input = (root / "requirements" / "development.in").read_text(
+            encoding="utf-8"
+        )
+        development_lock = (root / "requirements" / "development.lock").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("greenlet==3.5.4", development_input)
+        self.assertIn("greenlet==3.5.4", development_lock)
+
 
 if __name__ == "__main__":
     unittest.main()

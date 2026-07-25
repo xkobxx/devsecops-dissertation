@@ -5,6 +5,7 @@ matplotlib==3.10.8
 numpy==2.3.2
 flask==3.1.1
 flask-sqlalchemy==3.1.1
+greenlet==3.5.4
 flask-migrate==4.0.5
 flask-login==0.6.2
 flask-wtf==1.2.1

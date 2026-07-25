@@ -22,6 +22,23 @@ class RepositoryWorkflowScannerContractTests(unittest.TestCase):
         self.assertIn("--finding-exit-code 3", workflow)
         self.assertIn("reports/policy-result.json", workflow)
 
+    def test_python_report_jobs_install_runtime_dependencies(self) -> None:
+        workflow = (
+            REPOSITORY_ROOT / ".github" / "workflows" / "devsecops.yml"
+        ).read_text(encoding="utf-8")
+        security_gate = workflow.split("  security-gate:", 1)[1].split(
+            "  generate-dashboard:", 1
+        )[0]
+        dashboard = workflow.split("  generate-dashboard:", 1)[1].split(
+            "  publish-dashboard:", 1
+        )[0]
+        install_command = (
+            "python -m pip install --require-hashes -r requirements/runtime.lock"
+        )
+
+        self.assertIn(install_command, security_gate)
+        self.assertIn(install_command, dashboard)
+
 
 if __name__ == "__main__":
     unittest.main()

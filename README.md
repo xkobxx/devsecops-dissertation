@@ -63,6 +63,8 @@ complete baseline.
   with safe generated/vendor exclusions and explicit privacy declarations.
 - Conservative exact deduplication, multi-signal cross-scanner correlation, and
   ancestry-aware corroboration with confidence limits.
+- Cache-backed OSV, GitHub advisory, NVD, EPSS, and CISA KEV enrichment with
+  offline, identifier-only, and full dependency-metadata modes.
 
 Severity handling, including unknown defaults and the audited Trivy CVSS
 fallback, is documented in `docs/SEVERITY_NORMALISATION.md`.
@@ -74,6 +76,8 @@ Repository detection, overrides, dry-run behavior, and plan fields are
 documented in `docs/SCAN_PLANNING.md`.
 Finding consolidation, evidence ancestry, contradictions, and corroboration
 limits are documented in `docs/CORRELATION.md`.
+Threat-feed privacy, cache expiry, stale-data behavior, and CLI usage are
+documented in `docs/THREAT_INTELLIGENCE.md`.
 
 ## Install the CLI
 
@@ -101,6 +105,15 @@ trustgate report \
   --input reports/findings.json \
   --output reports/dashboard.html \
   --no-benchmark-ground-truth
+```
+
+Enrich an existing scan without sending source code:
+
+```bash
+trustgate enrich \
+  --input reports/findings.json \
+  --output reports/enriched-findings.json \
+  --network-mode metadata-only
 ```
 
 ## Evaluate the GitHub Action
@@ -163,6 +176,12 @@ Actions, Python packages, container images, and Semgrep rules. The generated
 dashboard also references Google Fonts unless opened offline with that request
 blocked.
 
+Threat enrichment defaults to `metadata-only`, which sends only existing
+advisory IDs. `disabled` makes no threat-feed requests; `full` may additionally
+send dependency ecosystem, name, version, and PURL to OSV. Source paths,
+excerpts, and repository content are never sent. See
+[docs/THREAT_INTELLIGENCE.md](docs/THREAT_INTELLIGENCE.md).
+
 The optional licence check is local. The undeployed commercial webhook would send
 customer identity, email address, licence token, and expiry metadata through
 Stripe, Vercel, and Resend; it does not receive repository source.
@@ -208,6 +227,7 @@ action.yml           reusable composite Action
 - [Dependency update process](docs/DEPENDENCY_UPDATES.md)
 - [Benchmark methodology](docs/BENCHMARK_METHODOLOGY.md)
 - [Confidence methodology](docs/CONFIDENCE_METHODOLOGY.md)
+- [Threat-intelligence enrichment](docs/THREAT_INTELLIGENCE.md)
 - [Implementation roadmap status](docs/ROADMAP_STATUS.md)
 - [Migration guide](docs/MIGRATION.md)
 - [Versioning policy](docs/VERSIONING.md)

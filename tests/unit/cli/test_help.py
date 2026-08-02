@@ -26,7 +26,27 @@ class TrustGateHelpTests(unittest.TestCase):
         self.assertIn("usage: trustgate", completed.stdout)
         self.assertIn("local-first application-security decision platform", completed.stdout)
         self.assertIn("aggregate", completed.stdout)
+        self.assertIn("enrich", completed.stdout)
         self.assertIn("report", completed.stdout)
+
+    def test_enrichment_help_documents_all_network_modes(self):
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = str(REPOSITORY_ROOT / "src")
+
+        completed = subprocess.run(
+            [sys.executable, "-m", "trustgate", "enrich", "--help"],
+            cwd=REPOSITORY_ROOT.parent,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("disabled", completed.stdout)
+        self.assertIn("metadata-only", completed.stdout)
+        self.assertIn("full", completed.stdout)
+        self.assertIn("metadata-only", completed.stdout)
 
 
 if __name__ == "__main__":

@@ -313,6 +313,37 @@
         },
         "scanner_state_counts": {
           "$ref": "#/$defs/scannerStateCounts"
+        },
+        "threat_data": {
+          "$ref": "#/$defs/threatDataSummary"
+        }
+      }
+    },
+    "threatDataSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "enriched_findings",
+        "stale_findings",
+        "failed_sources"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["not-requested", "fresh", "stale", "degraded", "unavailable"]
+        },
+        "enriched_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stale_findings": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed_sources": {
+          "type": "integer",
+          "minimum": 0
         }
       }
     },

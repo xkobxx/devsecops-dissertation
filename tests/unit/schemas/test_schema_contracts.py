@@ -84,6 +84,10 @@ OPTIONAL_CORRELATION_FIELDS = {
     "rule_ancestry",
 }
 
+OPTIONAL_THREAT_INTELLIGENCE_FIELDS = {
+    "threat_intelligence",
+}
+
 
 def load_schema(name: str) -> dict[str, object]:
     with (SCHEMA_DIRECTORY / name).open(encoding="utf-8") as handle:
@@ -214,6 +218,7 @@ class SchemaContractTests(unittest.TestCase):
                 FINDING_FIELDS
                 | OPTIONAL_CONFIDENCE_FIELDS
                 | OPTIONAL_CORRELATION_FIELDS
+                | OPTIONAL_THREAT_INTELLIGENCE_FIELDS
             ),
         )
         self.assertEqual(set(FINDING_SCHEMA["required"]), FINDING_FIELDS)
@@ -294,6 +299,45 @@ class SchemaContractTests(unittest.TestCase):
         )
         self.assertTrue(
             OPTIONAL_CORRELATION_FIELDS.issubset(FINDING_SCHEMA["properties"])
+        )
+
+    def test_threat_intelligence_fields_validate_with_visible_freshness(self) -> None:
+        instance = valid_finding()
+        instance["threat_intelligence"] = {
+            "advisory_ids": ["CVE-2026-1234", "GHSA-abcd-1234-efgh"],
+            "cvss_score": 9.8,
+            "cvss_vector": "CVSS:3.1/AV:N/AC:L",
+            "epss_probability": 0.42,
+            "epss_percentile": 0.91,
+            "kev_status": True,
+            "known_exploitation_date": "2026-01-02",
+            "ransomware_association": "known",
+            "fixed_versions": ["1.2.0"],
+            "published_date": "2026-01-01T00:00:00Z",
+            "modified_date": "2026-01-03T00:00:00Z",
+            "data_source_timestamp": "2026-01-04T00:00:00Z",
+            "network_mode": "metadata-only",
+            "stale": True,
+            "risk_context_complete": False,
+            "limitations": ["No threat feed provides complete risk context."],
+            "sources": [
+                {
+                    "source": "epss",
+                    "status": "stale-cache",
+                    "fetched_at": "2026-01-04T00:00:00Z",
+                    "expires_at": "2026-01-05T00:00:00Z",
+                    "stale": True,
+                    "identifiers_sent": [],
+                }
+            ],
+            "failures": [
+                {"source": "nvd", "error": "RuntimeError: rate limited"}
+            ],
+        }
+
+        self.assertEqual(
+            list(validator(FINDING_SCHEMA).iter_errors(instance)),
+            [],
         )
 
     def test_scan_run_validates_and_resolves_finding_reference(self) -> None:

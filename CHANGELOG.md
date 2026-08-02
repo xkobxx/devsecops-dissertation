@@ -34,6 +34,9 @@ Versioning as described in `docs/VERSIONING.md`.
   generated benchmark publications.
 - Six separate, report-visible confidence concepts with an acyclic dependency
   model and conservative-bound decisions.
+- Conservative cross-scanner correlation with ancestry-aware corroboration.
+- Cache-backed OSV, GitHub advisory, NVD, EPSS, and CISA KEV enrichment,
+  including offline and privacy-preserving network modes.
 
 ### Changed
 
@@ -49,9 +52,12 @@ Versioning as described in `docs/VERSIONING.md`.
   results through broad shell error suppression.
 - Byte-identical benchmark runs no longer inflate statistical maturity, and
   contradictory generated precision figures block release publication.
+- Policy results explicitly expose stale or degraded threat-feed context.
 
 ### Security
 
 - Private signing keys created by the seller tool now use mode `0600`.
 - Required scanner failures, malformed reports, unsafe workflow inputs, and
   inconsistent benchmark publications now fail closed.
+- Threat-feed requests use an HTTPS host allowlist and never include source
+  code, file paths, scanner excerpts, or raw reports.

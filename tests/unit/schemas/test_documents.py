@@ -243,6 +243,56 @@ class CanonicalDocumentTests(unittest.TestCase):
         )
         self.assertIn("original-severity", original_policy["reason"])
 
+    def test_gate_result_explicitly_identifies_stale_threat_data(self) -> None:
+        finding = valid_finding()
+        finding["threat_intelligence"] = {
+            "advisory_ids": ["CVE-2026-1234"],
+            "cvss_score": None,
+            "cvss_vector": None,
+            "epss_probability": 0.4,
+            "epss_percentile": 0.9,
+            "kev_status": False,
+            "known_exploitation_date": None,
+            "ransomware_association": None,
+            "fixed_versions": [],
+            "published_date": None,
+            "modified_date": None,
+            "data_source_timestamp": "2026-01-01T00:00:00Z",
+            "network_mode": "disabled",
+            "stale": True,
+            "risk_context_complete": False,
+            "limitations": ["No threat feed provides complete risk context."],
+            "sources": [
+                {
+                    "source": "epss",
+                    "status": "stale-cache",
+                    "fetched_at": "2026-01-01T00:00:00Z",
+                    "expires_at": "2026-01-02T00:00:00Z",
+                    "stale": True,
+                    "identifiers_sent": [],
+                }
+            ],
+            "failures": [],
+        }
+        scan_run = build_scan_run(
+            target=".",
+            findings=[finding],
+            scanner_results=[scanner_result(ScannerState.FINDINGS)],
+        )
+        policy_result = build_policy_result(
+            scan_run,
+            fail_on="high",
+            scanner_failure_policy="fail",
+        )
+
+        self.assertEqual(scan_run["summary"]["threat_data"]["status"], "stale")
+        self.assertEqual(
+            scan_run["summary"]["threat_data"]["stale_findings"], 1
+        )
+        self.assertTrue(policy_result["metadata"]["threat_data_stale"])
+        self.assertEqual(policy_result["metadata"]["threat_data_status"], "stale")
+        self.assertIn("stale threat data", policy_result["reason"].lower())
+
 
 if __name__ == "__main__":
     unittest.main()

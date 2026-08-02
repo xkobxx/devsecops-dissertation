@@ -151,6 +151,25 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
             "original reports for audit."
         ),
     )
+    parser.add_argument(
+        "--enrich-threats",
+        action="store_true",
+        help="Enrich dependency findings with advisory metadata before gating.",
+    )
+    parser.add_argument(
+        "--network-mode",
+        choices=["disabled", "metadata-only", "full"],
+        default="metadata-only",
+        help=(
+            "Threat-enrichment privacy mode (default: metadata-only; only used "
+            "with --enrich-threats)."
+        ),
+    )
+    parser.add_argument(
+        "--threat-cache-dir",
+        default=".trustgate/cache/threat-intelligence",
+        help="Local threat-data cache (only used with --enrich-threats).",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1513,6 +1532,22 @@ def run(args: argparse.Namespace) -> int:
         commit=commit,
         trigger=trigger,
     )
+    if args.enrich_threats:
+        from trustgate.threat_intelligence import (
+            EnrichmentConfig,
+            NetworkMode,
+            enrich_scan_run,
+        )
+
+        scan_run = enrich_scan_run(
+            scan_run,
+            config=EnrichmentConfig(
+                cache_dir=Path(args.threat_cache_dir),
+                network_mode=NetworkMode(args.network_mode),
+                github_token=os.environ.get("GITHUB_TOKEN"),
+                nvd_api_key=os.environ.get("NVD_API_KEY"),
+            ),
+        )
     policy_result = build_policy_result(
         scan_run,
         fail_on=args.fail_on,

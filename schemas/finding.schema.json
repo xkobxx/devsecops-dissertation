@@ -115,6 +115,9 @@
         "maxLength": 128
       }
     },
+    "threat_intelligence": {
+      "$ref": "#/$defs/threatIntelligence"
+    },
     "title": {
       "type": "string",
       "minLength": 1,
@@ -583,6 +586,184 @@
             "boolean",
             "null"
           ]
+        }
+      }
+    },
+    "threatIntelligence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "advisory_ids",
+        "cvss_score",
+        "cvss_vector",
+        "epss_probability",
+        "epss_percentile",
+        "kev_status",
+        "known_exploitation_date",
+        "ransomware_association",
+        "fixed_versions",
+        "published_date",
+        "modified_date",
+        "data_source_timestamp",
+        "network_mode",
+        "stale",
+        "risk_context_complete",
+        "limitations",
+        "sources",
+        "failures"
+      ],
+      "properties": {
+        "advisory_ids": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          }
+        },
+        "cvss_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 10
+        },
+        "cvss_vector": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        },
+        "epss_probability": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "epss_percentile": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "kev_status": {
+          "type": ["boolean", "null"]
+        },
+        "known_exploitation_date": {
+          "type": ["string", "null"],
+          "format": "date"
+        },
+        "ransomware_association": {
+          "type": ["string", "null"],
+          "enum": ["known", "unknown", null]
+        },
+        "fixed_versions": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "published_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "modified_date": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "data_source_timestamp": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "network_mode": {
+          "type": "string",
+          "enum": ["disabled", "metadata-only", "full"]
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "risk_context_complete": {
+          "const": false
+        },
+        "limitations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/threatSource"
+          }
+        },
+        "failures": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/threatFailure"
+          }
+        }
+      }
+    },
+    "threatSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source",
+        "status",
+        "fetched_at",
+        "expires_at",
+        "stale",
+        "identifiers_sent"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "not-applicable",
+            "cache-miss",
+            "fresh-cache",
+            "stale-cache",
+            "refreshed",
+            "failed",
+            "not-needed"
+          ]
+        },
+        "fetched_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": ["string", "null"],
+          "format": "date-time"
+        },
+        "stale": {
+          "type": "boolean"
+        },
+        "identifiers_sent": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "threatFailure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "error"],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "error": {
+          "type": "string",
+          "minLength": 1
         }
       }
     },

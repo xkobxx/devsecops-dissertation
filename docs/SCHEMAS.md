@@ -35,6 +35,13 @@ correlated. Optional Phase 6 fields preserve occurrence locations, all raw
 evidence references, source finding IDs, scanner agreement, match reasons, and
 bounded corroboration evidence. See `docs/CORRELATION.md`.
 
+Optional Phase 7 `threat_intelligence` fields contain normalized advisory IDs,
+CVSS, EPSS, KEV, exploitation, remediation-version, and source-date data. Each
+source record includes cache timestamps, stale state, request disclosure
+metadata, and visible failures. `summary.threat_data` aggregates freshness for
+the scan, while policy metadata repeats that status so a stale feed cannot be
+mistaken for fresh decision context. See `docs/THREAT_INTELLIGENCE.md`.
+
 ## Raw reports and normalisation evidence
 
 Before parsing, every produced scanner report is copied byte-for-byte to:
@@ -129,6 +136,11 @@ together and each component object is fully required and validated. See
 Phase 6 adds optional correlation and provenance fields to the backward-
 compatible `1.0.0` contract. Parser findings without these fields remain valid;
 canonical scan-run construction populates them before publication.
+
+Phase 7 adds optional threat-intelligence evidence to findings and an optional
+scan summary. Existing findings remain valid. Enriched fields deliberately use
+`null` for unknown values—for example, a failed KEV request cannot be recorded
+as `false`.
 
 ## Packaging
 

@@ -2,24 +2,24 @@
 
 Source of truth: `Trust Gate Product Implementation Roadmap.pdf` (43 pages).
 
-Last updated: 2026-07-25 on branch `codex/phase-0-repository-audit`.
+Last updated: 2026-07-25 on branch `codex/phase-7-threat-intelligence`.
 
 ## Status summary
 
 - Explicit PDF checkbox items: **964**
-- Validated complete: **289**
-- Remaining explicit checkbox items: **675**
+- Validated complete: **307**
+- Remaining explicit checkbox items: **657**
 - Derived final architecture/verification checks: **34** (tracked below but
   excluded from the PDF checkbox totals because the PDF presents them as an
   architecture flow and command requirements, not checkbox items)
-- Current work: **Phase 7.1 - Add advisory enrichment**
+- Current work: **Phase 8.1 - Implement dependency reachability**
 
 Only validation-backed work is checked. Existing files or partial implementations are not marked complete merely because they resemble a deliverable.
 
 ## Active implementation queue
 
-1. Implement Phase 7.1 advisory enrichment.
-2. Continue Phases 7-27 in the exact order below without skipping acceptance criteria.
+1. Implement Phase 8.1 dependency reachability.
+2. Continue Phases 8-27 in the exact order below without skipping acceptance criteria.
 
 ## Complete ordered checklist
 
@@ -405,27 +405,27 @@ Validated derived scanner-agreement fields: `supporting_scanners`,
 
 ### 7.1 Add advisory enrichment
 
-- [ ] OSV _(PDF p. 16)_
-- [ ] GitHub Security Advisories _(PDF p. 16)_
-- [ ] NVD where needed _(PDF p. 16)_
-- [ ] EPSS _(PDF p. 16)_
-- [ ] CISA KEV _(PDF p. 16)_
-- [ ] Enrichment failures are visible. _(PDF p. 17)_
-- [ ] Cached data has an expiry policy. _(PDF p. 17)_
-- [ ] Gate results identify stale threat data. _(PDF p. 17)_
-- [ ] No threat feed is treated as complete risk context. _(PDF p. 17)_
+- [x] OSV _(PDF p. 16)_
+- [x] GitHub Security Advisories _(PDF p. 16)_
+- [x] NVD where needed _(PDF p. 16)_
+- [x] EPSS _(PDF p. 16)_
+- [x] CISA KEV _(PDF p. 16)_
+- [x] Enrichment failures are visible. _(PDF p. 17)_
+- [x] Cached data has an expiry policy. _(PDF p. 17)_
+- [x] Gate results identify stale threat data. _(PDF p. 17)_
+- [x] No threat feed is treated as complete risk context. _(PDF p. 17)_
 
 ### 7.2 Add offline and privacy-preserving modes
 
-- [ ] Support local threat-data cache. _(PDF p. 17)_
-- [ ] Support fully offline runs. _(PDF p. 17)_
-- [ ] Document which identifiers are sent externally. _(PDF p. 17)_
-- [ ] Add network-mode: disabled. _(PDF p. 17)_
-- [ ] Add network-mode: metadata-only. _(PDF p. 17)_
-- [ ] Add network-mode: full. _(PDF p. 17)_
-- [ ] Default to the least invasive mode appropriate for the feature. _(PDF p. 17)_
-- [ ] Source code is never sent to enrichment services. _(PDF p. 17)_
-- [ ] Offline scans remain fully functional with cached data. _(PDF p. 17)_
+- [x] Support local threat-data cache. _(PDF p. 17)_
+- [x] Support fully offline runs. _(PDF p. 17)_
+- [x] Document which identifiers are sent externally. _(PDF p. 17)_
+- [x] Add network-mode: disabled. _(PDF p. 17)_
+- [x] Add network-mode: metadata-only. _(PDF p. 17)_
+- [x] Add network-mode: full. _(PDF p. 17)_
+- [x] Default to the least invasive mode appropriate for the feature. _(PDF p. 17)_
+- [x] Source code is never sent to enrichment services. _(PDF p. 17)_
+- [x] Offline scans remain fully functional with cached data. _(PDF p. 17)_
 
 ## Phase 8 - Add reachability analysis
 
@@ -1280,7 +1280,7 @@ Validated derived scanner-agreement fields: `supporting_scanners`,
 - [ ] Finding normalisation
 - [ ] Stable fingerprinting
 - [x] Deduplication and correlation
-- [ ] Threat-intelligence enrichment
+- [x] Threat-intelligence enrichment
 - [ ] Reachability analysis
 - [ ] Evidence and confidence calculation
 - [ ] Policy-as-code evaluation

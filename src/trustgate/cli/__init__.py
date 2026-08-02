@@ -20,6 +20,10 @@ from trustgate.scanners.cli import add_arguments as add_scanner_arguments
 from trustgate.scanners.cli import add_record_arguments
 from trustgate.scanners.cli import run as run_scanner
 from trustgate.scanners.cli import run_record as record_scanner
+from trustgate.threat_intelligence.cli import (
+    add_arguments as add_enrichment_arguments,
+)
+from trustgate.threat_intelligence.cli import run as run_enrichment
 
 
 def build_parser() -> ArgumentParser:
@@ -57,6 +61,12 @@ def build_parser() -> ArgumentParser:
     )
     add_aggregation_arguments(aggregate)
     aggregate.set_defaults(handler=run_aggregation)
+    enrich = commands.add_parser(
+        "enrich",
+        help="Enrich a canonical scan run with cached or live threat metadata.",
+    )
+    add_enrichment_arguments(enrich)
+    enrich.set_defaults(handler=run_enrichment)
     report = commands.add_parser(
         "report",
         help="Generate a static HTML report from normalised findings.",

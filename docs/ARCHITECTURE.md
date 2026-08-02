@@ -22,6 +22,14 @@ Rule ancestry prevents dependent scanners from being double counted, while DAST
 and human confirmation remain distinct. See
 [CORRELATION.md](CORRELATION.md).
 
+`trustgate.threat_intelligence` then adds cache-backed OSV, GitHub advisory,
+NVD, EPSS, and CISA KEV evidence. Network access is explicitly disabled,
+identifier-only, or full dependency-metadata mode; source code is never sent.
+Every finding retains feed failures, expiry, staleness, disclosure metadata, and
+the invariant that threat feeds are not complete risk context. Scan summaries
+and policy results surface stale threat data. See
+[THREAT_INTELLIGENCE.md](THREAT_INTELLIGENCE.md).
+
 The central `trustgate.aggregation` package contains no scanner-specific parser
 implementation. It resolves the catalogue and invokes adapters, retaining
 compatibility exports for the original parser function names. See
@@ -96,6 +104,7 @@ devsecops-dissertation/
 │   ├── repository/                  # Technology and monorepo context detection
 │   ├── schema/                      # Schema validation, builders and migrations
 │   ├── security/                    # Workflow input, path and URL validation
+│   ├── threat_intelligence/         # Privacy-aware advisory clients and local cache
 │   └── scoring/                     # Proprietary source layer, excluded from community wheel
 ├── tests/
 │   └── unit/cli/                    # CLI acceptance tests
@@ -135,3 +144,5 @@ that package relative to their own file rather than the caller's working directo
 See `docs/SCHEMAS.md` for the canonical JSON contract and migration API,
 `docs/BENCHMARK_METHODOLOGY.md` for the benchmark source of truth, and
 `docs/CONFIDENCE_METHODOLOGY.md` for the confidence dependency model.
+Threat-feed data handling and cache expiry are specified in
+`docs/THREAT_INTELLIGENCE.md`.

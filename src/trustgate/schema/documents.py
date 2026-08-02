@@ -14,6 +14,7 @@ from trustgate.correlation import (
     correlate_findings,
 )
 from trustgate.severity import normalise_scanner_severity
+from trustgate.threat_intelligence import summarise_threat_data
 
 from .validation import CURRENT_SCHEMA_VERSION, validate_instance
 
@@ -184,6 +185,7 @@ def build_scan_run(
             ),
             "severity_counts": _severity_counts(findings),
             "scanner_state_counts": _state_counts(scanners),
+            "threat_data": summarise_threat_data(findings),
         },
         "errors": errors,
     }
@@ -270,6 +272,19 @@ def build_policy_result(
         reason = (
             f"No finding met the {fail_on} {severity_basis}-severity threshold."
         )
+    threat_data = scan_run["summary"].get(
+        "threat_data",
+        {
+            "status": "not-requested",
+            "stale_findings": 0,
+            "failed_sources": 0,
+        },
+    )
+    if threat_data["status"] == "stale":
+        reason += (
+            f" Warning: {threat_data['stale_findings']} finding(s) use stale "
+            "threat data."
+        )
 
     identity = {
         "run_id": scan_run["run_id"],
@@ -306,6 +321,9 @@ def build_policy_result(
             "gating_findings": len(gating_findings),
             "required_scanner_failures": len(required_failures),
             "severity_basis": severity_basis,
+            "threat_data_status": threat_data["status"],
+            "threat_data_stale": threat_data["status"] == "stale",
+            "threat_data_failures": threat_data["failed_sources"],
         },
     }
     validate_instance("policy-result", policy_result)

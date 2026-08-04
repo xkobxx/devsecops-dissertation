@@ -9,7 +9,7 @@ greenlet==3.5.4
 flask-migrate==4.0.5
 flask-login==0.6.2
 flask-wtf==1.2.1
-flask-mail==0.9.1
+flask-mail==0.10.0
 flask-bootstrap==3.3.7.1
 flask-moment==1.0.5
 python-dotenv==1.0.0

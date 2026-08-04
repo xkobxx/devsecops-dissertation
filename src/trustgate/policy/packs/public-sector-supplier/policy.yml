@@ -1,0 +1,24 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.public-sector-supplier
+policy_version: 1.0.0
+description: Conservative defaults for software supplied to public-sector customers.
+default_action: investigate
+policies:
+  - name: block-known-exploited-public-sector-finding
+    action: block
+    when:
+      kev: true
+  - name: block-new-high-public-sector-finding
+    action: block
+    when:
+      all:
+        - introduced_in_pull_request: true
+        - severity: [critical, high]
+  - name: fix-reachable-public-sector-finding
+    action: fix_before_release
+    when:
+      all:
+        - reachability: confirmed
+        - fix_availability: true
+        - severity: [critical, high, medium]

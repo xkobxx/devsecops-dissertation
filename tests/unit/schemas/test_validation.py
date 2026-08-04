@@ -27,9 +27,15 @@ class SchemaValidationTests(unittest.TestCase):
         self.assertEqual(
             available_schema_versions(),
             {
+                "baseline": ("1.0.0",),
+                "baseline-diff": ("1.0.0",),
+                "baseline-gate": ("1.0.0",),
                 "finding": ("1.0.0",),
                 "scan-run": ("1.0.0",),
+                "suppression": ("1.0.0",),
                 "policy-result": ("1.0.0",),
+                "decision": ("1.0.0",),
+                "policy": ("1.0.0",),
             },
         )
 

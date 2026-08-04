@@ -27,7 +27,7 @@ ordered implementation work and acceptance status are tracked in
 Other important limitations:
 
 - SAST and dependency discovery are Python-first.
-- SARIF, VEX, differential gating, and policy-as-code are not implemented.
+- VEX is not implemented.
 - Confidence data comes from one small, deliberately vulnerable fixture and is
   Directional rather than statistically mature; decisions use its conservative
   lower credible bound.
@@ -43,7 +43,8 @@ complete baseline.
 - `requirements.txt` auditing with pip-audit.
 - Trivy configuration scanning.
 - Gitleaks secret scanning.
-- Versioned canonical finding, scan-run, and policy-result JSON contracts.
+- Versioned canonical finding, scan-run, decision, policy-as-code, and
+  policy-result JSON contracts.
 - Schema validation before atomic JSON publication.
 - Backward-compatible migration for historical unversioned findings and scan runs.
 - Stable, versioned finding fingerprints and cross-scanner correlation.
@@ -65,6 +66,42 @@ complete baseline.
   ancestry-aware corroboration with confidence limits.
 - Cache-backed OSV, GitHub advisory, NVD, EPSS, and CISA KEV enrichment with
   offline, identifier-only, and full dependency-metadata modes.
+- Conservative dependency reachability, Python source-to-sink traces, and
+  optional DAST correlation with explainable static and runtime evidence.
+- Opt-in, digest-pinned ZAP DAST with baseline/API discovery, safe and active
+  modes, authenticated headers, scope allowlists, and hard resource bounds.
+- Deterministic contextual decisions across 16 evidence components, with nine
+  policy-driven outcomes, full rule traces, uncertainty, and tamper detection.
+- JSON/YAML policy validation, exact-version inheritance, organisation defaults,
+  repository overrides, saved-finding simulation, explanations, and policy tests.
+- Ten documented and tested standard policy packs spanning startup,
+  high-assurance, sector, framework-aligned, container, secret, and supply-chain
+  starting points.
+- Content-bound default-branch baselines and deterministic pull-request
+  comparisons for new, removed, worsened, reachable, exploited, expired, and
+  scanner-coverage changes.
+- Differential baseline gates with new-risk enforcement by default, explicit
+  all-risk and worsened-risk modes, public policy evaluation, and fail-closed
+  scanner coverage checks.
+- Immutable finding-state transitions with actor, timestamp, reason, evidence,
+  approval, expiry, integrity checks, and automatic expiry reopening.
+- Content-bound, exact-fingerprint suppression records with explicit scope,
+  linting, expiry warnings, and automatic revalidation for code, reachability,
+  KEV, exploit-evidence, and policy changes.
+- Deterministic SARIF 2.1.0 with rule metadata, remediation, precise locations,
+  stable fingerprints, artifact publication, and least-privilege GitHub code
+  scanning upload.
+- A stable GitHub Actions `Trust Gate` check with a bounded in-product summary
+  of the decision, scanner health, finding classes, policy, baseline changes,
+  evidence explanations, and detailed artifact link.
+- One safely updatable pull-request comment with concise counts, collapsed
+  detail, exact code links, remediation availability, and no source excerpts.
+- Deterministic CycloneDX 1.6 and SPDX 2.3 product SBOMs with direct and
+  transitive dependency relationships, exact versions, licences, Package URLs,
+  lockfile hashes, signed release assets, and a fail-closed licence inventory.
+- Approval-backed CycloneDX 1.6 VEX with explicit exploitability status,
+  analysis state and justification, content-bound reachability and approval
+  links, versioned revisions, and optional keyless signing.
 
 Severity handling, including unknown defaults and the audited Trivy CVSS
 fallback, is documented in `docs/SEVERITY_NORMALISATION.md`.
@@ -78,6 +115,20 @@ Finding consolidation, evidence ancestry, contradictions, and corroboration
 limits are documented in `docs/CORRELATION.md`.
 Threat-feed privacy, cache expiry, stale-data behavior, and CLI usage are
 documented in `docs/THREAT_INTELLIGENCE.md`.
+Reachability statuses, limitations, evidence inputs, and CLI usage are
+documented in `docs/REACHABILITY_ANALYSIS.md`.
+DAST authorization, acknowledgements, limits, authentication handling, and CLI
+usage are documented in `docs/DAST_SAFETY.md`.
+Contextual outcomes, evidence strength, reproducibility, and CLI usage are
+documented in `docs/DECISION_SCORING.md`.
+Policy authoring, inheritance, simulation, explanation, and test commands are
+documented in `docs/POLICY_AS_CODE.md`.
+SARIF mapping, validation, GitHub permissions, and fork behavior are documented
+in `docs/SARIF.md`.
+GitHub Check summaries and branch-protection configuration are documented in
+`docs/GITHUB_CHECKS.md`.
+Consolidated pull-request comments and their publication boundary are
+documented in `docs/PR_COMMENTS.md`.
 
 ## Install the CLI
 
@@ -98,6 +149,54 @@ trustgate aggregate \
   --fail-on high
 ```
 
+Generate validated SARIF for GitHub code scanning or another SARIF consumer:
+
+```bash
+trustgate sarif \
+  --input reports/findings.json \
+  --output reports/trustgate.sarif
+```
+
+Generate both standard product SBOM formats from an immutable release tag:
+
+```bash
+trustgate sbom \
+  --repository . \
+  --ref v0.1.0 \
+  --tag v0.1.0 \
+  --output-directory reports/sbom
+```
+
+Generate and optionally sign an approved CycloneDX VEX document:
+
+```bash
+trustgate vex \
+  --input reports/reachability.json \
+  --analyses vex-analyses.json \
+  --output reports/trustgate.vex.cdx.json \
+  --sign
+```
+
+Generate the bounded Markdown shown directly on a GitHub Actions Check Run:
+
+```bash
+trustgate checks \
+  --input reports/findings.json \
+  --policy-result reports/policy-result.json \
+  --output reports/check-summary.md
+```
+
+Generate the bounded Markdown for one consolidated pull-request comment:
+
+```bash
+trustgate pr-comment \
+  --input reports/findings.json \
+  --policy-result reports/policy-result.json \
+  --repository owner/repository \
+  --commit "$GITHUB_SHA" \
+  --output reports/pr-comment.md
+```
+
 Generate a product report without research benchmark metrics:
 
 ```bash
@@ -114,6 +213,66 @@ trustgate enrich \
   --input reports/findings.json \
   --output reports/enriched-findings.json \
   --network-mode metadata-only
+```
+
+Analyze dependency, Python data-flow, and optional runtime evidence:
+
+```bash
+trustgate reachability \
+  --input reports/findings.json \
+  --output reports/reachability.json \
+  --repository-root . \
+  --vulnerable-symbols vulnerable-symbols.json \
+  --deployment-inventory deployment.json
+```
+
+Generate a safe, bounded DAST plan without executing it:
+
+```bash
+trustgate dast \
+  --target-url https://pr-123.preview.example.test \
+  --environment preview \
+  --scope-host pr-123.preview.example.test \
+  --public-target-acknowledged
+```
+
+Evaluate findings with explicit deployment context and a versioned policy:
+
+```bash
+trustgate decide \
+  --input reports/reachability.json \
+  --runtime-context deployment-context.json \
+  --output reports/decisions.json
+```
+
+Validate and test a JSON or YAML policy against saved findings:
+
+```bash
+trustgate policy validate --policy policies/service.policy.yml
+trustgate policy validate --policy pack:startup-baseline
+trustgate policy test \
+  --policy policies/service.policy.yml \
+  --input reports/findings.json \
+  --expectations policies/service.expectations.json
+```
+
+Create, compare, and gate against a default-branch finding baseline:
+
+```bash
+trustgate baseline create \
+  --input reports/default-branch-findings.json \
+  --output reports/baseline.json \
+  --default-branch main
+trustgate baseline compare \
+  --baseline reports/baseline.json \
+  --input reports/pull-request-findings.json \
+  --output reports/baseline-diff.json
+trustgate baseline gate \
+  --baseline reports/baseline.json \
+  --input reports/pull-request-findings.json \
+  --output reports/baseline-gate.json \
+  --gate-mode new \
+  --fail-on high
 ```
 
 ## Evaluate the GitHub Action
@@ -133,6 +292,7 @@ permissions:
 
 jobs:
   trust-gate:
+    name: Trust Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -156,6 +316,7 @@ roadmap requires immutable commit pins before production readiness.
 | `optional-scanners` | empty | Comma-separated scanners allowed to be absent or unhealthy |
 | `scanner-timeout-seconds` | `300` | Maximum duration for each command-based scanner |
 | `redact-sensitive-content` | `false` | Publish content-addressed redacted report views while retaining originals as separate sensitive audit evidence |
+| `dast-enabled` | `false` | Opt into bounded ZAP execution; see the DAST safety guide for the related target, mode, scope, limit, authentication, and acknowledgement inputs |
 | `license-key` | empty | Optional key for the experimental proprietary scoring layer |
 
 ### Action outputs
@@ -164,6 +325,9 @@ roadmap requires immutable commit pins before production readiness.
 |---|---|
 | `findings-path` | Path to the validated canonical scan-run JSON |
 | `policy-result-path` | Path to the validated policy-result JSON |
+| `sarif-path` | Path to the validated SARIF 2.1.0 output |
+| `check-summary-path` | Path to the bounded Markdown published on the Check Run |
+| `pr-comment-path` | Path to the concise Markdown for a consolidated PR comment |
 
 The current Action supports one invocation per job because its dashboard artifact
 name is fixed.
@@ -228,6 +392,14 @@ action.yml           reusable composite Action
 - [Benchmark methodology](docs/BENCHMARK_METHODOLOGY.md)
 - [Confidence methodology](docs/CONFIDENCE_METHODOLOGY.md)
 - [Threat-intelligence enrichment](docs/THREAT_INTELLIGENCE.md)
+- [Reachability analysis](docs/REACHABILITY_ANALYSIS.md)
+- [DAST safety](docs/DAST_SAFETY.md)
+- [Contextual decision scoring](docs/DECISION_SCORING.md)
+- [Policy as code](docs/POLICY_AS_CODE.md)
+- [Baseline and differential comparison](docs/BASELINES.md)
+- [Finding lifecycle](docs/FINDING_LIFECYCLE.md)
+- [Software bills of materials](docs/SBOM.md)
+- [Vulnerability Exploitability eXchange](docs/VEX.md)
 - [Implementation roadmap status](docs/ROADMAP_STATUS.md)
 - [Migration guide](docs/MIGRATION.md)
 - [Versioning policy](docs/VERSIONING.md)

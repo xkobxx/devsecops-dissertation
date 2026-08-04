@@ -1,12 +1,18 @@
 # Canonical JSON Schemas
 
-Trust Gate publishes three JSON document types using JSON Schema Draft 2020-12:
+Trust Gate publishes nine JSON document types using JSON Schema Draft 2020-12:
 
 | Document | Schema | Current version |
 |---|---|---:|
 | Finding | `schemas/finding.schema.json` | `1.0.0` |
 | Scan run | `schemas/scan-run.schema.json` | `1.0.0` |
+| Contextual decision | `schemas/decision.schema.json` | `1.0.0` |
+| Policy-as-code | `schemas/policy.schema.json` | `1.0.0` |
 | Policy result | `schemas/policy-result.schema.json` | `1.0.0` |
+| Default-branch baseline | `schemas/baseline.schema.json` | `1.0.0` |
+| Baseline difference | `schemas/baseline-diff.schema.json` | `1.0.0` |
+| Baseline gate result | `schemas/baseline-gate.schema.json` | `1.0.0` |
+| Finding suppression | `schemas/suppression.schema.json` | `1.0.0` |
 
 `schemas/registry.json` is the version registry used by the runtime. Every
 document carries a required `schema_version`, and every schema has a versioned
@@ -41,6 +47,62 @@ source record includes cache timestamps, stale state, request disclosure
 metadata, and visible failures. `summary.threat_data` aggregates freshness for
 the scan, while policy metadata repeats that status so a stale feed cannot be
 mistaken for fresh decision context. See `docs/THREAT_INTELLIGENCE.md`.
+
+Optional Phase 8 fields preserve reachability evidence without changing the
+`1.0.0` compatibility contract. `dependency_reachability` records package,
+relationship, scope, deployment, import, vulnerable-call, analyzed-path, and
+limitation evidence. `source_to_sink_analysis` records support state, ordered
+static traces, routing, authentication and authorization context, and path
+confidence. `dynamic_correlation` retains matched DAST observations, priority
+effects, authentication state, failed reproduction attempts, and both static
+and runtime evidence. `summary.reachability_analysis` aggregates these outcomes.
+See `docs/REACHABILITY_ANALYSIS.md`.
+
+Optional Phase 10 `contextual_decision` data is independently validated against
+the decision schema and embedded on its finding. It contains all 16 context
+components, the selected outcome, full policy snapshot and rule trace, evidence
+strength, unresolved uncertainty, and a reproduction digest.
+`summary.decision_analysis` records the policy version and aggregate outcome and
+evidence counts. See `docs/DECISION_SCORING.md`.
+
+Phase 11 policy documents use `version: 1` and a semantic `policy_version`.
+Their recursive `when` expressions support `any`, `all`, and `not`, with typed
+predicates for all 17 roadmap fields. The public policy schema is separate from
+the legacy aggregate `policy-result` output and the embedded Phase 10 policy
+snapshot. Optional exact-version `extends` references, `organisation_defaults`,
+and repository-pattern overrides are schema validated before resolution. Rule
+precedence is repository override, local policy, organisation default, then
+parent; invalid references and inheritance cycles fail closed. See
+`docs/POLICY_AS_CODE.md`.
+The ten installed standard policy packs use this same schema and are validated
+and simulated in the unit suite; they do not introduce a separate policy
+dialect.
+
+Phase 12 baselines retain complete canonical findings and scanner-health records
+in identity-keyed objects. `baseline_digest` binds repository, source commit,
+generation time, findings, and scanner coverage. Baseline differences retain
+the exact baseline digest and source/current identities, expose sorted transition
+sets and counts, show baseline age, and bind the result with
+`comparison_digest`. Baseline gate results bind that comparison to the selected
+mode, threshold or policy, candidate and blocked fingerprints, scanner coverage
+regressions, adoption behavior, and a canonical `gate_digest`. See
+`docs/BASELINES.md`.
+
+Optional Phase 13 `state_history` entries retain every finding-state transition
+without changing the existing `status` field or the `1.0.0` compatibility
+contract. Entries record state continuity, actor, timestamp, reason, structured
+evidence, approval, expiry, and automatic/manual provenance. Runtime lifecycle
+validation adds chronological, approval, expiry, and current-state integrity
+checks that JSON Schema alone cannot express. See `docs/FINDING_LIFECYCLE.md`.
+Separate suppression documents bind an approved exception to one exact finding
+and repository, retain narrowing scope selectors and revalidation context, and
+use `suppression_digest` to expose post-approval modification.
+
+SARIF is a standards-based exchange view rather than a tenth canonical Trust
+Gate document. `trustgate sarif` first validates the canonical scan run, maps it
+to SARIF 2.1.0, validates Trust Gate's strict emitted profile, and atomically
+publishes `reports/trustgate.sarif`. Its `$schema` points to the official OASIS
+SARIF 2.1.0 errata schema. See [SARIF.md](SARIF.md).
 
 ## Raw reports and normalisation evidence
 
@@ -82,6 +144,11 @@ See `docs/SEVERITY_NORMALISATION.md` for precedence and score ranges.
 
 New findings use the versioned, line-stable `v2:sha256` correlation algorithm.
 See `docs/FINGERPRINTS.md` for identity inputs and explicit migration.
+
+CycloneDX VEX is emitted as the external CycloneDX 1.6 contract rather than a
+Trust Gate canonical schema. Its versioned `1.0.0` analysis input is strictly
+validated by `trustgate.vex`, bound to the canonical scan-run digest, and
+documented in `docs/VEX.md`.
 
 ### Optional redaction
 
@@ -141,6 +208,16 @@ Phase 7 adds optional threat-intelligence evidence to findings and an optional
 scan summary. Existing findings remain valid. Enriched fields deliberately use
 `null` for unknown values—for example, a failed KEV request cannot be recorded
 as `false`.
+
+Phase 8 adds optional dependency, source-to-sink, and dynamic-correlation
+objects plus an optional scan summary. Nullable booleans distinguish unknown
+evidence from a confirmed `false`, and unsupported analysis is represented by
+an explicit support status rather than an absent or empty success result.
+
+Phase 10 adds an optional contextual decision to each finding and an optional
+decision summary to the scan run. Older `1.0.0` findings remain valid, while a
+present decision is complete and independently reproducible rather than a
+partial score.
 
 ## Packaging
 

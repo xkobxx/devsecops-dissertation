@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/baseline-gate.schema.json",
+  "title": "Trust Gate Differential Gate Result",
+  "description": "Versioned release decision over a verified baseline comparison.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "gate_mode",
+    "fail_on",
+    "enforce_legacy_risk",
+    "repository",
+    "baseline_digest",
+    "comparison_digest",
+    "baseline_age_seconds",
+    "current_run_id",
+    "policy_id",
+    "policy_version",
+    "candidate_fingerprints",
+    "blocked_findings",
+    "scanner_coverage_regressions",
+    "passed",
+    "summary",
+    "gate_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "version": {"const": 1},
+    "gate_mode": {"enum": ["new", "all", "worsened", "policy"]},
+    "fail_on": {"enum": ["critical", "high", "medium", "low", "none"]},
+    "enforce_legacy_risk": {"type": "boolean"},
+    "repository": {"type": "string", "minLength": 1, "maxLength": 512},
+    "baseline_digest": {"$ref": "#/$defs/digest"},
+    "comparison_digest": {"$ref": "#/$defs/digest"},
+    "baseline_age_seconds": {"type": "number", "minimum": 0},
+    "current_run_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "policy_id": {"type": ["string", "null"], "minLength": 1},
+    "policy_version": {"type": ["string", "null"], "minLength": 1},
+    "candidate_fingerprints": {"$ref": "#/$defs/fingerprints"},
+    "blocked_findings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/blockedFinding"}
+    },
+    "scanner_coverage_regressions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "baseline-diff.schema.json#/$defs/scannerRegression"}
+    },
+    "passed": {"type": "boolean"},
+    "summary": {"$ref": "#/$defs/summary"},
+    "gate_digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "fingerprints": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 512}
+    },
+    "blockedFinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fingerprint",
+        "finding_id",
+        "severity",
+        "reasons",
+        "policy_outcome",
+        "matched_policy"
+      ],
+      "properties": {
+        "fingerprint": {"type": "string", "minLength": 1, "maxLength": 512},
+        "finding_id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "severity": {"enum": ["critical", "high", "medium", "low", "info", "unknown"]},
+        "reasons": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "new",
+              "legacy",
+              "worsened",
+              "newly_reachable",
+              "newly_exploited",
+              "expired_suppression",
+              "policy"
+            ]
+          }
+        },
+        "policy_outcome": {"type": ["string", "null"]},
+        "matched_policy": {"type": ["string", "null"]}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_findings", "blocked_findings", "scanner_coverage_regressions"],
+      "properties": {
+        "candidate_findings": {"type": "integer", "minimum": 0},
+        "blocked_findings": {"type": "integer", "minimum": 0},
+        "scanner_coverage_regressions": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "shared": {
+    "introduced_in_pull_request": true,
+    "severity": "high",
+    "scanner_health": "healthy"
+  }
+}

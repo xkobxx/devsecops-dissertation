@@ -1,0 +1,8 @@
+{
+  "shared": {
+    "environment": "production",
+    "asset_criticality": "critical",
+    "severity": "high",
+    "cwe": ["CWE-89"]
+  }
+}

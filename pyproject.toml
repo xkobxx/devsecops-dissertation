@@ -16,6 +16,7 @@ authors = [
 dependencies = [
   "cryptography==49.0.0",
   "jsonschema==4.25.1",
+  "PyYAML==6.0.3",
 ]
 
 [project.scripts]
@@ -27,10 +28,26 @@ exclude = ["trustgate.scoring*"]
 
 [tool.setuptools.data-files]
 "share/trustgate/schemas" = [
+  "schemas/baseline.schema.json",
+  "schemas/baseline-diff.schema.json",
+  "schemas/baseline-gate.schema.json",
+  "schemas/decision.schema.json",
   "schemas/finding.schema.json",
   "schemas/policy-result.schema.json",
+  "schemas/policy.schema.json",
   "schemas/registry.json",
   "schemas/scan-run.schema.json",
+  "schemas/suppression.schema.json",
+]
+
+[tool.setuptools.package-data]
+"trustgate.policy.packs" = [
+  "manifest.json",
+  "README.md",
+  "fixtures/*.json",
+  "*/*.yml",
+  "*/*.json",
+  "*/*.md",
 ]
 
 [tool.vercel]

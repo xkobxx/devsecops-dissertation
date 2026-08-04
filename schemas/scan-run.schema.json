@@ -316,7 +316,80 @@
         },
         "threat_data": {
           "$ref": "#/$defs/threatDataSummary"
+        },
+        "reachability_analysis": {
+          "$ref": "#/$defs/reachabilityAnalysisSummary"
+        },
+        "decision_analysis": {
+          "$ref": "#/$defs/decisionAnalysisSummary"
         }
+      }
+    },
+    "decisionAnalysisSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_id",
+        "policy_version",
+        "total_decisions",
+        "outcome_counts",
+        "evidence_strength_counts",
+        "findings_with_uncertainty"
+      ],
+      "properties": {
+        "policy_id": {"type": "string", "minLength": 1},
+        "policy_version": {"type": "string", "minLength": 1},
+        "total_decisions": {"type": "integer", "minimum": 0},
+        "outcome_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "BLOCK_IMMEDIATELY", "FIX_BEFORE_RELEASE", "FIX_WITHIN_SLA",
+            "INVESTIGATE", "MONITOR", "TEMPORARILY_SUPPRESSED",
+            "ACCEPTED_RISK", "LIKELY_NOISE", "INSUFFICIENT_EVIDENCE"
+          ],
+          "properties": {
+            "BLOCK_IMMEDIATELY": {"type": "integer", "minimum": 0},
+            "FIX_BEFORE_RELEASE": {"type": "integer", "minimum": 0},
+            "FIX_WITHIN_SLA": {"type": "integer", "minimum": 0},
+            "INVESTIGATE": {"type": "integer", "minimum": 0},
+            "MONITOR": {"type": "integer", "minimum": 0},
+            "TEMPORARILY_SUPPRESSED": {"type": "integer", "minimum": 0},
+            "ACCEPTED_RISK": {"type": "integer", "minimum": 0},
+            "LIKELY_NOISE": {"type": "integer", "minimum": 0},
+            "INSUFFICIENT_EVIDENCE": {"type": "integer", "minimum": 0}
+          }
+        },
+        "evidence_strength_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["strong", "moderate", "weak", "insufficient"],
+          "properties": {
+            "strong": {"type": "integer", "minimum": 0},
+            "moderate": {"type": "integer", "minimum": 0},
+            "weak": {"type": "integer", "minimum": 0},
+            "insufficient": {"type": "integer", "minimum": 0}
+          }
+        },
+        "findings_with_uncertainty": {"type": "integer", "minimum": 0}
+      }
+    },
+    "reachabilityAnalysisSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dependency_findings_analyzed", "source_findings_analyzed",
+        "source_paths_found", "unsupported_findings", "incomplete_findings",
+        "confirmed_reachable", "dynamically_confirmed"
+      ],
+      "properties": {
+        "dependency_findings_analyzed": {"type": "integer", "minimum": 0},
+        "source_findings_analyzed": {"type": "integer", "minimum": 0},
+        "source_paths_found": {"type": "integer", "minimum": 0},
+        "unsupported_findings": {"type": "integer", "minimum": 0},
+        "incomplete_findings": {"type": "integer", "minimum": 0},
+        "confirmed_reachable": {"type": "integer", "minimum": 0},
+        "dynamically_confirmed": {"type": "integer", "minimum": 0}
       }
     },
     "threatDataSummary": {

@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "packs": [
+    {
+      "name": "startup-baseline",
+      "policy_id": "trustgate.startup-baseline",
+      "policy_version": "1.0.0",
+      "path": "startup-baseline/policy.yml",
+      "description": "Pragmatic defaults for small teams adopting application-security gating."
+    },
+    {
+      "name": "high-assurance-baseline",
+      "policy_id": "trustgate.high-assurance-baseline",
+      "policy_version": "1.0.0",
+      "path": "high-assurance-baseline/policy.yml",
+      "description": "Conservative release controls for high-assurance software."
+    },
+    {
+      "name": "financial-services",
+      "policy_id": "trustgate.financial-services",
+      "policy_version": "1.0.0",
+      "path": "financial-services/policy.yml",
+      "description": "Risk-sensitive defaults for financial-services workloads."
+    },
+    {
+      "name": "healthcare",
+      "policy_id": "trustgate.healthcare",
+      "policy_version": "1.0.0",
+      "path": "healthcare/policy.yml",
+      "description": "Risk-sensitive defaults for healthcare workloads."
+    },
+    {
+      "name": "public-sector-supplier",
+      "policy_id": "trustgate.public-sector-supplier",
+      "policy_version": "1.0.0",
+      "path": "public-sector-supplier/policy.yml",
+      "description": "Conservative defaults for software supplied to public-sector customers."
+    },
+    {
+      "name": "owasp-asvs-aligned",
+      "policy_id": "trustgate.owasp-asvs-aligned",
+      "policy_version": "1.0.0",
+      "path": "owasp-asvs-aligned/policy.yml",
+      "description": "Finding gates informed by selected OWASP ASVS control themes."
+    },
+    {
+      "name": "nist-ssdf-aligned",
+      "policy_id": "trustgate.nist-ssdf-aligned",
+      "policy_version": "1.0.0",
+      "path": "nist-ssdf-aligned/policy.yml",
+      "description": "Release gates informed by selected NIST SSDF practices."
+    },
+    {
+      "name": "container-security",
+      "policy_id": "trustgate.container-security",
+      "policy_version": "1.0.0",
+      "path": "container-security/policy.yml",
+      "description": "Container-oriented exploited, reachable, and fixable vulnerability gates."
+    },
+    {
+      "name": "secret-protection",
+      "policy_id": "trustgate.secret-protection",
+      "policy_version": "1.0.0",
+      "path": "secret-protection/policy.yml",
+      "description": "Validated-secret blocking and uncertain-secret investigation defaults."
+    },
+    {
+      "name": "supply-chain-security",
+      "policy_id": "trustgate.supply-chain-security",
+      "policy_version": "1.0.0",
+      "path": "supply-chain-security/policy.yml",
+      "description": "Dependency exploitation, reachability, and scanner-health gates."
+    }
+  ]
+}

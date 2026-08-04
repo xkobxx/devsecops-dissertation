@@ -118,6 +118,18 @@
     "threat_intelligence": {
       "$ref": "#/$defs/threatIntelligence"
     },
+    "dependency_reachability": {
+      "$ref": "#/$defs/dependencyReachability"
+    },
+    "source_to_sink_analysis": {
+      "$ref": "#/$defs/sourceToSinkAnalysis"
+    },
+    "dynamic_correlation": {
+      "$ref": "#/$defs/dynamicCorrelation"
+    },
+    "contextual_decision": {
+      "$ref": "decision.schema.json"
+    },
     "title": {
       "type": "string",
       "minLength": 1,
@@ -270,15 +282,13 @@
       "format": "date-time"
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "open",
-        "acknowledged",
-        "suppressed",
-        "resolved",
-        "false_positive",
-        "accepted_risk"
-      ]
+      "$ref": "#/$defs/findingState"
+    },
+    "state_history": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/stateTransition"
+      }
     },
     "evidence": {
       "type": "array",
@@ -393,6 +403,129 @@
     }
   },
   "$defs": {
+    "lifecycleEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "reference",
+        "summary"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reference": {
+          "type": "string",
+          "minLength": 1
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "lifecycleApproval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor",
+        "timestamp",
+        "reason"
+      ],
+      "properties": {
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "stateTransition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "from_state",
+        "to_state",
+        "actor",
+        "timestamp",
+        "reason",
+        "evidence",
+        "approval",
+        "expires_at",
+        "automatic"
+      ],
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "from_state": {
+          "$ref": "#/$defs/findingState"
+        },
+        "to_state": {
+          "$ref": "#/$defs/findingState"
+        },
+        "actor": {
+          "type": "string",
+          "minLength": 1
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/lifecycleEvidence"
+          }
+        },
+        "approval": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/lifecycleApproval"
+            }
+          ]
+        },
+        "expires_at": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "automatic": {
+          "type": "boolean"
+        }
+      }
+    },
+    "findingState": {
+      "type": "string",
+      "enum": [
+        "open",
+        "acknowledged",
+        "suppressed",
+        "resolved",
+        "false_positive",
+        "accepted_risk"
+      ]
+    },
     "nullableString": {
       "type": [
         "string",
@@ -764,6 +897,169 @@
         "error": {
           "type": "string",
           "minLength": 1
+        }
+      }
+    },
+    "analysisEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["file", "line", "symbol", "description"],
+      "properties": {
+        "file": {"$ref": "#/$defs/nullableString"},
+        "line": {"$ref": "#/$defs/nullableLine"},
+        "symbol": {"$ref": "#/$defs/nullableString"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "reachabilityStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "file", "line", "symbol", "description"],
+      "properties": {
+        "kind": {"type": "string", "enum": ["manifest", "import", "call"]},
+        "file": {"$ref": "#/$defs/nullableString"},
+        "line": {"$ref": "#/$defs/nullableLine"},
+        "symbol": {"$ref": "#/$defs/nullableString"},
+        "description": {"type": "string", "minLength": 1}
+      }
+    },
+    "dependencyReachability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status", "package_installed", "dependency_relationship", "imported",
+        "vulnerable_symbol_called", "dependency_scope",
+        "included_in_deployed_artifact", "call_path_exists",
+        "analysis_incomplete", "dynamic_behaviour_unknown",
+        "analysed_call_path", "analysed_files", "limitations", "explanation"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "CONFIRMED_REACHABLE", "LIKELY_REACHABLE", "NO_PATH_FOUND",
+            "NOT_ANALYSED", "ANALYSIS_INCOMPLETE", "DYNAMIC_BEHAVIOUR_UNKNOWN"
+          ]
+        },
+        "package_installed": {"type": ["boolean", "null"]},
+        "dependency_relationship": {
+          "type": "string",
+          "enum": ["direct", "transitive", "unknown", "not-applicable"]
+        },
+        "imported": {"type": ["boolean", "null"]},
+        "vulnerable_symbol_called": {"type": ["boolean", "null"]},
+        "dependency_scope": {
+          "type": "string",
+          "enum": [
+            "runtime", "development", "test", "build", "optional", "unknown",
+            "not-applicable"
+          ]
+        },
+        "included_in_deployed_artifact": {"type": ["boolean", "null"]},
+        "call_path_exists": {"type": ["boolean", "null"]},
+        "analysis_incomplete": {"type": "boolean"},
+        "dynamic_behaviour_unknown": {"type": "boolean"},
+        "analysed_call_path": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/reachabilityStep"}
+        },
+        "analysed_files": {
+          "type": "array", "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "limitations": {
+          "type": "array", "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "explanation": {"type": "string", "minLength": 1}
+      }
+    },
+    "frameworkRoute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endpoint", "methods", "file", "line", "handler"],
+      "properties": {
+        "endpoint": {"$ref": "#/$defs/nullableString"},
+        "methods": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "file": {"type": "string", "minLength": 1},
+        "line": {"type": "integer", "minimum": 1},
+        "handler": {"type": "string", "minLength": 1}
+      }
+    },
+    "sourceToSinkAnalysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "support", "status", "analysis_incomplete", "identified_sources",
+        "identified_sanitizers", "identified_sinks", "intra_file", "cross_file",
+        "framework_routes", "authentication_required", "authorization_checks",
+        "path_confidence", "evidence", "limitations"
+      ],
+      "properties": {
+        "support": {"type": "string", "enum": ["supported", "unsupported", "incomplete"]},
+        "status": {"type": "string", "enum": ["path-found", "no-path-found", "not-analysed"]},
+        "analysis_incomplete": {"type": "boolean"},
+        "identified_sources": {"type": "array", "items": {"$ref": "#/$defs/analysisEvidence"}},
+        "identified_sanitizers": {"type": "array", "items": {"$ref": "#/$defs/analysisEvidence"}},
+        "identified_sinks": {"type": "array", "items": {"$ref": "#/$defs/analysisEvidence"}},
+        "intra_file": {"type": "boolean"},
+        "cross_file": {"type": "boolean"},
+        "framework_routes": {"type": "array", "items": {"$ref": "#/$defs/frameworkRoute"}},
+        "authentication_required": {"type": ["boolean", "null"]},
+        "authorization_checks": {
+          "type": "array", "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "path_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/dataFlowStep"}},
+        "limitations": {
+          "type": "array", "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "failedReproduction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observation_id", "evidence"],
+      "properties": {
+        "observation_id": {"type": "string", "minLength": 1},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "dynamicCorrelation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status", "matched_observation_ids", "endpoint_matched",
+        "parameter_matched", "sink_matched", "priority_adjustment",
+        "priority_reason", "authentication_state", "failed_reproduction_attempts",
+        "static_evidence", "runtime_evidence", "limitations"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["confirmed", "failed-reproduction", "blocked-authentication", "inconclusive", "not-attempted"]
+        },
+        "matched_observation_ids": {
+          "type": "array", "minItems": 1, "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "endpoint_matched": {"type": "boolean"},
+        "parameter_matched": {"type": "boolean"},
+        "sink_matched": {"type": "boolean"},
+        "priority_adjustment": {"type": "string", "enum": ["increased", "unchanged"]},
+        "priority_reason": {"type": "string", "minLength": 1},
+        "authentication_state": {"type": "string", "minLength": 1},
+        "failed_reproduction_attempts": {"type": "array", "items": {"$ref": "#/$defs/failedReproduction"}},
+        "static_evidence": {"type": "array", "items": {"$ref": "#/$defs/dataFlowStep"}},
+        "runtime_evidence": {"type": "array", "items": {"type": "string"}},
+        "limitations": {
+          "type": "array", "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
         }
       }
     },

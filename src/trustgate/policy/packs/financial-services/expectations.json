@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "tests": [
+    {
+      "name": "injection on a critical financial asset blocks",
+      "finding_id": "finding-001",
+      "expected_outcome": "BLOCK_IMMEDIATELY",
+      "expected_policy": "block-critical-financial-assets"
+    }
+  ]
+}

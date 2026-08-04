@@ -170,6 +170,23 @@ def add_arguments(parser: argparse.ArgumentParser) -> None:
         default=".trustgate/cache/threat-intelligence",
         help="Local threat-data cache (only used with --enrich-threats).",
     )
+    parser.add_argument(
+        "--analyse-reachability",
+        action="store_true",
+        help="Run local dependency and Python source-to-sink analysis before gating.",
+    )
+    parser.add_argument(
+        "--vulnerable-symbols",
+        help="JSON package-to-symbol map used by reachability analysis.",
+    )
+    parser.add_argument(
+        "--deployment-inventory",
+        help="JSON deployment package inventory used by reachability analysis.",
+    )
+    parser.add_argument(
+        "--dynamic-evidence",
+        help="JSON DAST observations correlated with static reachability evidence.",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -1547,6 +1564,55 @@ def run(args: argparse.Namespace) -> int:
                 github_token=os.environ.get("GITHUB_TOKEN"),
                 nvd_api_key=os.environ.get("NVD_API_KEY"),
             ),
+        )
+    if args.analyse_reachability:
+        from trustgate.reachability import analyze_scan_run
+
+        symbol_data = (
+            _load_json(Path(args.vulnerable_symbols))
+            if args.vulnerable_symbols
+            else {}
+        )
+        if not isinstance(symbol_data, dict) or not all(
+            isinstance(key, str) and isinstance(value, list)
+            for key, value in symbol_data.items()
+        ):
+            raise ValueError(
+                "vulnerable-symbols must map package names to arrays"
+            )
+        deployment_data = (
+            _load_json(Path(args.deployment_inventory))
+            if args.deployment_inventory
+            else None
+        )
+        if deployment_data is not None and (
+            not isinstance(deployment_data, dict)
+            or not isinstance(deployment_data.get("packages"), list)
+        ):
+            raise ValueError(
+                "deployment inventory must contain a packages array"
+            )
+        dynamic_data = (
+            _load_json(Path(args.dynamic_evidence))
+            if args.dynamic_evidence
+            else []
+        )
+        if isinstance(dynamic_data, dict):
+            dynamic_data = dynamic_data.get("observations")
+        if not isinstance(dynamic_data, list):
+            raise ValueError(
+                "dynamic evidence must be an array of observations"
+            )
+        scan_run = analyze_scan_run(
+            scan_run,
+            repository_root=repository_path,
+            vulnerable_symbols=symbol_data,
+            deployed_packages=(
+                deployment_data["packages"]
+                if deployment_data is not None
+                else None
+            ),
+            dynamic_observations=dynamic_data,
         )
     policy_result = build_policy_result(
         scan_run,

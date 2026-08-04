@@ -1,0 +1,24 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.container-security
+policy_version: 1.0.0
+description: Container-oriented exploited, reachable, and fixable vulnerability gates.
+default_action: investigate
+policies:
+  - name: block-exploited-reachable-container-risk
+    action: block
+    when:
+      all:
+        - kev: true
+        - reachability: confirmed
+  - name: fix-reachable-container-risk
+    action: fix_before_release
+    when:
+      all:
+        - severity: [critical, high]
+        - reachability: confirmed
+        - fix_availability: true
+  - name: surface-container-scanner-gap
+    action: insufficient_evidence
+    when:
+      scanner_health: [missing, failed, partial, unhealthy]

@@ -31,6 +31,23 @@ class ActionInputValidationTests(unittest.TestCase):
                 "TRUSTGATE_REDACT_SENSITIVE_CONTENT": "false",
                 "TRUSTGATE_ARTIFACT_NAME": "security-dashboard",
                 "TRUSTGATE_LICENSE_KEY": "",
+                "TRUSTGATE_DAST_ENABLED": "false",
+                "TRUSTGATE_DAST_URL": "",
+                "TRUSTGATE_DAST_MODE": "baseline",
+                "TRUSTGATE_DAST_SCAN_MODE": "safe",
+                "TRUSTGATE_DAST_ENVIRONMENT": "preview",
+                "TRUSTGATE_DAST_SCOPE_HOSTS": "",
+                "TRUSTGATE_DAST_RATE_LIMIT": "5",
+                "TRUSTGATE_DAST_REQUEST_LIMIT": "500",
+                "TRUSTGATE_DAST_MAX_DURATION": "300",
+                "TRUSTGATE_DAST_OPENAPI_PATH": "",
+                "TRUSTGATE_DAST_AUTH_TYPE": "none",
+                "TRUSTGATE_DAST_AUTH_HEADER": "Authorization",
+                "TRUSTGATE_DAST_AUTH_SECRET": "",
+                "TRUSTGATE_DAST_PUBLIC_ACK": "false",
+                "TRUSTGATE_DAST_ACTIVE_ACK": "false",
+                "TRUSTGATE_DAST_PRODUCTION_ACK": "false",
+                "TRUSTGATE_DAST_ALLOW_PRIVATE": "false",
             }
         )
         environment.update(overrides)
@@ -96,8 +113,61 @@ class ActionInputValidationTests(unittest.TestCase):
                     "scanner-timeout-seconds=300",
                     "redact-sensitive-content=false",
                     "artifact-name=security-dashboard",
+                    "dast-enabled=false",
                 ],
             )
+
+    def test_enabled_dast_inputs_are_validated_without_exporting_secret(self) -> None:
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            secret = "action-dast-super-secret"
+
+            completed, output = self._run_action(
+                workspace,
+                TRUSTGATE_DAST_ENABLED="true",
+                TRUSTGATE_DAST_URL="https://preview.example.test",
+                TRUSTGATE_DAST_SCOPE_HOSTS="preview.example.test",
+                TRUSTGATE_DAST_AUTH_TYPE="bearer",
+                TRUSTGATE_DAST_AUTH_SECRET=secret,
+                TRUSTGATE_DAST_PUBLIC_ACK="true",
+            )
+
+            values = output.read_text()
+
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertIn("dast-enabled=true", values)
+        self.assertIn("dast-target-url=https://preview.example.test", values)
+        self.assertIn("dast-auth-type=bearer", values)
+        self.assertNotIn(secret, values)
+
+    def test_unsafe_dast_action_configuration_fails_before_execution(self) -> None:
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            base = {
+                "TRUSTGATE_DAST_ENABLED": "true",
+                "TRUSTGATE_DAST_URL": "https://preview.example.test",
+                "TRUSTGATE_DAST_SCOPE_HOSTS": "preview.example.test",
+                "TRUSTGATE_DAST_PUBLIC_ACK": "true",
+            }
+            cases = (
+                {"TRUSTGATE_DAST_SCOPE_HOSTS": "other.example.test"},
+                {
+                    "TRUSTGATE_DAST_SCAN_MODE": "active",
+                    "TRUSTGATE_DAST_ACTIVE_ACK": "false",
+                },
+                {"TRUSTGATE_DAST_PUBLIC_ACK": "false"},
+                {
+                    "TRUSTGATE_DAST_ENVIRONMENT": "production",
+                    "TRUSTGATE_DAST_PRODUCTION_ACK": "false",
+                },
+            )
+            for overrides in cases:
+                with self.subTest(overrides=overrides):
+                    completed, _ = self._run_action(
+                        workspace, **(base | overrides)
+                    )
+                    self.assertNotEqual(completed.returncode, 0)
+                    self.assertIn("dast", completed.stderr.lower())
 
     def test_target_cannot_escape_the_workspace(self) -> None:
         with TemporaryDirectory() as directory:

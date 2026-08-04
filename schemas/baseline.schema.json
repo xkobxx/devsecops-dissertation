@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/baseline.schema.json",
+  "title": "Trust Gate Default-Branch Baseline",
+  "description": "Content-bound default-branch findings and scanner coverage used for differential comparison.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "repository",
+    "default_branch",
+    "ref",
+    "commit",
+    "source_run_id",
+    "source_schema_version",
+    "generated_at",
+    "findings",
+    "scanners",
+    "baseline_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "version": {"const": 1},
+    "repository": {"type": "string", "minLength": 1, "maxLength": 512},
+    "default_branch": {"type": "string", "minLength": 1, "maxLength": 512},
+    "ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "commit": {"type": "string", "pattern": "^[0-9a-fA-F]{7,64}$"},
+    "source_run_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "source_schema_version": {"const": "1.0.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "findings": {
+      "type": "object",
+      "propertyNames": {"type": "string", "minLength": 1, "maxLength": 512},
+      "additionalProperties": {"$ref": "finding.schema.json"}
+    },
+    "scanners": {
+      "type": "object",
+      "propertyNames": {"type": "string", "minLength": 1, "maxLength": 128},
+      "additionalProperties": {"$ref": "scan-run.schema.json#/$defs/scannerResult"}
+    },
+    "baseline_digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+"""SARIF generation unit tests."""

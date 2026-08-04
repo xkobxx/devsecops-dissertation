@@ -10,20 +10,42 @@ from trustgate.adapters.cli import run_adapter
 from trustgate.adapters.cli import run_list as list_adapters
 from trustgate.aggregation import add_arguments as add_aggregation_arguments
 from trustgate.aggregation import run as run_aggregation
+from trustgate.baselines.cli import add_arguments as add_baseline_arguments
+from trustgate.baselines.cli import run as run_baseline
 from trustgate.benchmarks.cli import add_arguments as add_benchmark_arguments
 from trustgate.benchmarks.cli import run as run_benchmark
+from trustgate.checks.cli import add_arguments as add_check_arguments
+from trustgate.checks.cli import run as run_checks
+from trustgate.comments.cli import add_arguments as add_comment_arguments
+from trustgate.comments.cli import run as run_comment
+from trustgate.dast.cli import add_arguments as add_dast_arguments
+from trustgate.dast.cli import run as run_dast
+from trustgate.decisions.cli import add_arguments as add_decision_arguments
+from trustgate.decisions.cli import run as run_decision
+from trustgate.lifecycle.cli import add_arguments as add_suppression_arguments
+from trustgate.lifecycle.cli import run as run_suppression
 from trustgate.planning.cli import add_arguments as add_plan_arguments
 from trustgate.planning.cli import run as run_plan
+from trustgate.policy.cli import add_arguments as add_policy_arguments
+from trustgate.policy.cli import run as run_policy
+from trustgate.reachability.cli import add_arguments as add_reachability_arguments
+from trustgate.reachability.cli import run as run_reachability
 from trustgate.reporting import add_arguments as add_reporting_arguments
 from trustgate.reporting import run as run_reporting
+from trustgate.sarif.cli import add_arguments as add_sarif_arguments
+from trustgate.sarif.cli import run as run_sarif
 from trustgate.scanners.cli import add_arguments as add_scanner_arguments
 from trustgate.scanners.cli import add_record_arguments
 from trustgate.scanners.cli import run as run_scanner
 from trustgate.scanners.cli import run_record as record_scanner
+from trustgate.supply_chain.cli import add_arguments as add_sbom_arguments
+from trustgate.supply_chain.cli import run as run_sbom
 from trustgate.threat_intelligence.cli import (
     add_arguments as add_enrichment_arguments,
 )
 from trustgate.threat_intelligence.cli import run as run_enrichment
+from trustgate.vex.cli import add_arguments as add_vex_arguments
+from trustgate.vex.cli import run as run_vex
 
 
 def build_parser() -> ArgumentParser:
@@ -67,6 +89,72 @@ def build_parser() -> ArgumentParser:
     )
     add_enrichment_arguments(enrich)
     enrich.set_defaults(handler=run_enrichment)
+    reachability = commands.add_parser(
+        "reachability",
+        help="Analyze dependency, source-to-sink, and dynamic reachability evidence.",
+    )
+    add_reachability_arguments(reachability)
+    reachability.set_defaults(handler=run_reachability)
+    dast = commands.add_parser(
+        "dast",
+        help="Build or execute a scope- and resource-bounded DAST plan.",
+    )
+    add_dast_arguments(dast)
+    dast.set_defaults(handler=run_dast)
+    decide = commands.add_parser(
+        "decide",
+        help="Evaluate findings with an explainable contextual policy.",
+    )
+    add_decision_arguments(decide)
+    decide.set_defaults(handler=run_decision)
+    policy = commands.add_parser(
+        "policy",
+        help="Validate, test, explain, or simulate policy-as-code.",
+    )
+    add_policy_arguments(policy)
+    policy.set_defaults(handler=run_policy)
+    baseline = commands.add_parser(
+        "baseline",
+        help="Create or compare a default-branch finding baseline.",
+    )
+    add_baseline_arguments(baseline)
+    baseline.set_defaults(handler=run_baseline)
+    suppression = commands.add_parser(
+        "suppression",
+        help="Create, lint, apply, or revalidate finding suppressions.",
+    )
+    add_suppression_arguments(suppression)
+    suppression.set_defaults(handler=run_suppression)
+    sarif = commands.add_parser(
+        "sarif",
+        help="Generate validated SARIF 2.1.0 from canonical findings.",
+    )
+    add_sarif_arguments(sarif)
+    sarif.set_defaults(handler=run_sarif)
+    checks = commands.add_parser(
+        "checks",
+        help="Generate a bounded GitHub Check job summary.",
+    )
+    add_check_arguments(checks)
+    checks.set_defaults(handler=run_checks)
+    comment = commands.add_parser(
+        "pr-comment",
+        help="Generate a safe, consolidated pull-request comment.",
+    )
+    add_comment_arguments(comment)
+    comment.set_defaults(handler=run_comment)
+    sbom = commands.add_parser(
+        "sbom",
+        help="Generate deterministic CycloneDX and SPDX product SBOMs.",
+    )
+    add_sbom_arguments(sbom)
+    sbom.set_defaults(handler=run_sbom)
+    vex = commands.add_parser(
+        "vex",
+        help="Generate and optionally sign approved CycloneDX VEX.",
+    )
+    add_vex_arguments(vex)
+    vex.set_defaults(handler=run_vex)
     report = commands.add_parser(
         "report",
         help="Generate a static HTML report from normalised findings.",

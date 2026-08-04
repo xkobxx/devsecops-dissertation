@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/baseline-diff.schema.json",
+  "title": "Trust Gate Baseline Difference",
+  "description": "Deterministic pull-request finding and scanner-coverage changes from a verified default-branch baseline.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "repository",
+    "baseline_digest",
+    "baseline_generated_at",
+    "baseline_ref",
+    "baseline_commit",
+    "current_run_id",
+    "current_ref",
+    "current_commit",
+    "compared_at",
+    "baseline_age_seconds",
+    "new_findings",
+    "removed_findings",
+    "persisting_findings",
+    "worsened_findings",
+    "newly_reachable_findings",
+    "newly_exploited_dependencies",
+    "expired_suppressions",
+    "scanner_coverage_regressions",
+    "summary",
+    "comparison_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "version": {"const": 1},
+    "repository": {"type": "string", "minLength": 1, "maxLength": 512},
+    "baseline_digest": {"$ref": "#/$defs/digest"},
+    "baseline_generated_at": {"type": "string", "format": "date-time"},
+    "baseline_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "baseline_commit": {"type": "string", "pattern": "^[0-9a-fA-F]{7,64}$"},
+    "current_run_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "current_ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "current_commit": {"type": "string", "pattern": "^[0-9a-fA-F]{7,64}$"},
+    "compared_at": {"type": "string", "format": "date-time"},
+    "baseline_age_seconds": {"type": "number", "minimum": 0},
+    "new_findings": {"$ref": "#/$defs/fingerprints"},
+    "removed_findings": {"$ref": "#/$defs/fingerprints"},
+    "persisting_findings": {"$ref": "#/$defs/fingerprints"},
+    "worsened_findings": {"$ref": "#/$defs/fingerprints"},
+    "newly_reachable_findings": {"$ref": "#/$defs/fingerprints"},
+    "newly_exploited_dependencies": {"$ref": "#/$defs/fingerprints"},
+    "expired_suppressions": {"$ref": "#/$defs/fingerprints"},
+    "scanner_coverage_regressions": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/scannerRegression"}
+    },
+    "summary": {"$ref": "#/$defs/summary"},
+    "comparison_digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "fingerprints": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1, "maxLength": 512}
+    },
+    "scannerRegression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scanner", "baseline_state", "current_state", "reason"],
+      "properties": {
+        "scanner": {"type": "string", "minLength": 1, "maxLength": 128},
+        "baseline_state": {"type": "string", "minLength": 1},
+        "current_state": {"type": ["string", "null"]},
+        "reason": {"type": "string", "minLength": 1}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "new_findings",
+        "removed_findings",
+        "persisting_findings",
+        "worsened_findings",
+        "newly_reachable_findings",
+        "newly_exploited_dependencies",
+        "expired_suppressions",
+        "scanner_coverage_regressions"
+      ],
+      "properties": {
+        "new_findings": {"type": "integer", "minimum": 0},
+        "removed_findings": {"type": "integer", "minimum": 0},
+        "persisting_findings": {"type": "integer", "minimum": 0},
+        "worsened_findings": {"type": "integer", "minimum": 0},
+        "newly_reachable_findings": {"type": "integer", "minimum": 0},
+        "newly_exploited_dependencies": {"type": "integer", "minimum": 0},
+        "expired_suppressions": {"type": "integer", "minimum": 0},
+        "scanner_coverage_regressions": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

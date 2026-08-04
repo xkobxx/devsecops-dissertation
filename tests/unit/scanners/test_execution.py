@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
@@ -136,6 +137,41 @@ class ScannerExecutionTests(unittest.TestCase):
             self.assertIsNone(result.exit_code)
             self.assertFalse(result.report_produced)
             self.assertIn("timed out", result.error.lower())
+
+    def test_sensitive_values_are_redacted_from_scanner_logs(self) -> None:
+        with TemporaryDirectory() as directory:
+            workspace = Path(directory)
+            report = workspace / "zap.json"
+            secret = "phase-nine-super-secret"
+            script = (
+                "from pathlib import Path; import os, sys; "
+                "secret = os.environ['TRUSTGATE_DAST_AUTH_SECRET']; "
+                "Path(sys.argv[1]).write_text('{\"site\":[]}'); "
+                "print('auth=' + secret); "
+                "print('failed auth=' + secret, file=sys.stderr)"
+            )
+            environment = os.environ.copy()
+            environment["TRUSTGATE_DAST_AUTH_SECRET"] = secret
+
+            result = execute_scanner(
+                scanner="zap",
+                command=[sys.executable, "-c", script, str(report)],
+                report_path=report,
+                metadata_path=workspace / "execution.json",
+                logs_dir=workspace / "logs",
+                timeout_seconds=5,
+                finding_exit_codes={1, 2},
+                version="2.17.0",
+                environment=environment,
+                redactions=(secret,),
+            )
+
+            stdout = Path(result.stdout_path).read_text()
+            stderr = Path(result.stderr_path).read_text()
+
+        self.assertNotIn(secret, stdout + stderr)
+        self.assertIn("[REDACTED]", stdout)
+        self.assertIn("[REDACTED]", stderr)
 
     def test_external_action_failure_is_recorded_even_with_a_report(self) -> None:
         with TemporaryDirectory() as directory:

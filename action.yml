@@ -40,7 +40,7 @@ inputs:
     required: false
     default: 'normalised'
   optional-scanners:
-    description: 'Comma-separated scanners that may be absent: bandit, semgrep, pip-audit, trivy, gitleaks'
+    description: 'Comma-separated scanners that may be absent: bandit, semgrep, pip-audit, trivy, gitleaks, zap'
     required: false
     default: ''
   scanner-timeout-seconds:
@@ -49,6 +49,74 @@ inputs:
     default: '300'
   redact-sensitive-content:
     description: 'Create redacted scanner-report views while retaining originals separately for audit'
+    required: false
+    default: 'false'
+  dast-enabled:
+    description: 'Run bounded OWASP ZAP DAST after static scanners'
+    required: false
+    default: 'false'
+  dast-target-url:
+    description: 'Explicit DAST target URL; must match dast-scope-hosts'
+    required: false
+    default: ''
+  dast-mode:
+    description: 'DAST discovery mode: baseline | api'
+    required: false
+    default: 'baseline'
+  dast-scan-mode:
+    description: 'DAST behavior: safe (passive) | active'
+    required: false
+    default: 'safe'
+  dast-environment:
+    description: 'Target environment: local | preview | staging | production'
+    required: false
+    default: 'preview'
+  dast-scope-hosts:
+    description: 'Comma-separated exact hosts or *.domain scope entries'
+    required: false
+    default: ''
+  dast-rate-limit:
+    description: 'Maximum requests per second, from 1 through 100'
+    required: false
+    default: '5'
+  dast-request-limit:
+    description: 'Maximum total requests, from 1 through 100000'
+    required: false
+    default: '500'
+  dast-max-duration-seconds:
+    description: 'Maximum DAST duration, from 1 through 3600 seconds'
+    required: false
+    default: '300'
+  dast-openapi-path:
+    description: 'Workspace-relative OpenAPI file required by api mode'
+    required: false
+    default: ''
+  dast-auth-type:
+    description: 'Authentication: none | bearer | basic | header'
+    required: false
+    default: 'none'
+  dast-auth-header:
+    description: 'Authentication header name'
+    required: false
+    default: 'Authorization'
+  dast-auth-secret:
+    description: 'Authentication value passed only through the scanner environment'
+    required: false
+    default: ''
+  dast-public-target-acknowledged:
+    description: 'Explicit acknowledgement that the target is publicly reachable'
+    required: false
+    default: 'false'
+  dast-active-scan-acknowledged:
+    description: 'Explicit opt-in required for active scanning'
+    required: false
+    default: 'false'
+  dast-production-scan-acknowledged:
+    description: 'Explicit acknowledgement required for production targets'
+    required: false
+    default: 'false'
+  dast-allow-private-target:
+    description: 'Explicitly allow a private/local target for controlled testing'
     required: false
     default: 'false'
   license-key:
@@ -63,6 +131,15 @@ outputs:
   policy-result-path:
     description: 'Path to the validated policy-result JSON produced by this run'
     value: ${{ steps.aggregate.outputs.policy-result-path }}
+  sarif-path:
+    description: 'Path to the validated SARIF 2.1.0 file produced by this run'
+    value: ${{ steps.sarif.outputs.sarif-path }}
+  check-summary-path:
+    description: 'Path to the bounded Markdown summary published on the job Check Run'
+    value: ${{ steps.check-summary.outputs.check-summary-path }}
+  pr-comment-path:
+    description: 'Path to the concise Markdown intended for one consolidated pull-request comment'
+    value: ${{ steps.pr-comment.outputs.pr-comment-path }}
 
 runs:
   using: 'composite'
@@ -85,6 +162,23 @@ runs:
         TRUSTGATE_REDACT_SENSITIVE_CONTENT: ${{ inputs.redact-sensitive-content }}
         TRUSTGATE_ARTIFACT_NAME: security-dashboard
         TRUSTGATE_LICENSE_KEY: ${{ inputs.license-key }}
+        TRUSTGATE_DAST_ENABLED: ${{ inputs.dast-enabled }}
+        TRUSTGATE_DAST_URL: ${{ inputs.dast-target-url }}
+        TRUSTGATE_DAST_MODE: ${{ inputs.dast-mode }}
+        TRUSTGATE_DAST_SCAN_MODE: ${{ inputs.dast-scan-mode }}
+        TRUSTGATE_DAST_ENVIRONMENT: ${{ inputs.dast-environment }}
+        TRUSTGATE_DAST_SCOPE_HOSTS: ${{ inputs.dast-scope-hosts }}
+        TRUSTGATE_DAST_RATE_LIMIT: ${{ inputs.dast-rate-limit }}
+        TRUSTGATE_DAST_REQUEST_LIMIT: ${{ inputs.dast-request-limit }}
+        TRUSTGATE_DAST_MAX_DURATION: ${{ inputs.dast-max-duration-seconds }}
+        TRUSTGATE_DAST_OPENAPI_PATH: ${{ inputs.dast-openapi-path }}
+        TRUSTGATE_DAST_AUTH_TYPE: ${{ inputs.dast-auth-type }}
+        TRUSTGATE_DAST_AUTH_HEADER: ${{ inputs.dast-auth-header }}
+        TRUSTGATE_DAST_AUTH_SECRET: ${{ inputs.dast-auth-secret }}
+        TRUSTGATE_DAST_PUBLIC_ACK: ${{ inputs.dast-public-target-acknowledged }}
+        TRUSTGATE_DAST_ACTIVE_ACK: ${{ inputs.dast-active-scan-acknowledged }}
+        TRUSTGATE_DAST_PRODUCTION_ACK: ${{ inputs.dast-production-scan-acknowledged }}
+        TRUSTGATE_DAST_ALLOW_PRIVATE: ${{ inputs.dast-allow-private-target }}
       run: python "${{ github.action_path }}/scripts/validate_inputs.py" action
 
     - name: Create reports directory
@@ -204,6 +298,66 @@ runs:
           --report-path /repo/reports/gitleaks_report.json \
           --exit-code 3
 
+    - name: Run bounded DAST
+      if: steps.validate.outputs.dast-enabled == 'true'
+      shell: bash
+      continue-on-error: true
+      env:
+        DAST_TARGET_URL: ${{ steps.validate.outputs.dast-target-url }}
+        DAST_MODE: ${{ steps.validate.outputs.dast-mode }}
+        DAST_SCAN_MODE: ${{ steps.validate.outputs.dast-scan-mode }}
+        DAST_ENVIRONMENT: ${{ steps.validate.outputs.dast-environment }}
+        DAST_SCOPE_HOSTS: ${{ steps.validate.outputs.dast-scope-hosts }}
+        DAST_RATE_LIMIT: ${{ steps.validate.outputs.dast-rate-limit }}
+        DAST_REQUEST_LIMIT: ${{ steps.validate.outputs.dast-request-limit }}
+        DAST_MAX_DURATION: ${{ steps.validate.outputs.dast-max-duration-seconds }}
+        DAST_OPENAPI_PATH: ${{ steps.validate.outputs.dast-openapi-path }}
+        DAST_AUTH_TYPE: ${{ steps.validate.outputs.dast-auth-type }}
+        DAST_AUTH_HEADER: ${{ steps.validate.outputs.dast-auth-header }}
+        DAST_PUBLIC_ACK: ${{ steps.validate.outputs.dast-public-target-acknowledged }}
+        DAST_ACTIVE_ACK: ${{ steps.validate.outputs.dast-active-scan-acknowledged }}
+        DAST_PRODUCTION_ACK: ${{ steps.validate.outputs.dast-production-scan-acknowledged }}
+        DAST_ALLOW_PRIVATE: ${{ steps.validate.outputs.dast-allow-private-target }}
+        TRUSTGATE_DAST_AUTH_SECRET: ${{ inputs.dast-auth-secret }}
+      run: |
+        dast_args=()
+        IFS=',' read -r -a scope_hosts <<< "$DAST_SCOPE_HOSTS"
+        for host in "${scope_hosts[@]}"; do
+          dast_args+=(--scope-host "$host")
+        done
+        if [ -n "$DAST_OPENAPI_PATH" ]; then
+          dast_args+=(--openapi-path "$DAST_OPENAPI_PATH")
+        fi
+        if [ "$DAST_PUBLIC_ACK" = "true" ]; then
+          dast_args+=(--public-target-acknowledged)
+        fi
+        if [ "$DAST_ACTIVE_ACK" = "true" ]; then
+          dast_args+=(--active-scan-acknowledged)
+        fi
+        if [ "$DAST_PRODUCTION_ACK" = "true" ]; then
+          dast_args+=(--production-scan-acknowledged)
+        fi
+        if [ "$DAST_ALLOW_PRIVATE" = "true" ]; then
+          dast_args+=(--allow-private-target)
+        fi
+        python "${{ github.action_path }}/scripts/run_dast.py" \
+          --target-url "$DAST_TARGET_URL" \
+          --mode "$DAST_MODE" \
+          --scan-mode "$DAST_SCAN_MODE" \
+          --environment "$DAST_ENVIRONMENT" \
+          --rate-limit "$DAST_RATE_LIMIT" \
+          --request-limit "$DAST_REQUEST_LIMIT" \
+          --max-duration-seconds "$DAST_MAX_DURATION" \
+          --auth-type "$DAST_AUTH_TYPE" \
+          --auth-header-name "$DAST_AUTH_HEADER" \
+          --plan-output reports/dast-plan.yaml \
+          --report reports/zap_report.json \
+          --metadata reports/zap_execution.json \
+          --logs-dir reports/logs/zap \
+          --container-image ghcr.io/zaproxy/zaproxy@sha256:8d387b1a63e3425beef4846e39719f5af2a787753af2d8b6558c6257d7a577a2 \
+          --execute \
+          "${dast_args[@]}"
+
     - name: Aggregate findings and evaluate gate
       id: aggregate
       if: always()
@@ -215,9 +369,11 @@ runs:
         SEVERITY_BASIS: ${{ steps.validate.outputs.severity-basis }}
         OPTIONAL_SCANNERS: ${{ steps.validate.outputs.optional-scanners }}
         REDACT_SENSITIVE_CONTENT: ${{ steps.validate.outputs.redact-sensitive-content }}
+        DAST_ENABLED: ${{ steps.validate.outputs.dast-enabled }}
       run: |
         optional_args=()
         redaction_args=()
+        required_args=()
         if [ -n "$OPTIONAL_SCANNERS" ]; then
           IFS=',' read -r -a optional_scanners <<< "$OPTIONAL_SCANNERS"
           for scanner in "${optional_scanners[@]}"; do
@@ -227,6 +383,15 @@ runs:
         if [ "$REDACT_SENSITIVE_CONTENT" = "true" ]; then
           redaction_args+=(--redact-sensitive-content)
         fi
+        required_scanners=(bandit semgrep pip-audit trivy gitleaks)
+        if [ "$DAST_ENABLED" = "true" ]; then
+          required_scanners+=(zap)
+        fi
+        for scanner in "${required_scanners[@]}"; do
+          if [[ ",$OPTIONAL_SCANNERS," != *",$scanner,"* ]]; then
+            required_args+=(--required-scanner "$scanner")
+          fi
+        done
         set +e
         python "${{ github.action_path }}/scripts/aggregate_results.py" \
           --target "$TARGET" \
@@ -234,6 +399,7 @@ runs:
           --scanner-failure-policy "$SCANNER_FAILURE_POLICY" \
           --severity-basis "$SEVERITY_BASIS" \
           --require-execution-metadata \
+          "${required_args[@]}" \
           "${redaction_args[@]}" \
           "${optional_args[@]}"
         gate_exit=$?
@@ -265,6 +431,94 @@ runs:
           --confidence-table "${{ github.action_path }}/benchmarks/reports/flask-vulnerable-v1.confidence.json" \
           --license-key "$LICENSE_KEY"
 
+    - name: Generate SARIF
+      id: sarif
+      if: always()
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+      run: |
+        if [ ! -f reports/findings.json ]; then
+          echo "Canonical findings are unavailable; SARIF was not generated."
+          exit 0
+        fi
+        python -m trustgate sarif \
+          --input reports/findings.json \
+          --output reports/trustgate.sarif
+        echo "sarif-path=reports/trustgate.sarif" >> "$GITHUB_OUTPUT"
+
+    - name: Publish Trust Gate Check summary
+      id: check-summary
+      if: always()
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+      run: |
+        if [ -f reports/findings.json ] && [ -f reports/policy-result.json ]; then
+          summary_args=()
+          if [ -f reports/baseline-diff.json ]; then
+            summary_args+=(--baseline-diff reports/baseline-diff.json)
+          fi
+          if [ -f reports/baseline-gate.json ]; then
+            summary_args+=(--baseline-gate reports/baseline-gate.json)
+          fi
+          python -m trustgate checks \
+            --input reports/findings.json \
+            --policy-result reports/policy-result.json \
+            --artifact-url "$ARTIFACT_URL" \
+            --output reports/check-summary.md \
+            "${summary_args[@]}"
+        else
+          {
+            echo "# Trust Gate check"
+            echo
+            echo "**Release decision: ERROR**"
+            echo
+            echo "Canonical findings or policy output was unavailable. Inspect the failed scanner and aggregation steps."
+            echo
+            echo "[Detailed workflow artifacts]($ARTIFACT_URL)"
+          } > reports/check-summary.md
+        fi
+        cat reports/check-summary.md >> "$GITHUB_STEP_SUMMARY"
+        echo "check-summary-path=reports/check-summary.md" >> "$GITHUB_OUTPUT"
+
+    - name: Generate consolidated PR comment
+      id: pr-comment
+      if: always()
+      shell: bash
+      env:
+        PYTHONPATH: ${{ github.action_path }}/src
+        TRUSTGATE_REPOSITORY: ${{ github.repository }}
+        TRUSTGATE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+        ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+      run: |
+        if [ -f reports/findings.json ] && [ -f reports/policy-result.json ]; then
+          comment_args=()
+          if [ -f reports/baseline-diff.json ]; then
+            comment_args+=(--baseline-diff reports/baseline-diff.json)
+          fi
+          if [ -f reports/baseline-gate.json ]; then
+            comment_args+=(--baseline-gate reports/baseline-gate.json)
+          fi
+          python -m trustgate pr-comment \
+            --input reports/findings.json \
+            --policy-result reports/policy-result.json \
+            --repository "$TRUSTGATE_REPOSITORY" \
+            --commit "$TRUSTGATE_COMMIT" \
+            --artifact-url "$ARTIFACT_URL" \
+            --output reports/pr-comment.md \
+            "${comment_args[@]}"
+        else
+          {
+            printf '%s\n' '<!-- trustgate-pr-summary -->'
+            printf '%s\n' '## Trust Gate' '' '**Release decision: ERROR**' ''
+            printf '%s\n' 'Canonical findings or policy output was unavailable. Inspect the workflow artifacts.' ''
+            printf '[Detailed workflow artifacts](%s)\n' "$ARTIFACT_URL"
+          } > reports/pr-comment.md
+        fi
+        echo "pr-comment-path=reports/pr-comment.md" >> "$GITHUB_OUTPUT"
+
     - name: Generate dashboard
       if: always()
       shell: bash
@@ -279,7 +533,13 @@ runs:
           reports/dashboard.html
           reports/findings.json
           reports/policy-result.json
+          reports/trustgate.sarif
+          reports/check-summary.md
+          reports/pr-comment.md
           reports/redacted/
+          reports/dast-plan.yaml
+          reports/zap_execution.json
+          reports/logs/zap/
 
     - name: Upload raw scanner evidence
       if: always()

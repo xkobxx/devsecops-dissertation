@@ -1,0 +1,24 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.supply-chain-security
+policy_version: 1.0.0
+description: Dependency exploitation, reachability, and scanner-health gates.
+default_action: investigate
+policies:
+  - name: block-exploited-reachable-dependency
+    action: block
+    when:
+      all:
+        - kev: true
+        - reachability: confirmed
+  - name: fix-likely-exploitable-dependency
+    action: fix_before_release
+    when:
+      all:
+        - epss: ">=0.70"
+        - reachability: [confirmed, likely]
+        - fix_availability: true
+  - name: surface-supply-chain-coverage-gap
+    action: insufficient_evidence
+    when:
+      scanner_health: [missing, failed, partial, unhealthy]

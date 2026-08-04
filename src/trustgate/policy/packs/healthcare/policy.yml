@@ -1,0 +1,28 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.healthcare
+policy_version: 1.0.0
+description: Risk-sensitive defaults for healthcare workloads.
+default_action: investigate
+policies:
+  - name: block-critical-healthcare-assets
+    action: block
+    when:
+      all:
+        - environment: production
+        - asset_criticality: critical
+        - any:
+            - severity: critical
+            - cwe: [CWE-79, CWE-89]
+  - name: block-known-exploited-healthcare-finding
+    action: block
+    when:
+      all:
+        - kev: true
+        - environment: production
+  - name: fix-reachable-high-healthcare-finding
+    action: fix_before_release
+    when:
+      all:
+        - severity: high
+        - reachability: confirmed

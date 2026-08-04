@@ -1,0 +1,25 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.owasp-asvs-aligned
+policy_version: 1.0.0
+description: Finding gates informed by selected OWASP ASVS control themes.
+default_action: investigate
+policies:
+  - name: block-high-injection-or-ssrf
+    action: block
+    when:
+      all:
+        - severity: [critical, high]
+        - cwe: [CWE-22, CWE-78, CWE-79, CWE-89, CWE-918]
+  - name: fix-access-control-before-release
+    action: fix_before_release
+    when:
+      all:
+        - cwe: [CWE-287, CWE-862]
+        - severity: [critical, high, medium]
+  - name: fix-confirmed-asvs-theme-finding
+    action: fix_within_sla
+    when:
+      all:
+        - reachability: confirmed
+        - confidence_lower_bound: ">=0.80"

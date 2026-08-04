@@ -19,6 +19,42 @@
         "file": "policy-result.schema.json",
         "id": "https://schemas.trustgate.dev/v1.0.0/policy-result.schema.json"
       }
+    },
+    "decision": {
+      "1.0.0": {
+        "file": "decision.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/decision.schema.json"
+      }
+    },
+    "policy": {
+      "1.0.0": {
+        "file": "policy.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/policy.schema.json"
+      }
+    },
+    "baseline": {
+      "1.0.0": {
+        "file": "baseline.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/baseline.schema.json"
+      }
+    },
+    "baseline-diff": {
+      "1.0.0": {
+        "file": "baseline-diff.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/baseline-diff.schema.json"
+      }
+    },
+    "baseline-gate": {
+      "1.0.0": {
+        "file": "baseline-gate.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/baseline-gate.schema.json"
+      }
+    },
+    "suppression": {
+      "1.0.0": {
+        "file": "suppression.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/suppression.schema.json"
+      }
     }
   }
 }

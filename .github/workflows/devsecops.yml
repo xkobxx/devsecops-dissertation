@@ -6,9 +6,15 @@ name: Trust Gate CI
     branches: [main]
   pull_request:
     branches: [main]
+  merge_group:
+    types: [checks_requested]
 
 permissions:
   contents: read
+
+concurrency:
+  group: trust-gate-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 env:
   TRUSTGATE_SCANNER_TIMEOUT: "300"
@@ -430,7 +436,7 @@ jobs:
   # HIGH/CRITICAL findings. If the count is too high, the gate fails and the
   # build is blocked. Nothing ships until it's clean.
   security-gate:
-    name: Security Gate
+    name: Trust Gate
     runs-on: ubuntu-latest
     needs: [sast-bandit, sast-semgrep, sca-pip-audit, container-scan-trivy, secrets-scan-gitleaks]
     if: always()
@@ -489,6 +495,87 @@ jobs:
         run: python scripts/aggregate_results.py --require-execution-metadata
         continue-on-error: true
 
+      - name: Generate Trust Gate SARIF
+        if: always()
+        env:
+          PYTHONPATH: src
+        run: |
+          if [ ! -f reports/findings.json ]; then
+            echo "Canonical findings are unavailable; SARIF was not generated."
+            exit 0
+          fi
+          python -m trustgate sarif \
+            --input reports/findings.json \
+            --output reports/trustgate.sarif
+
+      - name: Publish Trust Gate Check summary
+        if: always()
+        env:
+          PYTHONPATH: src
+          ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+        run: |
+          if [ -f reports/findings.json ] && [ -f reports/policy-result.json ]; then
+            summary_args=()
+            if [ -f reports/baseline-diff.json ]; then
+              summary_args+=(--baseline-diff reports/baseline-diff.json)
+            fi
+            if [ -f reports/baseline-gate.json ]; then
+              summary_args+=(--baseline-gate reports/baseline-gate.json)
+            fi
+            python -m trustgate checks \
+              --input reports/findings.json \
+              --policy-result reports/policy-result.json \
+              --artifact-url "$ARTIFACT_URL" \
+              --output reports/check-summary.md \
+              "${summary_args[@]}"
+          else
+            {
+              echo "# Trust Gate check"
+              echo
+              echo "**Release decision: ERROR**"
+              echo
+              echo "Canonical findings or policy output was unavailable. Inspect the failed scanner and aggregation steps."
+              echo
+              echo "[Detailed workflow artifacts]($ARTIFACT_URL)"
+            } > reports/check-summary.md
+          fi
+          cat reports/check-summary.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Generate consolidated PR comment
+        if: always()
+        env:
+          PYTHONPATH: src
+          TRUSTGATE_REPOSITORY: ${{ github.repository }}
+          TRUSTGATE_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
+          ARTIFACT_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}#artifacts
+          DASHBOARD_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: |
+          if [ -f reports/findings.json ] && [ -f reports/policy-result.json ]; then
+            comment_args=()
+            if [ -f reports/baseline-diff.json ]; then
+              comment_args+=(--baseline-diff reports/baseline-diff.json)
+            fi
+            if [ -f reports/baseline-gate.json ]; then
+              comment_args+=(--baseline-gate reports/baseline-gate.json)
+            fi
+            python -m trustgate pr-comment \
+              --input reports/findings.json \
+              --policy-result reports/policy-result.json \
+              --repository "$TRUSTGATE_REPOSITORY" \
+              --commit "$TRUSTGATE_COMMIT" \
+              --artifact-url "$ARTIFACT_URL" \
+              --dashboard-url "$DASHBOARD_URL" \
+              --output reports/pr-comment.md \
+              "${comment_args[@]}"
+          else
+            {
+              printf '%s\n' '<!-- trustgate-pr-summary -->'
+              printf '%s\n' '## Trust Gate' '' '**Release decision: ERROR**' ''
+              printf '%s\n' 'Canonical findings or policy output was unavailable. Inspect the workflow artifacts.' ''
+              printf '[Detailed workflow artifacts](%s)\n' "$ARTIFACT_URL"
+            } > reports/pr-comment.md
+          fi
+
       - name: Upload unified findings
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
@@ -497,6 +584,9 @@ jobs:
           path: |
             reports/findings.json
             reports/policy-result.json
+            reports/trustgate.sarif
+            reports/check-summary.md
+            reports/pr-comment.md
 
       # Final enforcement — if the gate script failed, block the build here with a clear message
       - name: Enforce security gate result
@@ -507,6 +597,38 @@ jobs:
             exit 1
           fi
           echo "Security gate passed."
+
+  # This write-capable job never checks out or executes repository code. Fork
+  # pull requests retain the SARIF artifact but cannot publish with a read-only
+  # token. Same-repository PRs receive code annotations after publication.
+  upload-sarif:
+    name: Publish Trust Gate findings to code scanning
+    needs: [security-gate]
+    runs-on: ubuntu-latest
+    if: >-
+      always() &&
+      (github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository)
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - name: Download Trust Gate SARIF artifact
+        id: sarif-artifact
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: unified-findings
+          path: reports/
+
+      - name: Upload Trust Gate SARIF to code scanning
+        if: >-
+          steps.sarif-artifact.outcome == 'success' &&
+          hashFiles('reports/trustgate.sarif') != ''
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          sarif_file: reports/trustgate.sarif
+          category: trustgate
 
   # --- Dashboard Generator ---
   # Takes the unified findings and renders a nice HTML report so humans can actually
@@ -563,42 +685,56 @@ jobs:
       id-token: write
     uses: ./.github/workflows/publish-dashboard.yml
 
-  # --- Link Dashboard on PR ---
-  # Drops (or updates) a single comment on the PR pointing at the live dashboard
-  # for main (PRs don't get their own Pages deploy — see publish-dashboard above),
-  # so reviewers don't have to leave the PR to see scan results.
-  comment-dashboard-link:
-    name: Link Dashboard on PR
+  # This write-capable job never checks out or executes repository code. It
+  # upserts only Trust Gate's marked, bot-owned summary so repeated runs cannot
+  # flood the pull request or overwrite a human-authored lookalike comment.
+  comment-pr-summary:
+    name: Update Trust Gate PR summary
     runs-on: ubuntu-latest
-    needs: [generate-dashboard, security-gate]
+    needs: [security-gate]
     if: always() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     permissions:
+      actions: read
       pull-requests: write
     steps:
-      - name: Comment dashboard link on PR
+      - name: Download consolidated PR summary
+        id: pr-comment-artifact
+        continue-on-error: true
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: unified-findings
+          path: reports/
+
+      - name: Create or update consolidated PR summary
+        if: >-
+          steps.pr-comment-artifact.outcome == 'success' &&
+          hashFiles('reports/pr-comment.md') != ''
         uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
         with:
           script: |
-            const marker = '<!-- devsecops-dashboard-link -->';
-            const pageUrl = `https://${context.repo.owner}.github.io/${context.repo.repo}/`;
-            const gatePassed = '${{ needs.security-gate.result }}' === 'success';
-            const body = [
-              marker,
-              '### Trust Gate',
-              '',
-              `_Dashboard reflects the latest run on \`main\` — merge this PR to update it._`,
-              '',
-              `Security gate: **${gatePassed ? 'passed' : 'failed'}**`,
-              '',
-              `[Open the live dashboard](${pageUrl})`,
-            ].join('\n');
+            const fs = require('fs');
+            const marker = '<!-- trustgate-pr-summary -->';
+            const body = fs.readFileSync('reports/pr-comment.md', 'utf8');
+            if (!body.includes(marker)) {
+              core.setFailed('Refusing to publish an unmarked Trust Gate comment.');
+              return;
+            }
+            if (Buffer.byteLength(body, 'utf8') >= 32768) {
+              core.setFailed('Refusing to publish an oversized Trust Gate comment.');
+              return;
+            }
 
-            const { data: comments } = await github.rest.issues.listComments({
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
+              per_page: 100,
             });
-            const existing = comments.find((c) => c.body.includes(marker));
+            const existing = comments.find((comment) =>
+              comment.user?.type === 'Bot' &&
+              comment.user?.login === 'github-actions[bot]' &&
+              comment.body?.includes(marker)
+            );
 
             if (existing) {
               await github.rest.issues.updateComment({

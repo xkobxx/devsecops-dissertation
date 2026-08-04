@@ -9,8 +9,9 @@ from pathlib import Path
 from trustgate.supply_chain.release import (
     ReleaseError,
     build_release_archives,
-    generate_cyclonedx_sbom,
     generate_checksums,
+    generate_cyclonedx_sbom,
+    generate_spdx_sbom,
     sign_release_artifacts,
 )
 
@@ -49,19 +50,27 @@ def main() -> int:
             ref=args.ref,
             expected_tag=args.tag,
         )
-        sbom = generate_cyclonedx_sbom(
-            repository=repository,
-            output=args.output / f"trustgate-{args.tag}.cdx.json",
-            ref=args.ref,
-            expected_tag=args.tag,
-        )
+        sboms = [
+            generate_cyclonedx_sbom(
+                repository=repository,
+                output=args.output / f"trustgate-{args.tag}.cdx.json",
+                ref=args.ref,
+                expected_tag=args.tag,
+            ),
+            generate_spdx_sbom(
+                repository=repository,
+                output=args.output / f"trustgate-{args.tag}.spdx.json",
+                ref=args.ref,
+                expected_tag=args.tag,
+            ),
+        ]
         checksum_manifest = generate_checksums(
-            [*archives, sbom],
+            [*archives, *sboms],
             args.output / "SHA256SUMS",
         )
         signed = (
             sign_release_artifacts(
-                [*archives, sbom, checksum_manifest],
+                [*archives, *sboms, checksum_manifest],
                 cosign=args.cosign,
             )
             if args.sign
@@ -70,7 +79,7 @@ def main() -> int:
     except ReleaseError as error:
         parser.error(str(error))
 
-    for artifact in [*archives, sbom, checksum_manifest, *signed]:
+    for artifact in [*archives, *sboms, checksum_manifest, *signed]:
         print(artifact)
     return 0
 

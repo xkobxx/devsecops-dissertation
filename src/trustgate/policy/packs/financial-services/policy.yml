@@ -1,0 +1,27 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.financial-services
+policy_version: 1.0.0
+description: Risk-sensitive defaults for financial-services workloads.
+default_action: investigate
+policies:
+  - name: block-critical-financial-assets
+    action: block
+    when:
+      all:
+        - environment: production
+        - asset_criticality: critical
+        - severity: [critical, high]
+        - cwe: [CWE-78, CWE-89]
+  - name: block-known-exploited-financial-finding
+    action: block
+    when:
+      all:
+        - kev: true
+        - environment: production
+  - name: fix-reachable-high-financial-finding
+    action: fix_before_release
+    when:
+      all:
+        - severity: high
+        - reachability: confirmed

@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
-from collections.abc import Sequence, Set
+from collections.abc import Mapping, Sequence, Set
 
 from .models import ParserStatus, ScannerResult, ScannerState
 
@@ -72,6 +72,17 @@ def _as_text(output: str | bytes | None) -> str:
     return output
 
 
+def _redact(value: str | None, sensitive_values: Sequence[str]) -> str | None:
+    if value is None:
+        return None
+    redacted = value
+    for sensitive in sorted(
+        {item for item in sensitive_values if item}, key=len, reverse=True
+    ):
+        redacted = redacted.replace(sensitive, "[REDACTED]")
+    return redacted
+
+
 def execute_scanner(
     *,
     scanner: str,
@@ -83,6 +94,8 @@ def execute_scanner(
     finding_exit_codes: Set[int],
     version: str | None = None,
     report_from_stdout: bool = False,
+    environment: Mapping[str, str] | None = None,
+    redactions: Sequence[str] = (),
 ) -> ScannerResult:
     """Run one scanner and persist complete execution-health evidence."""
 
@@ -108,6 +121,7 @@ def execute_scanner(
             text=True,
             timeout=timeout_seconds,
             check=False,
+            env=environment,
         )
         exit_code = completed.returncode
         stdout = completed.stdout
@@ -122,6 +136,9 @@ def execute_scanner(
         stderr = error + "\n"
 
     ended_at = datetime.now(timezone.utc)
+    stdout = _redact(stdout, redactions) or ""
+    stderr = _redact(stderr, redactions) or ""
+    error = _redact(error, redactions)
     stdout_path.write_text(stdout, encoding="utf-8")
     stderr_path.write_text(stderr, encoding="utf-8")
     if (

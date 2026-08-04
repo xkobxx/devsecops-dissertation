@@ -498,6 +498,94 @@ def confidence_components_html(finding):
     )
 
 
+def reachability_details_html(finding):
+    sections = []
+    dependency = finding.get('dependency_reachability')
+    if isinstance(dependency, dict):
+        path = dependency.get('analysed_call_path') or []
+        path_text = ' → '.join(
+            str(step.get('symbol') or step.get('file') or step.get('kind'))
+            for step in path
+            if isinstance(step, dict)
+        ) or 'No static call path found'
+        sections.append(
+            '<dt>Dependency reachability</dt>'
+            f'<dd><strong>{esc(str(dependency.get("status", "")))}</strong>'
+            f' — {esc(str(dependency.get("explanation", "")))}'
+            f'<br><span class="text-muted-mono">{esc(path_text)}</span></dd>'
+        )
+    source_analysis = finding.get('source_to_sink_analysis')
+    if isinstance(source_analysis, dict):
+        evidence = source_analysis.get('evidence') or []
+        trace = ' → '.join(
+            str(step.get('symbol') or step.get('description') or step.get('kind'))
+            for step in evidence
+            if isinstance(step, dict)
+        ) or 'No source-to-sink path found'
+        routes = ', '.join(
+            str(route.get('endpoint'))
+            for route in source_analysis.get('framework_routes') or []
+            if isinstance(route, dict) and route.get('endpoint')
+        ) or 'No framework route identified'
+        sections.append(
+            '<dt>Source-to-sink evidence</dt>'
+            f'<dd><strong>{esc(str(source_analysis.get("status", "")))}</strong>'
+            f' — {esc(trace)}<br>Route: {esc(routes)}</dd>'
+        )
+    dynamic = finding.get('dynamic_correlation')
+    if isinstance(dynamic, dict):
+        status = str(dynamic.get('status') or '')
+        label = 'Dynamically confirmed' if status == 'confirmed' else status
+        runtime = '; '.join(
+            str(value) for value in dynamic.get('runtime_evidence') or []
+        )
+        sections.append(
+            '<dt>Runtime correlation</dt>'
+            f'<dd><strong>{esc(label)}</strong> — {esc(runtime)}</dd>'
+        )
+    if not sections:
+        return ''
+    return (
+        '<details><summary>Reachability evidence</summary>'
+        '<dl class="confidence-components">'
+        + ''.join(sections)
+        + '</dl></details>'
+    )
+
+
+def decision_details_html(finding):
+    decision = finding.get('contextual_decision')
+    if not isinstance(decision, dict):
+        return ''
+    policy = decision.get('policy') or {}
+    strength = decision.get('evidence_strength') or {}
+    explanation = decision.get('explanation') or []
+    uncertainty = decision.get('unresolved_uncertainty') or []
+    explanation_items = ''.join(
+        f'<li>{esc(str(reason))}</li>' for reason in explanation
+    )
+    uncertainty_text = (
+        ', '.join(str(value) for value in uncertainty)
+        if uncertainty
+        else 'None'
+    )
+    return (
+        '<details><summary>Complete decision explanation</summary>'
+        '<dl class="confidence-components">'
+        f'<dt>Outcome</dt><dd><strong>{esc(str(decision.get("outcome", "")))}</strong></dd>'
+        f'<dt>Policy</dt><dd>{esc(str(policy.get("id", "")))}@{esc(str(policy.get("version", "")))}'
+        f' — rule {esc(str(policy.get("matched_rule_id") or "default"))}</dd>'
+        f'<dt>Evidence strength</dt><dd>{esc(str(strength.get("level", "unknown")))} '
+        f'({esc(str(strength.get("known_components", 0)))}/'
+        f'{esc(str(strength.get("total_components", 16)))} components)</dd>'
+        f'<dt>Explanation</dt><dd><ul>{explanation_items}</ul></dd>'
+        f'<dt>Unresolved uncertainty</dt><dd>{esc(uncertainty_text)}</dd>'
+        f'<dt>Reproduction digest</dt><dd class="text-muted-mono">'
+        f'{esc(str(decision.get("reproduction_digest", "")))}</dd>'
+        '</dl></details>'
+    )
+
+
 finding_rows = ''
 for f in findings:
     sev = finding_severity(f)
@@ -513,7 +601,7 @@ for f in findings:
         f'<td>{badge(sev)}</td>'
         f'<td class="{conf_class}">{esc(conf_label)}</td>'
         f'<td><span class="tag-mono">{esc(rule_short)}</span></td>'
-        f'<td class="clamp-2">{esc(f.get("description",""))}</td>'
+        f'<td>{esc(f.get("description",""))}{reachability_details_html(f)}{decision_details_html(f)}</td>'
         f'<td>{confidence_components_html(f)}</td>'
         f'<td class="text-muted-mono">{esc(f.get("file",""))}</td>'
         f'<td style="text-align:right;font-weight:600;color:var(--gray-900)">{esc(str(line or ""))}</td>'

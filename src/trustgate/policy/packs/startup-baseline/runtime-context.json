@@ -1,0 +1,7 @@
+{
+  "shared": {
+    "severity": "critical",
+    "confidence_lower_bound": 0.91,
+    "kev": false
+  }
+}

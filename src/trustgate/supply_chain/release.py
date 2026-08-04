@@ -3,29 +3,37 @@
 from __future__ import annotations
 
 import ast
-from collections.abc import Iterable, Sequence
 import hashlib
 import json
-from pathlib import Path
 import re
 import subprocess
 import tempfile
 import tomllib
 import uuid
-
+from collections.abc import Iterable, Sequence
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 
 SEMANTIC_VERSION = re.compile(
     r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
     r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
     r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
 )
-LOCKED_REQUIREMENT = re.compile(
-    r"^([A-Za-z0-9_.-]+)==([^=<>!~;\s]+)(?:\s*\\)?$"
-)
+LOCKED_REQUIREMENT = re.compile(r"^([A-Za-z0-9_.-]+)==([^=<>!~;\s]+)(?:\s*\\)?$")
+LOCKED_HASH = re.compile(r"^--hash=sha256:([0-9a-f]{64})(?:\s*\\)?$")
 
 
 class ReleaseError(RuntimeError):
     """Raised when release inputs or generated artifacts are unsafe."""
+
+
+@dataclass(frozen=True, slots=True)
+class _LockedPackage:
+    name: str
+    version: str
+    hashes: tuple[str, ...]
+    parents: tuple[str, ...]
 
 
 def _git(repository: Path, *arguments: str) -> str:
@@ -39,7 +47,9 @@ def _git(repository: Path, *arguments: str) -> str:
         )
     except (OSError, subprocess.CalledProcessError) as error:
         detail = getattr(error, "stderr", "") or str(error)
-        raise ReleaseError(f"git {' '.join(arguments)} failed: {detail.strip()}") from error
+        raise ReleaseError(
+            f"git {' '.join(arguments)} failed: {detail.strip()}"
+        ) from error
     return result.stdout.strip()
 
 
@@ -196,26 +206,169 @@ def _locked_requirements(source: str, *, label: str) -> dict[str, str]:
     return requirements
 
 
-def _component(name: str, version: str) -> dict[str, str]:
-    purl = f"pkg:pypi/{name}@{version}"
+def _locked_packages(source: str, *, label: str) -> dict[str, _LockedPackage]:
+    packages: dict[str, _LockedPackage] = {}
+    current_name: str | None = None
+    current_version = ""
+    current_hashes: set[str] = set()
+    current_parents: set[str] = set()
+    in_via_block = False
+
+    def finish() -> None:
+        nonlocal current_name, current_version, current_hashes, current_parents
+        if current_name is None:
+            return
+        if not current_hashes:
+            raise ReleaseError(
+                f"{label} dependency {current_name} has no SHA-256 hashes"
+            )
+        if current_name in packages:
+            raise ReleaseError(f"{label} contains duplicate dependency {current_name}")
+        packages[current_name] = _LockedPackage(
+            name=current_name,
+            version=current_version,
+            hashes=tuple(sorted(current_hashes)),
+            parents=tuple(sorted(current_parents)),
+        )
+        current_name = None
+        current_version = ""
+        current_hashes = set()
+        current_parents = set()
+
+    for line_number, raw_line in enumerate(source.splitlines(), start=1):
+        stripped = raw_line.strip()
+        requirement = LOCKED_REQUIREMENT.fullmatch(stripped)
+        if requirement is not None:
+            finish()
+            name, current_version = requirement.groups()
+            current_name = _normalise_package_name(name)
+            in_via_block = False
+            continue
+        if current_name is None:
+            continue
+        digest = LOCKED_HASH.fullmatch(stripped)
+        if digest is not None:
+            current_hashes.add(digest.group(1))
+            in_via_block = False
+            continue
+        if stripped.startswith("# via"):
+            parent = stripped.removeprefix("# via").strip()
+            if parent and not parent.startswith("-r "):
+                current_parents.add(_normalise_package_name(parent))
+            in_via_block = True
+            continue
+        if in_via_block and stripped.startswith("#"):
+            parent = stripped.removeprefix("#").strip()
+            if parent and not parent.startswith("-r "):
+                current_parents.add(_normalise_package_name(parent))
+            continue
+        if stripped and not stripped.startswith("#"):
+            raise ReleaseError(
+                f"{label}:{line_number} is not locked dependency metadata: {stripped}"
+            )
+    finish()
+    if not packages:
+        raise ReleaseError(f"{label} contains no locked dependencies")
+    unknown_parents = sorted(
+        {
+            parent
+            for package in packages.values()
+            for parent in package.parents
+            if parent not in packages
+        }
+    )
+    if unknown_parents:
+        raise ReleaseError(
+            f"{label} references missing parent dependencies: "
+            + ", ".join(unknown_parents)
+        )
+    return packages
+
+
+def _license_inventory(
+    source: str,
+    packages: dict[str, _LockedPackage],
+    *,
+    label: str,
+) -> dict[str, str]:
+    try:
+        document = json.loads(source)
+    except json.JSONDecodeError as error:
+        raise ReleaseError(f"{label} is not valid JSON") from error
+    if not isinstance(document, dict) or document.get("schema_version") != "1.0.0":
+        raise ReleaseError(f"{label} must use schema_version 1.0.0")
+    entries = document.get("packages")
+    if not isinstance(entries, dict):
+        raise ReleaseError(f"{label} packages must be an object")
+    licenses: dict[str, str] = {}
+    for raw_name, entry in entries.items():
+        name = _normalise_package_name(str(raw_name))
+        if not isinstance(entry, dict):
+            raise ReleaseError(f"{label} entry for {name} must be an object")
+        package = packages.get(name)
+        if package is None:
+            raise ReleaseError(
+                f"{label} contains dependency not present in lock: {name}"
+            )
+        if entry.get("version") != package.version:
+            raise ReleaseError(f"{label} version does not match lock for {name}")
+        expression = entry.get("license")
+        if (
+            not isinstance(expression, str)
+            or not expression.strip()
+            or any(ord(character) < 32 for character in expression)
+        ):
+            raise ReleaseError(f"{label} has no valid licence for {name}")
+        licenses[name] = expression.strip()
+    missing = sorted(set(packages) - set(licenses))
+    if missing:
+        raise ReleaseError(
+            f"{label} is missing dependency licences: " + ", ".join(missing)
+        )
+    return licenses
+
+
+def _component(
+    package: _LockedPackage,
+    *,
+    direct: bool,
+    license_expression: str,
+) -> dict[str, object]:
+    purl = f"pkg:pypi/{package.name}@{package.version}"
     return {
         "type": "library",
         "bom-ref": purl,
-        "name": name,
-        "version": version,
+        "name": package.name,
+        "version": package.version,
         "purl": purl,
+        "licenses": [{"expression": license_expression}],
+        "hashes": [{"alg": "SHA-256", "content": digest} for digest in package.hashes],
+        "properties": [
+            {
+                "name": "trustgate:dependency:type",
+                "value": "direct" if direct else "transitive",
+            }
+        ],
     }
 
 
-def generate_cyclonedx_sbom(
+@dataclass(frozen=True, slots=True)
+class _SbomContext:
+    commit: str
+    version: str
+    release_tag: str
+    timestamp: str
+    locked: dict[str, _LockedPackage]
+    direct: dict[str, str]
+    licenses: dict[str, str]
+
+
+def _sbom_context(
     *,
     repository: Path,
-    output: Path,
     ref: str,
-    expected_tag: str,
-) -> Path:
-    """Generate a deterministic CycloneDX inventory from the tagged lockfile."""
-
+    expected_tag: str | None,
+) -> _SbomContext:
     repository = repository.resolve()
     if not (repository / ".git").exists():
         raise ReleaseError(f"not a Git repository: {repository}")
@@ -224,7 +377,7 @@ def generate_cyclonedx_sbom(
         ref,
         expected_tag,
     )
-    locked = _locked_requirements(
+    locked = _locked_packages(
         _git(repository, "show", f"{commit}:requirements/runtime.lock"),
         label="requirements/runtime.lock",
     )
@@ -233,76 +386,31 @@ def generate_cyclonedx_sbom(
         label="requirements/runtime.in",
     )
     for name, direct_version in direct.items():
-        locked_version = locked.get(name)
-        if locked_version is None:
-            raise ReleaseError(
-                f"direct dependency {name} is missing from runtime.lock"
-            )
-        if locked_version != direct_version:
+        locked_package = locked.get(name)
+        if locked_package is None:
+            raise ReleaseError(f"direct dependency {name} is missing from runtime.lock")
+        if locked_package.version != direct_version:
             raise ReleaseError(
                 f"direct dependency {name} is {direct_version} in runtime.in "
-                f"but {locked_version} in runtime.lock"
+                f"but {locked_package.version} in runtime.lock"
             )
-
-    root_ref = f"pkg:pypi/trustgate@{version}"
-    components = [
-        _component(name, dependency_version)
-        for name, dependency_version in sorted(locked.items())
-    ]
-    timestamp = _git(repository, "show", "-s", "--format=%cI", commit)
-    serial = uuid.uuid5(
-        uuid.NAMESPACE_URL,
-        f"https://github.com/xkobxx/devsecops-dissertation@{commit}",
+    licenses = _license_inventory(
+        _git(repository, "show", f"{commit}:requirements/runtime.licenses.json"),
+        locked,
+        label="requirements/runtime.licenses.json",
     )
-    sbom = {
-        "$schema": "https://cyclonedx.org/schema/bom-1.6.schema.json",
-        "bomFormat": "CycloneDX",
-        "specVersion": "1.6",
-        "serialNumber": f"urn:uuid:{serial}",
-        "version": 1,
-        "metadata": {
-            "timestamp": timestamp,
-            "component": {
-                "type": "application",
-                "bom-ref": root_ref,
-                "name": "trustgate",
-                "version": version,
-                "purl": root_ref,
-                "licenses": [{"license": {"id": "MIT"}}],
-                "externalReferences": [
-                    {
-                        "type": "vcs",
-                        "url": (
-                            "https://github.com/xkobxx/"
-                            f"devsecops-dissertation/tree/{commit}"
-                        ),
-                    }
-                ],
-            },
-            "properties": [
-                {"name": "trustgate:git:commit", "value": commit},
-                {"name": "trustgate:git:tag", "value": release_tag},
-                {
-                    "name": "trustgate:dependency-source",
-                    "value": "requirements/runtime.lock",
-                },
-            ],
-        },
-        "components": components,
-        "dependencies": [
-            {
-                "ref": root_ref,
-                "dependsOn": [
-                    f"pkg:pypi/{name}@{direct[name]}" for name in sorted(direct)
-                ],
-            },
-            *[
-                {"ref": component["bom-ref"], "dependsOn": []}
-                for component in components
-            ],
-        ],
-    }
+    return _SbomContext(
+        commit=commit,
+        version=version,
+        release_tag=release_tag,
+        timestamp=_git(repository, "show", "-s", "--format=%cI", commit),
+        locked=locked,
+        direct=direct,
+        licenses=licenses,
+    )
 
+
+def _write_json_artifact(document: dict[str, object], output: Path) -> Path:
     if output.is_symlink():
         raise ReleaseError(f"refusing to overwrite release artifact: {output}")
     output = output.resolve()
@@ -315,11 +423,242 @@ def generate_cyclonedx_sbom(
         prefix=f".{output.name}.",
         delete=False,
     ) as temporary:
-        json.dump(sbom, temporary, indent=2, sort_keys=True)
+        json.dump(document, temporary, indent=2, sort_keys=True)
         temporary.write("\n")
         temporary_path = Path(temporary.name)
     temporary_path.replace(output)
     return output
+
+
+def generate_cyclonedx_sbom(
+    *,
+    repository: Path,
+    output: Path,
+    ref: str,
+    expected_tag: str | None = None,
+) -> Path:
+    """Generate a deterministic CycloneDX inventory from the tagged lockfile."""
+
+    repository = repository.resolve()
+    context = _sbom_context(repository=repository, ref=ref, expected_tag=expected_tag)
+
+    root_ref = f"pkg:pypi/trustgate@{context.version}"
+    components = [
+        _component(
+            package,
+            direct=name in context.direct,
+            license_expression=context.licenses[name],
+        )
+        for name, package in sorted(context.locked.items())
+    ]
+    serial = uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"https://github.com/xkobxx/devsecops-dissertation@{context.commit}",
+    )
+    sbom = {
+        "$schema": "https://cyclonedx.org/schema/bom-1.6.schema.json",
+        "bomFormat": "CycloneDX",
+        "specVersion": "1.6",
+        "serialNumber": f"urn:uuid:{serial}",
+        "version": 1,
+        "metadata": {
+            "timestamp": context.timestamp,
+            "component": {
+                "type": "application",
+                "bom-ref": root_ref,
+                "name": "trustgate",
+                "version": context.version,
+                "purl": root_ref,
+                "licenses": [{"license": {"id": "MIT"}}],
+                "externalReferences": [
+                    {
+                        "type": "vcs",
+                        "url": (
+                            "https://github.com/xkobxx/"
+                            f"devsecops-dissertation/tree/{context.commit}"
+                        ),
+                    }
+                ],
+            },
+            "properties": [
+                {"name": "trustgate:git:commit", "value": context.commit},
+                {"name": "trustgate:git:tag", "value": context.release_tag},
+                {
+                    "name": "trustgate:dependency-source",
+                    "value": "requirements/runtime.lock",
+                },
+            ],
+        },
+        "components": components,
+        "dependencies": [
+            {
+                "ref": root_ref,
+                "dependsOn": [
+                    f"pkg:pypi/{name}@{context.direct[name]}"
+                    for name in sorted(context.direct)
+                ],
+            },
+            *[
+                {
+                    "ref": component["bom-ref"],
+                    "dependsOn": [
+                        f"pkg:pypi/{child.name}@{child.version}"
+                        for child in sorted(
+                            (
+                                candidate
+                                for candidate in context.locked.values()
+                                if component["name"] in candidate.parents
+                            ),
+                            key=lambda candidate: candidate.name,
+                        )
+                    ],
+                }
+                for component in components
+            ],
+        ],
+    }
+
+    return _write_json_artifact(sbom, output)
+
+
+def _spdx_package_id(name: str) -> str:
+    safe_name = re.sub(r"[^A-Za-z0-9.-]+", "-", name).strip("-.")
+    return f"SPDXRef-Package-{safe_name}"
+
+
+def generate_spdx_sbom(
+    *,
+    repository: Path,
+    output: Path,
+    ref: str,
+    expected_tag: str | None = None,
+) -> Path:
+    """Generate a deterministic SPDX 2.3 inventory from the tagged lockfile."""
+
+    context = _sbom_context(
+        repository=repository.resolve(), ref=ref, expected_tag=expected_tag
+    )
+    root_id = _spdx_package_id("trustgate")
+    package_ids = {name: _spdx_package_id(name) for name in sorted(context.locked)}
+    created = (
+        datetime.fromisoformat(context.timestamp)
+        .astimezone(UTC)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
+    namespace_id = uuid.uuid5(
+        uuid.NAMESPACE_URL,
+        f"https://github.com/xkobxx/devsecops-dissertation/spdx/{context.commit}",
+    )
+    packages: list[dict[str, object]] = [
+        {
+            "SPDXID": root_id,
+            "name": "trustgate",
+            "versionInfo": context.version,
+            "downloadLocation": "NOASSERTION",
+            "filesAnalyzed": False,
+            "licenseConcluded": "MIT",
+            "licenseDeclared": "MIT",
+            "copyrightText": "NOASSERTION",
+            "externalRefs": [
+                {
+                    "referenceCategory": "PACKAGE-MANAGER",
+                    "referenceType": "purl",
+                    "referenceLocator": f"pkg:pypi/trustgate@{context.version}",
+                }
+            ],
+        }
+    ]
+    for name, package in sorted(context.locked.items()):
+        license_expression = context.licenses[name]
+        packages.append(
+            {
+                "SPDXID": package_ids[name],
+                "name": name,
+                "versionInfo": package.version,
+                "downloadLocation": "NOASSERTION",
+                "filesAnalyzed": False,
+                "licenseConcluded": license_expression,
+                "licenseDeclared": license_expression,
+                "copyrightText": "NOASSERTION",
+                "checksums": [
+                    {"algorithm": "SHA256", "checksumValue": digest}
+                    for digest in package.hashes
+                ],
+                "externalRefs": [
+                    {
+                        "referenceCategory": "PACKAGE-MANAGER",
+                        "referenceType": "purl",
+                        "referenceLocator": f"pkg:pypi/{name}@{package.version}",
+                    }
+                ],
+                "comment": (
+                    "Trust Gate dependency type: "
+                    + ("direct" if name in context.direct else "transitive")
+                ),
+            }
+        )
+
+    relationships: list[dict[str, str]] = [
+        {
+            "spdxElementId": "SPDXRef-DOCUMENT",
+            "relationshipType": "DESCRIBES",
+            "relatedSpdxElement": root_id,
+        },
+        *[
+            {
+                "spdxElementId": root_id,
+                "relationshipType": "DEPENDS_ON",
+                "relatedSpdxElement": package_ids[name],
+            }
+            for name in sorted(context.direct)
+        ],
+    ]
+    for child_name, package in sorted(context.locked.items()):
+        for parent_name in package.parents:
+            relationships.append(
+                {
+                    "spdxElementId": package_ids[parent_name],
+                    "relationshipType": "DEPENDS_ON",
+                    "relatedSpdxElement": package_ids[child_name],
+                }
+            )
+    relationships[1:] = sorted(
+        relationships[1:],
+        key=lambda relationship: (
+            relationship["spdxElementId"],
+            relationship["relatedSpdxElement"],
+        ),
+    )
+    document: dict[str, object] = {
+        "spdxVersion": "SPDX-2.3",
+        "dataLicense": "CC0-1.0",
+        "SPDXID": "SPDXRef-DOCUMENT",
+        "name": f"trustgate-{context.release_tag}",
+        "documentNamespace": (
+            f"https://spdx.org/spdxdocs/trustgate-{context.release_tag}-{namespace_id}"
+        ),
+        "creationInfo": {
+            "created": created,
+            "creators": [f"Tool: TrustGate-{context.version}"],
+        },
+        "documentDescribes": [root_id],
+        "packages": packages,
+        "relationships": relationships,
+        "annotations": [
+            {
+                "annotationDate": created,
+                "annotationType": "OTHER",
+                "annotator": f"Tool: TrustGate-{context.version}",
+                "comment": (
+                    f"Git commit {context.commit}; release tag "
+                    f"{context.release_tag}; dependency source "
+                    "requirements/runtime.lock"
+                ),
+            }
+        ],
+    }
+    return _write_json_artifact(document, output)
 
 
 def _checked_artifacts(artifacts: Iterable[Path]) -> list[Path]:
@@ -393,7 +732,9 @@ def sign_release_artifacts(
                 check=True,
             )
         except (OSError, subprocess.CalledProcessError) as error:
-            raise ReleaseError(f"could not sign release artifact: {artifact}") from error
+            raise ReleaseError(
+                f"could not sign release artifact: {artifact}"
+            ) from error
         if not bundle.is_file() or bundle.stat().st_size == 0:
             raise ReleaseError(f"cosign did not create a signature bundle: {bundle}")
         bundles.append(bundle)
@@ -403,7 +744,8 @@ def sign_release_artifacts(
 __all__ = [
     "ReleaseError",
     "build_release_archives",
-    "generate_cyclonedx_sbom",
     "generate_checksums",
+    "generate_cyclonedx_sbom",
+    "generate_spdx_sbom",
     "sign_release_artifacts",
 ]

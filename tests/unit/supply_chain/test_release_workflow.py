@@ -1,7 +1,6 @@
-from pathlib import Path
 import re
 import unittest
-
+from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
@@ -30,13 +29,12 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
         self.assertIn("subject-checksums: release/SHA256SUMS", workflow)
         self.assertIn("sbom-path:", workflow)
         self.assertIn("trustgate-${{ github.ref_name }}.cdx.json", workflow)
+        self.assertIn("trustgate-${{ github.ref_name }}.spdx.json", workflow)
         self.assertIn("gh release create", workflow)
-        self.assertIn("release/trustgate-*.cdx.json", workflow)
         self.assertIn("cosign-release: v3.0.6", workflow)
         self.assertEqual(
             workflow.count(
-                "actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6"
-                " # v4.2.0"
+                "actions/attest@f7c74d28b9d84cb8768d0b8ca14a4bac6ef463e6 # v4.2.0"
             ),
             2,
         )
@@ -65,8 +63,12 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
             builder.index("generate_cyclonedx_sbom("),
             builder.index("generate_checksums("),
         )
-        self.assertIn("[*archives, sbom]", builder)
-        self.assertIn("[*archives, sbom, checksum_manifest]", builder)
+        self.assertLess(
+            builder.index("generate_spdx_sbom("),
+            builder.index("generate_checksums("),
+        )
+        self.assertIn("[*archives, *sboms]", builder)
+        self.assertIn("[*archives, *sboms, checksum_manifest]", builder)
 
     def test_release_verification_document_constrains_repository_identity(self) -> None:
         path = REPOSITORY_ROOT / "docs" / "RELEASE_VERIFICATION.md"
@@ -75,6 +77,7 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
 
         self.assertIn("sha256sum --check SHA256SUMS", guide)
         self.assertIn("cosign verify-blob", guide)
+        self.assertIn('"trustgate-v${VERSION}.spdx.json"', guide)
         self.assertIn("gh attestation verify", guide)
         self.assertIn("--predicate-type https://cyclonedx.org/bom", guide)
         self.assertIn("--repo xkobxx/devsecops-dissertation", guide)

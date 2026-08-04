@@ -1,9 +1,8 @@
 import os
-from pathlib import Path
 import subprocess
 import sys
 import unittest
-
+from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 
@@ -24,9 +23,22 @@ class TrustGateHelpTests(unittest.TestCase):
 
         self.assertEqual(completed.returncode, 0, completed.stderr)
         self.assertIn("usage: trustgate", completed.stdout)
-        self.assertIn("local-first application-security decision platform", completed.stdout)
+        self.assertIn(
+            "local-first application-security decision platform", completed.stdout
+        )
         self.assertIn("aggregate", completed.stdout)
         self.assertIn("enrich", completed.stdout)
+        self.assertIn("reachability", completed.stdout)
+        self.assertIn("dast", completed.stdout)
+        self.assertIn("decide", completed.stdout)
+        self.assertIn("policy", completed.stdout)
+        self.assertIn("baseline", completed.stdout)
+        self.assertIn("suppression", completed.stdout)
+        self.assertIn("sarif", completed.stdout)
+        self.assertIn("checks", completed.stdout)
+        self.assertIn("pr-comment", completed.stdout)
+        self.assertIn("sbom", completed.stdout)
+        self.assertIn("vex", completed.stdout)
         self.assertIn("report", completed.stdout)
 
     def test_enrichment_help_documents_all_network_modes(self):

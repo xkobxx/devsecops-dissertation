@@ -1,0 +1,8 @@
+{
+  "shared": {
+    "environment": "production",
+    "severity": "high",
+    "confidence_lower_bound": 0.9,
+    "scanner_health": "healthy"
+  }
+}

@@ -2,19 +2,21 @@ from __future__ import annotations
 
 import hashlib
 import json
-from pathlib import Path
 import subprocess
 import tarfile
-from tempfile import TemporaryDirectory
 import unittest
-from unittest.mock import patch
 import zipfile
+from pathlib import Path
+from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
+import trustgate.supply_chain.release as release_module
+from trustgate.cli import main as cli_main
 from trustgate.supply_chain.release import (
     ReleaseError,
     build_release_archives,
-    generate_cyclonedx_sbom,
     generate_checksums,
+    generate_cyclonedx_sbom,
     sign_release_artifacts,
 )
 
@@ -51,6 +53,28 @@ pycparser==3.0 \\
 """.lstrip(),
             encoding="utf-8",
         )
+        (requirements / "runtime.licenses.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "1.0.0",
+                    "packages": {
+                        "cffi": {"version": "2.1.0", "license": "MIT-0"},
+                        "cryptography": {
+                            "version": "49.0.0",
+                            "license": "Apache-2.0 OR BSD-3-Clause",
+                        },
+                        "pycparser": {
+                            "version": "3.0",
+                            "license": "BSD-3-Clause",
+                        },
+                    },
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         (root / "README.md").write_text("release fixture\n", encoding="utf-8")
         (root / ".gitignore").write_text("private-key.pem\n", encoding="utf-8")
         (root / "private-key.pem").write_text("never package me\n", encoding="utf-8")
@@ -74,7 +98,9 @@ pycparser==3.0 \\
         )
         subprocess.run(["git", "tag", f"v{package_version}"], cwd=root, check=True)
 
-    def test_builds_reproducible_versioned_archives_from_the_tagged_commit(self) -> None:
+    def test_builds_reproducible_versioned_archives_from_the_tagged_commit(
+        self,
+    ) -> None:
         with TemporaryDirectory() as directory:
             root = Path(directory)
             self._repository(root)
@@ -107,8 +133,7 @@ pycparser==3.0 \\
 
             self.assertTrue(
                 all(
-                    name == "trustgate-0.1.0"
-                    or name.startswith("trustgate-0.1.0/")
+                    name == "trustgate-0.1.0" or name.startswith("trustgate-0.1.0/")
                     for name in tar_names
                 )
             )
@@ -198,11 +223,42 @@ pycparser==3.0 \\
                     "pkg:pypi/pycparser@3.0",
                 ],
             )
-            root_dependency = sbom["dependencies"][0]
-            self.assertEqual(root_dependency["ref"], "pkg:pypi/trustgate@0.1.0")
+            components = {
+                component["purl"]: component for component in sbom["components"]
+            }
             self.assertEqual(
-                root_dependency["dependsOn"],
+                components["pkg:pypi/cffi@2.1.0"]["licenses"],
+                [{"expression": "MIT-0"}],
+            )
+            self.assertEqual(
+                components["pkg:pypi/cffi@2.1.0"]["hashes"],
+                [{"alg": "SHA-256", "content": "a" * 64}],
+            )
+            properties = {
+                item["name"]: item["value"]
+                for item in components["pkg:pypi/cryptography@49.0.0"]["properties"]
+            }
+            self.assertEqual(properties["trustgate:dependency:type"], "direct")
+            properties = {
+                item["name"]: item["value"]
+                for item in components["pkg:pypi/cffi@2.1.0"]["properties"]
+            }
+            self.assertEqual(properties["trustgate:dependency:type"], "transitive")
+            dependencies = {
+                dependency["ref"]: dependency["dependsOn"]
+                for dependency in sbom["dependencies"]
+            }
+            self.assertEqual(
+                dependencies["pkg:pypi/trustgate@0.1.0"],
                 ["pkg:pypi/cryptography@49.0.0"],
+            )
+            self.assertEqual(
+                dependencies["pkg:pypi/cryptography@49.0.0"],
+                ["pkg:pypi/cffi@2.1.0"],
+            )
+            self.assertEqual(
+                dependencies["pkg:pypi/cffi@2.1.0"],
+                ["pkg:pypi/pycparser@3.0"],
             )
             commit = subprocess.run(
                 ["git", "rev-parse", "v0.1.0^{commit}"],
@@ -212,8 +268,7 @@ pycparser==3.0 \\
                 text=True,
             ).stdout.strip()
             properties = {
-                item["name"]: item["value"]
-                for item in sbom["metadata"]["properties"]
+                item["name"]: item["value"] for item in sbom["metadata"]["properties"]
             }
             self.assertEqual(properties["trustgate:git:commit"], commit)
             self.assertEqual(properties["trustgate:git:tag"], "v0.1.0")
@@ -247,6 +302,132 @@ pycparser==3.0 \\
                     ref="v0.1.0",
                     expected_tag="v0.1.0",
                 )
+
+    def test_sbom_rejects_an_incomplete_dependency_licence_inventory(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._repository(root)
+            inventory = root / "requirements" / "runtime.licenses.json"
+            document = json.loads(inventory.read_text(encoding="utf-8"))
+            del document["packages"]["pycparser"]
+            inventory.write_text(
+                json.dumps(document, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            subprocess.run(["git", "add", str(inventory)], cwd=root, check=True)
+            subprocess.run(
+                ["git", "commit", "-q", "-m", "remove licence"],
+                cwd=root,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "tag", "-f", "v0.1.0"],
+                cwd=root,
+                check=True,
+                capture_output=True,
+            )
+
+            with self.assertRaisesRegex(ReleaseError, "missing dependency licences"):
+                generate_cyclonedx_sbom(
+                    repository=root,
+                    output=root / "trustgate-v0.1.0.cdx.json",
+                    ref="v0.1.0",
+                    expected_tag="v0.1.0",
+                )
+
+    def test_generates_a_deterministic_spdx_sbom_with_dependency_edges(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._repository(root)
+            generator = release_module.generate_spdx_sbom
+            first = generator(
+                repository=root,
+                output=root / "first" / "trustgate-v0.1.0.spdx.json",
+                ref="v0.1.0",
+                expected_tag="v0.1.0",
+            )
+            second = generator(
+                repository=root,
+                output=root / "second" / "trustgate-v0.1.0.spdx.json",
+                ref="v0.1.0",
+                expected_tag="v0.1.0",
+            )
+
+            self.assertEqual(first.read_bytes(), second.read_bytes())
+            sbom = json.loads(first.read_text(encoding="utf-8"))
+            self.assertEqual(sbom["spdxVersion"], "SPDX-2.3")
+            self.assertEqual(sbom["dataLicense"], "CC0-1.0")
+            self.assertEqual(sbom["name"], "trustgate-v0.1.0")
+            packages = {package["name"]: package for package in sbom["packages"]}
+            self.assertEqual(
+                list(packages),
+                ["trustgate", "cffi", "cryptography", "pycparser"],
+            )
+            self.assertEqual(packages["cffi"]["versionInfo"], "2.1.0")
+            self.assertEqual(packages["cffi"]["licenseDeclared"], "MIT-0")
+            self.assertEqual(
+                packages["cffi"]["checksums"],
+                [{"algorithm": "SHA256", "checksumValue": "a" * 64}],
+            )
+            self.assertEqual(
+                packages["cffi"]["externalRefs"][0]["referenceLocator"],
+                "pkg:pypi/cffi@2.1.0",
+            )
+            package_ids = {
+                package["name"]: package["SPDXID"] for package in sbom["packages"]
+            }
+            relationships = {
+                (
+                    relationship["spdxElementId"],
+                    relationship["relationshipType"],
+                    relationship["relatedSpdxElement"],
+                )
+                for relationship in sbom["relationships"]
+            }
+            self.assertIn(
+                ("SPDXRef-DOCUMENT", "DESCRIBES", package_ids["trustgate"]),
+                relationships,
+            )
+            self.assertIn(
+                (
+                    package_ids["trustgate"],
+                    "DEPENDS_ON",
+                    package_ids["cryptography"],
+                ),
+                relationships,
+            )
+            self.assertIn(
+                (package_ids["cryptography"], "DEPENDS_ON", package_ids["cffi"]),
+                relationships,
+            )
+            self.assertIn(
+                (package_ids["cffi"], "DEPENDS_ON", package_ids["pycparser"]),
+                relationships,
+            )
+
+    def test_sbom_cli_generates_both_standard_formats(self) -> None:
+        with TemporaryDirectory() as directory:
+            root = Path(directory)
+            self._repository(root)
+            output = root / "sboms"
+
+            result = cli_main(
+                [
+                    "sbom",
+                    "--repository",
+                    str(root),
+                    "--ref",
+                    "v0.1.0",
+                    "--tag",
+                    "v0.1.0",
+                    "--output-directory",
+                    str(output),
+                ]
+            )
+
+            self.assertEqual(result, 0)
+            self.assertTrue((output / "trustgate-v0.1.0.cdx.json").is_file())
+            self.assertTrue((output / "trustgate-v0.1.0.spdx.json").is_file())
 
     @patch("trustgate.supply_chain.release.subprocess.run")
     def test_signs_every_archive_and_the_checksum_manifest(

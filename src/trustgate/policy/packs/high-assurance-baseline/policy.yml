@@ -1,0 +1,25 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.high-assurance-baseline
+policy_version: 1.0.0
+description: Conservative release controls for high-assurance software.
+default_action: fix_within_sla
+policies:
+  - name: block-production-high
+    action: block
+    when:
+      all:
+        - environment: production
+        - severity: [critical, high]
+        - confidence_lower_bound: ">=0.80"
+  - name: block-degraded-scanner-evidence
+    action: insufficient_evidence
+    when:
+      not:
+        scanner_health: healthy
+  - name: fix-confirmed-medium-before-release
+    action: fix_before_release
+    when:
+      all:
+        - severity: medium
+        - reachability: confirmed

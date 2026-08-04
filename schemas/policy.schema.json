@@ -1,0 +1,409 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/policy.schema.json",
+  "title": "Trust Gate Policy-as-Code",
+  "description": "Versioned, deterministic policy rules over canonical finding and runtime context.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "version",
+    "policy_id",
+    "policy_version",
+    "policies"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "version": {"const": 1},
+    "policy_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "policy_version": {"type": "string", "minLength": 1, "maxLength": 128},
+    "description": {"type": "string"},
+    "default_action": {"$ref": "#/$defs/action"},
+    "extends": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/policyReference"}
+    },
+    "organisation_defaults": {"$ref": "#/$defs/policyLayer"},
+    "repository_overrides": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/repositoryOverride"}
+    },
+    "policies": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/policyRule"}
+    }
+  },
+  "$defs": {
+    "action": {
+      "type": "string",
+      "enum": [
+        "block",
+        "fix_before_release",
+        "fix_within_sla",
+        "investigate",
+        "monitor",
+        "temporarily_suppress",
+        "accept_risk",
+        "likely_noise",
+        "insufficient_evidence"
+      ]
+    },
+    "policyReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "policy_id", "policy_version"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "policy_id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "policy_version": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "policyLayer": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "default_action": {"$ref": "#/$defs/action"},
+        "policies": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/policyRule"}
+        }
+      },
+      "anyOf": [
+        {"required": ["default_action"]},
+        {"required": ["policies"]}
+      ]
+    },
+    "repositoryOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repositories"],
+      "properties": {
+        "repositories": {"$ref": "#/$defs/selectorValue"},
+        "default_action": {"$ref": "#/$defs/action"},
+        "policies": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/policyRule"}
+        }
+      },
+      "anyOf": [
+        {"required": ["default_action"]},
+        {"required": ["policies"]}
+      ]
+    },
+    "policyRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "action", "when"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 256},
+        "description": {"type": "string"},
+        "action": {"$ref": "#/$defs/action"},
+        "when": {"$ref": "#/$defs/expression"}
+      }
+    },
+    "expression": {
+      "oneOf": [
+        {"$ref": "#/$defs/anyExpression"},
+        {"$ref": "#/$defs/allExpression"},
+        {"$ref": "#/$defs/notExpression"},
+        {"$ref": "#/$defs/severityPredicate"},
+        {"$ref": "#/$defs/cwePredicate"},
+        {"$ref": "#/$defs/cvePredicate"},
+        {"$ref": "#/$defs/epssPredicate"},
+        {"$ref": "#/$defs/kevPredicate"},
+        {"$ref": "#/$defs/reachabilityPredicate"},
+        {"$ref": "#/$defs/environmentPredicate"},
+        {"$ref": "#/$defs/repositoryPredicate"},
+        {"$ref": "#/$defs/branchPredicate"},
+        {"$ref": "#/$defs/assetCriticalityPredicate"},
+        {"$ref": "#/$defs/confidencePredicate"},
+        {"$ref": "#/$defs/findingStatusPredicate"},
+        {"$ref": "#/$defs/introducedPredicate"},
+        {"$ref": "#/$defs/fixPredicate"},
+        {"$ref": "#/$defs/scannerHealthPredicate"},
+        {"$ref": "#/$defs/secretValidationPredicate"},
+        {"$ref": "#/$defs/suppressionExpiryPredicate"}
+      ]
+    },
+    "anyExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["any"],
+      "properties": {
+        "any": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/expression"}
+        }
+      }
+    },
+    "allExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["all"],
+      "properties": {
+        "all": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/expression"}
+        }
+      }
+    },
+    "notExpression": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["not"],
+      "properties": {"not": {"$ref": "#/$defs/expression"}}
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "info", "unknown"]
+    },
+    "severityValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/severity"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/severity"}
+        }
+      ]
+    },
+    "selector": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "selectorValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/selector"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/selector"}
+        }
+      ]
+    },
+    "probabilityComparison": {
+      "oneOf": [
+        {"type": "number", "minimum": 0, "maximum": 1},
+        {
+          "type": "string",
+          "pattern": "^(?:>=|<=|>|<|==)(?:0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"
+        }
+      ]
+    },
+    "severityPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["severity"],
+      "properties": {"severity": {"$ref": "#/$defs/severityValue"}}
+    },
+    "cwePredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cwe"],
+      "properties": {
+        "cwe": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^CWE-[1-9][0-9]*$"}
+        }
+      }
+    },
+    "cvePredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cve"],
+      "properties": {
+        "cve": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"}
+        }
+      }
+    },
+    "epssPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["epss"],
+      "properties": {"epss": {"$ref": "#/$defs/probabilityComparison"}}
+    },
+    "kevPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kev"],
+      "properties": {"kev": {"type": "boolean"}}
+    },
+    "reachability": {
+      "type": "string",
+      "enum": ["confirmed", "likely", "unreachable", "unknown", "not_applicable"]
+    },
+    "reachabilityValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/reachability"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/reachability"}
+        }
+      ]
+    },
+    "reachabilityPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reachability"],
+      "properties": {"reachability": {"$ref": "#/$defs/reachabilityValue"}}
+    },
+    "environmentPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environment"],
+      "properties": {"environment": {"$ref": "#/$defs/selectorValue"}}
+    },
+    "repositoryPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository"],
+      "properties": {"repository": {"$ref": "#/$defs/selectorValue"}}
+    },
+    "branchPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branch"],
+      "properties": {"branch": {"$ref": "#/$defs/selectorValue"}}
+    },
+    "assetCriticality": {
+      "type": "string",
+      "enum": ["critical", "high", "medium", "low", "unknown"]
+    },
+    "assetCriticalityValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/assetCriticality"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/assetCriticality"}
+        }
+      ]
+    },
+    "assetCriticalityPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_criticality"],
+      "properties": {"asset_criticality": {"$ref": "#/$defs/assetCriticalityValue"}}
+    },
+    "confidencePredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["confidence_lower_bound"],
+      "properties": {"confidence_lower_bound": {"$ref": "#/$defs/probabilityComparison"}}
+    },
+    "findingStatus": {
+      "type": "string",
+      "enum": ["open", "acknowledged", "suppressed", "resolved", "false_positive", "accepted_risk"]
+    },
+    "findingStatusValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/findingStatus"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/findingStatus"}
+        }
+      ]
+    },
+    "findingStatusPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finding_status"],
+      "properties": {"finding_status": {"$ref": "#/$defs/findingStatusValue"}}
+    },
+    "introducedPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["introduced_in_pull_request"],
+      "properties": {"introduced_in_pull_request": {"type": "boolean"}}
+    },
+    "fixPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fix_availability"],
+      "properties": {"fix_availability": {"type": "boolean"}}
+    },
+    "scannerHealth": {
+      "type": "string",
+      "enum": ["healthy", "unhealthy", "partial", "failed", "missing", "skipped"]
+    },
+    "scannerHealthValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/scannerHealth"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/scannerHealth"}
+        }
+      ]
+    },
+    "scannerHealthPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scanner_health"],
+      "properties": {"scanner_health": {"$ref": "#/$defs/scannerHealthValue"}}
+    },
+    "secretValidation": {
+      "type": "string",
+      "enum": ["valid", "invalid", "unknown", "not_applicable"]
+    },
+    "secretValidationValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/secretValidation"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/secretValidation"}
+        }
+      ]
+    },
+    "secretValidationPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["secret_validation_status"],
+      "properties": {"secret_validation_status": {"$ref": "#/$defs/secretValidationValue"}}
+    },
+    "suppressionExpiry": {
+      "type": "string",
+      "enum": ["active", "expired", "none", "unknown"]
+    },
+    "suppressionExpiryValue": {
+      "oneOf": [
+        {"$ref": "#/$defs/suppressionExpiry"},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/suppressionExpiry"}
+        }
+      ]
+    },
+    "suppressionExpiryPredicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["suppression_expiry"],
+      "properties": {"suppression_expiry": {"$ref": "#/$defs/suppressionExpiryValue"}}
+    }
+  }
+}

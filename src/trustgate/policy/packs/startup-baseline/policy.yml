@@ -1,0 +1,27 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.startup-baseline
+policy_version: 1.0.0
+description: Pragmatic release defaults for small teams adopting security gating.
+default_action: investigate
+policies:
+  - name: block-critical-or-known-exploited
+    action: block
+    when:
+      any:
+        - kev: true
+        - all:
+            - severity: critical
+            - confidence_lower_bound: ">=0.80"
+  - name: fix-reachable-high-before-release
+    action: fix_before_release
+    when:
+      all:
+        - severity: high
+        - reachability: confirmed
+  - name: schedule-medium-with-fix
+    action: fix_within_sla
+    when:
+      all:
+        - severity: medium
+        - fix_availability: true

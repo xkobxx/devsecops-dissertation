@@ -15,7 +15,17 @@ from referencing import Registry, Resource
 
 
 CURRENT_SCHEMA_VERSION = "1.0.0"
-SCHEMA_NAMES = ("finding", "scan-run", "policy-result")
+SCHEMA_NAMES = (
+    "baseline",
+    "baseline-diff",
+    "baseline-gate",
+    "decision",
+    "finding",
+    "scan-run",
+    "suppression",
+    "policy",
+    "policy-result",
+)
 
 
 class SchemaVersionError(ValueError):
@@ -70,7 +80,8 @@ def _manifest() -> dict[str, Any]:
     schemas = manifest.get("schemas")
     if not isinstance(schemas, dict) or set(schemas) != set(SCHEMA_NAMES):
         raise SchemaVersionError(
-            "schema registry must define finding, scan-run, and policy-result"
+            "schema registry must define baseline, baseline-diff, baseline-gate, "
+            "decision, finding, scan-run, suppression, policy, and policy-result"
         )
     return manifest
 

@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "run-standard-policy-pack",
+  "status": "complete",
+  "started_at": "2026-08-02T12:00:00Z",
+  "ended_at": "2026-08-02T12:00:01Z",
+  "duration_seconds": 1.0,
+  "target": ".",
+  "repository": "example/trustgate",
+  "ref": "refs/heads/main",
+  "commit": "abcdef1234567",
+  "trigger": "local",
+  "scanners": [],
+  "findings": [
+    {
+      "schema_version": "1.0.0",
+      "finding_id": "finding-001",
+      "fingerprint": "v1:sha256:0123456789abcdef",
+      "scanner": "semgrep",
+      "scanner_version": "1.125.0",
+      "rule_id": "python.lang.security.audit.sqli",
+      "rule_version": null,
+      "category": "sast",
+      "cwe": ["CWE-89"],
+      "cve": [],
+      "ghsa": [],
+      "osv": [],
+      "title": "Potential SQL injection",
+      "description": "Untrusted input reaches a SQL query.",
+      "original_severity": "ERROR",
+      "normalised_severity": "high",
+      "severity_reason": "Semgrep ERROR maps to Trust Gate high.",
+      "confidence": 0.95,
+      "confidence_method": null,
+      "confidence_sample_size": null,
+      "confidence_interval": null,
+      "file": "src/app.py",
+      "start_line": 42,
+      "end_line": 42,
+      "symbol": "search",
+      "source": "request.args['q']",
+      "sink": "cursor.execute",
+      "data_flow": [],
+      "dependency": null,
+      "dependency_scope": null,
+      "reachability": "reachable",
+      "environment": {"language": "python", "ci": true},
+      "introduced_commit": null,
+      "first_seen": "2026-07-25T12:00:00Z",
+      "last_seen": "2026-07-25T12:00:00Z",
+      "status": "open",
+      "evidence": [],
+      "remediation": {
+        "summary": "Use parameterised SQL.",
+        "guidance": null,
+        "references": ["https://cwe.mitre.org/data/definitions/89.html"]
+      },
+      "raw_report_reference": {
+        "path": "reports/semgrep.json",
+        "sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+        "scanner_finding_id": null
+      }
+    }
+  ],
+  "summary": {
+    "total_findings": 1,
+    "required_scanners": 0,
+    "healthy_scanners": 0,
+    "severity_counts": {
+      "critical": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 0,
+      "info": 0,
+      "unknown": 0
+    },
+    "scanner_state_counts": {
+      "CLEAN": 0,
+      "FINDINGS": 0,
+      "FAILED_SCANNER": 0,
+      "PARTIAL": 0,
+      "SKIPPED": 0
+    }
+  },
+  "errors": []
+}

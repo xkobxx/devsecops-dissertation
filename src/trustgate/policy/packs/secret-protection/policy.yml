@@ -1,0 +1,21 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.secret-protection
+policy_version: 1.0.0
+description: Validated-secret blocking and uncertain-secret investigation defaults.
+default_action: investigate
+policies:
+  - name: block-validated-secret
+    action: block
+    when:
+      secret_validation_status: valid
+  - name: investigate-unvalidated-secret
+    action: investigate
+    when:
+      secret_validation_status: unknown
+  - name: fix-high-secret-before-release
+    action: fix_before_release
+    when:
+      all:
+        - severity: [critical, high]
+        - introduced_in_pull_request: true

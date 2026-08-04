@@ -10,12 +10,13 @@ repository secrets, and no publishing credentials.
 | Scope | Event | Permissions | Executes repository code |
 | --- | --- | --- | --- |
 | Scan and gate jobs | `push` and `pull_request` to `main` | `contents: read` | Yes |
-| Same-repository PR dashboard link | `pull_request` | `pull-requests: write` only | No |
+| SARIF publisher | trusted push or same-repository pull request | `contents: read`, `security-events: write` | No |
+| Same-repository PR summary | `pull_request` | `actions: read`, `pull-requests: write` | No |
 | Reusable Pages publisher | trusted `push` to `main` only | `contents: read`, `pages: write`, `id-token: write` | No |
 | Environment-gated release | canonical `v*.*.*` tag | `contents: write`, `id-token: write`, `attestations: write`, `artifact-metadata: write` | Yes, only after approval |
 
 The scan workflow defaults to `contents: read`. A job-level permission block
-replaces that default for the two write-capable jobs. Neither write-capable job
+replaces that default for each write-capable job. No write-capable job
 checks out the repository or runs a shell command from repository content.
 
 ## Untrusted pull requests
@@ -29,10 +30,21 @@ be treated as hostile execution contexts.
 - Pages and OIDC permissions are unavailable to pull-request jobs.
 - The dashboard publisher is callable only when the triggering event is a
   successful push build.
-- The PR-link job runs a pinned Action with a static script and does not check
-  out pull-request code.
-- The PR-link job is skipped for fork pull requests; it never requests a write
+- The PR-summary job runs a pinned Action, downloads only the generated summary,
+  and does not check out or execute pull-request code.
+- It updates only the marker-bearing comment owned by `github-actions[bot]`;
+  human comments cannot be selected as the update target.
+- The PR-summary job is skipped for fork pull requests; it never requests a write
   token for an external contributor's branch.
+- The SARIF publisher is skipped for fork pull requests. Its separate job only
+  downloads the generated artifact and invokes the pinned upload Action.
+- The native `Trust Gate` Check summary needs no write permission. It is capped
+  below 65,536 bytes, escapes Markdown controls, and excludes descriptions,
+  source/sink expressions, raw evidence excerpts, and scanner logs.
+- The PR comment is capped below 32,768 bytes and omits titles, descriptions,
+  source/sink expressions, evidence, scanner logs, remediation text,
+  suppression reasons, and approval identities. Only remediation availability
+  is shown.
 
 Repository settings should keep Actions from approving pull requests or
 creating releases unless a dedicated workflow explicitly needs that authority.
@@ -59,16 +71,18 @@ The validator rejects shell metacharacters, option-like path segments, absolute
 paths and traversal before emitting canonical step outputs. Scanner steps use
 only those outputs, not the original path or policy values.
 
-DAST configuration has a separate validation mode. Public targets require
-HTTPS and reject credentials, local names, private/reserved IP addresses and
-fragments. The repository's fixed localhost research target opts into
-`--allow-private`; its ZAP rules file must still resolve to a real file inside
-the workspace.
+Product DAST is disabled by default. Enabled targets require HTTPS, an explicit
+hostname allowlist, bounded request/rate/duration controls, and acknowledgement
+for public, active, private, or production behavior as applicable. OpenAPI files
+must resolve inside the workspace. A ZAP HTTPSender gate rechecks scope and
+limits at request time. The older repository-only validator still supports the
+fixed localhost research job through `--allow-private`.
 
-Never add a secret to the environment of a scanner step. Scanner processes may
-parse attacker-controlled source, dependency manifests, configuration and
-repository history. Secret-bearing work must execute later, through trusted
-code under `${{ github.action_path }}`, with the smallest possible environment.
+Never add general repository, licence, publishing, or cloud secrets to a scanner
+environment. Authenticated DAST is the narrow exception: a least-privilege test
+credential may be passed only to the bounded ZAP step, by environment-variable
+name. It is absent from the plan, command arguments, step outputs, reports, and
+captured logs. Do not enable authenticated DAST for untrusted pull-request code.
 
 ## Publishing boundary
 
@@ -99,9 +113,9 @@ A separate read-only job first queries the GitHub environment API and fails
 unless the environment has at least one required reviewer. It performs no
 checkout and receives no write permission. Only after that check succeeds does
 the environment-gated release job validate that the tag, package version, and
-tagged commit agree. It then creates deterministic archives, an exact-lock
-CycloneDX SBOM, checksums, keyless Sigstore bundles, SLSA build provenance, and
-an SBOM attestation. Only this environment-gated job receives release, OIDC, or
+tagged commit agree. It then creates deterministic archives, exact-lock
+CycloneDX and SPDX SBOMs, checksums, keyless Sigstore bundles, SLSA build
+provenance, and a CycloneDX SBOM attestation. Only this environment-gated job receives release, OIDC, or
 attestation write permissions. Checkout credentials are not persisted.
 
 ## Review checklist

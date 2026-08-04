@@ -1,0 +1,6 @@
+{
+  "shared": {
+    "severity": "high",
+    "cwe": ["CWE-89"]
+  }
+}

@@ -88,6 +88,20 @@ OPTIONAL_THREAT_INTELLIGENCE_FIELDS = {
     "threat_intelligence",
 }
 
+OPTIONAL_REACHABILITY_FIELDS = {
+    "dependency_reachability",
+    "source_to_sink_analysis",
+    "dynamic_correlation",
+}
+
+OPTIONAL_DECISION_FIELDS = {
+    "contextual_decision",
+}
+
+OPTIONAL_LIFECYCLE_FIELDS = {
+    "state_history",
+}
+
 
 def load_schema(name: str) -> dict[str, object]:
     with (SCHEMA_DIRECTORY / name).open(encoding="utf-8") as handle:
@@ -97,6 +111,12 @@ def load_schema(name: str) -> dict[str, object]:
 FINDING_SCHEMA = load_schema("finding.schema.json")
 SCAN_RUN_SCHEMA = load_schema("scan-run.schema.json")
 POLICY_RESULT_SCHEMA = load_schema("policy-result.schema.json")
+DECISION_SCHEMA = load_schema("decision.schema.json")
+POLICY_SCHEMA = load_schema("policy.schema.json")
+BASELINE_SCHEMA = load_schema("baseline.schema.json")
+BASELINE_DIFF_SCHEMA = load_schema("baseline-diff.schema.json")
+BASELINE_GATE_SCHEMA = load_schema("baseline-gate.schema.json")
+SUPPRESSION_SCHEMA = load_schema("suppression.schema.json")
 
 REGISTRY = Registry().with_resources(
     [
@@ -104,7 +124,17 @@ REGISTRY = Registry().with_resources(
             schema["$id"],
             Resource.from_contents(schema),
         )
-        for schema in (FINDING_SCHEMA, SCAN_RUN_SCHEMA, POLICY_RESULT_SCHEMA)
+        for schema in (
+            FINDING_SCHEMA,
+            SCAN_RUN_SCHEMA,
+            POLICY_RESULT_SCHEMA,
+            DECISION_SCHEMA,
+            POLICY_SCHEMA,
+            BASELINE_SCHEMA,
+            BASELINE_DIFF_SCHEMA,
+            BASELINE_GATE_SCHEMA,
+            SUPPRESSION_SCHEMA,
+        )
     ]
 )
 
@@ -195,7 +225,17 @@ def zero_scanner_state_counts() -> dict[str, int]:
 
 class SchemaContractTests(unittest.TestCase):
     def test_schemas_use_draft_2020_12_and_have_unique_versioned_ids(self) -> None:
-        schemas = (FINDING_SCHEMA, SCAN_RUN_SCHEMA, POLICY_RESULT_SCHEMA)
+        schemas = (
+            FINDING_SCHEMA,
+            SCAN_RUN_SCHEMA,
+            POLICY_RESULT_SCHEMA,
+            DECISION_SCHEMA,
+            POLICY_SCHEMA,
+            BASELINE_SCHEMA,
+            BASELINE_DIFF_SCHEMA,
+            BASELINE_GATE_SCHEMA,
+            SUPPRESSION_SCHEMA,
+        )
 
         for schema in schemas:
             with self.subTest(title=schema["title"]):
@@ -219,6 +259,9 @@ class SchemaContractTests(unittest.TestCase):
                 | OPTIONAL_CONFIDENCE_FIELDS
                 | OPTIONAL_CORRELATION_FIELDS
                 | OPTIONAL_THREAT_INTELLIGENCE_FIELDS
+                | OPTIONAL_REACHABILITY_FIELDS
+                | OPTIONAL_DECISION_FIELDS
+                | OPTIONAL_LIFECYCLE_FIELDS
             ),
         )
         self.assertEqual(set(FINDING_SCHEMA["required"]), FINDING_FIELDS)

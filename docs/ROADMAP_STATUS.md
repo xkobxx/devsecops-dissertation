@@ -2,24 +2,24 @@
 
 Source of truth: `Trust Gate Product Implementation Roadmap.pdf` (43 pages).
 
-Last updated: 2026-07-25 on branch `codex/phase-7-threat-intelligence`.
+Last updated: 2026-08-04 on branch `codex/phase-8-reachability-analysis`.
 
 ## Status summary
 
 - Explicit PDF checkbox items: **964**
-- Validated complete: **307**
-- Remaining explicit checkbox items: **657**
+- Validated complete: **515**
+- Remaining explicit checkbox items: **449**
 - Derived final architecture/verification checks: **34** (tracked below but
   excluded from the PDF checkbox totals because the PDF presents them as an
   architecture flow and command requirements, not checkbox items)
-- Current work: **Phase 8.1 - Implement dependency reachability**
+- Current work: **Phase 15.3 - Generate compliance and audit evidence**
 
 Only validation-backed work is checked. Existing files or partial implementations are not marked complete merely because they resemble a deliverable.
 
 ## Active implementation queue
 
-1. Implement Phase 8.1 dependency reachability.
-2. Continue Phases 8-27 in the exact order below without skipping acceptance criteria.
+1. Implement Phase 15.3 compliance and audit evidence.
+2. Continue Phases 15-27 in the exact order below without skipping acceptance criteria.
 
 ## Complete ordered checklist
 
@@ -431,279 +431,279 @@ Validated derived scanner-agreement fields: `supporting_scanners`,
 
 ### 8.1 Implement dependency reachability
 
-- [ ] Whether a vulnerable package is installed. _(PDF p. 17)_
-- [ ] Whether it is a direct or transitive dependency. _(PDF p. 17)_
-- [ ] Whether it is imported. _(PDF p. 17)_
-- [ ] Whether the vulnerable symbol is called. _(PDF p. 17)_
-- [ ] Whether it is production or development-only. _(PDF p. 17)_
-- [ ] Whether it is included in the deployed artefact. _(PDF p. 17)_
-- [ ] Whether a call path exists. _(PDF p. 17)_
-- [ ] Whether analysis is incomplete. _(PDF p. 17)_
-- [ ] “No path found” is never described as “not exploitable.” _(PDF p. 18)_
-- [ ] Reachability evidence includes the analysed call path. _(PDF p. 18)_
-- [ ] Dynamic limitations are visible. _(PDF p. 18)_
+- [x] Whether a vulnerable package is installed. _(PDF p. 17)_
+- [x] Whether it is a direct or transitive dependency. _(PDF p. 17)_
+- [x] Whether it is imported. _(PDF p. 17)_
+- [x] Whether the vulnerable symbol is called. _(PDF p. 17)_
+- [x] Whether it is production or development-only. _(PDF p. 17)_
+- [x] Whether it is included in the deployed artefact. _(PDF p. 17)_
+- [x] Whether a call path exists. _(PDF p. 17)_
+- [x] Whether analysis is incomplete. _(PDF p. 17)_
+- [x] “No path found” is never described as “not exploitable.” _(PDF p. 18)_
+- [x] Reachability evidence includes the analysed call path. _(PDF p. 18)_
+- [x] Dynamic limitations are visible. _(PDF p. 18)_
 
 ### 8.2 Implement SAST source-to-sink analysis
 
-- [ ] Identify untrusted sources. _(PDF p. 18)_
-- [ ] Identify sanitizers. _(PDF p. 18)_
-- [ ] Identify dangerous sinks. _(PDF p. 18)_
-- [ ] Trace intra-file data flow. _(PDF p. 18)_
-- [ ] Trace cross-file data flow. _(PDF p. 18)_
-- [ ] Trace framework routing. _(PDF p. 18)_
-- [ ] Record authentication requirements. _(PDF p. 18)_
-- [ ] Record authorization checks where detectable. _(PDF p. 18)_
-- [ ] Record path confidence. _(PDF p. 18)_
-- [ ] Show source-to-sink evidence. _(PDF p. 18)_
-- [ ] Supported findings can show an explainable data-flow trace. _(PDF p. 18)_
-- [ ] Unsupported analysis is marked explicitly. _(PDF p. 18)_
+- [x] Identify untrusted sources. _(PDF p. 18)_
+- [x] Identify sanitizers. _(PDF p. 18)_
+- [x] Identify dangerous sinks. _(PDF p. 18)_
+- [x] Trace intra-file data flow. _(PDF p. 18)_
+- [x] Trace cross-file data flow. _(PDF p. 18)_
+- [x] Trace framework routing. _(PDF p. 18)_
+- [x] Record authentication requirements. _(PDF p. 18)_
+- [x] Record authorization checks where detectable. _(PDF p. 18)_
+- [x] Record path confidence. _(PDF p. 18)_
+- [x] Show source-to-sink evidence. _(PDF p. 18)_
+- [x] Supported findings can show an explainable data-flow trace. _(PDF p. 18)_
+- [x] Unsupported analysis is marked explicitly. _(PDF p. 18)_
 
 ### 8.3 Correlate static and dynamic evidence
 
-- [ ] Match DAST endpoints to source-code routes. _(PDF p. 18)_
-- [ ] Match DAST parameters to SAST sources. _(PDF p. 18)_
-- [ ] Match DAST proof to SAST sinks. _(PDF p. 18)_
-- [ ] Increase priority when a static issue is dynamically confirmed. _(PDF p. 18)_
-- [ ] Record failed reproduction attempts without marking the issue false. _(PDF p. 18)_
-- [ ] Distinguish blocked authentication from failed exploitation. _(PDF p. 18)_
-- [ ] Dynamically confirmed findings show both static and runtime evidence. _(PDF p. 18)_
-- [ ] Inconclusive DAST results do not automatically suppress SAST findings. _(PDF p. 18)_
+- [x] Match DAST endpoints to source-code routes. _(PDF p. 18)_
+- [x] Match DAST parameters to SAST sources. _(PDF p. 18)_
+- [x] Match DAST proof to SAST sinks. _(PDF p. 18)_
+- [x] Increase priority when a static issue is dynamically confirmed. _(PDF p. 18)_
+- [x] Record failed reproduction attempts without marking the issue false. _(PDF p. 18)_
+- [x] Distinguish blocked authentication from failed exploitation. _(PDF p. 18)_
+- [x] Dynamically confirmed findings show both static and runtime evidence. _(PDF p. 18)_
+- [x] Inconclusive DAST results do not automatically suppress SAST findings. _(PDF p. 18)_
 
 ## Phase 9 - Package DAST safely
 
 ### 9.1 Add reusable DAST configuration
 
-- [ ] Support baseline mode. _(PDF p. 19)_
-- [ ] Support API mode. _(PDF p. 19)_
-- [ ] Support authenticated mode. _(PDF p. 19)_
-- [ ] Support preview environments. _(PDF p. 19)_
-- [ ] Support scope allowlists. _(PDF p. 19)_
-- [ ] Reject non-allowlisted domains. _(PDF p. 19)_
-- [ ] Add rate limits. _(PDF p. 19)_
-- [ ] Add request limits. _(PDF p. 19)_
-- [ ] Add maximum scan duration. _(PDF p. 19)_
-- [ ] Add safe and active scan modes. _(PDF p. 19)_
-- [ ] Require explicit opt-in for active scans. _(PDF p. 19)_
-- [ ] Prevent scanning production by accident. _(PDF p. 19)_
-- [ ] Require acknowledgement for public targets. _(PDF p. 19)_
-- [ ] DAST cannot target arbitrary external domains by default. _(PDF p. 19)_
-- [ ] Active scanning requires explicit configuration. _(PDF p. 19)_
-- [ ] Authentication secrets are redacted from logs. _(PDF p. 19)_
+- [x] Support baseline mode. _(PDF p. 19)_
+- [x] Support API mode. _(PDF p. 19)_
+- [x] Support authenticated mode. _(PDF p. 19)_
+- [x] Support preview environments. _(PDF p. 19)_
+- [x] Support scope allowlists. _(PDF p. 19)_
+- [x] Reject non-allowlisted domains. _(PDF p. 19)_
+- [x] Add rate limits. _(PDF p. 19)_
+- [x] Add request limits. _(PDF p. 19)_
+- [x] Add maximum scan duration. _(PDF p. 19)_
+- [x] Add safe and active scan modes. _(PDF p. 19)_
+- [x] Require explicit opt-in for active scans. _(PDF p. 19)_
+- [x] Prevent scanning production by accident. _(PDF p. 19)_
+- [x] Require acknowledgement for public targets. _(PDF p. 19)_
+- [x] DAST cannot target arbitrary external domains by default. _(PDF p. 19)_
+- [x] Active scanning requires explicit configuration. _(PDF p. 19)_
+- [x] Authentication secrets are redacted from logs. _(PDF p. 19)_
 
 ## Phase 10 - Build contextual decision scoring
 
 ### 10.1 Define decision components
 
-- [ ] Finding-validity confidence _(PDF p. 19)_
-- [ ] Original severity _(PDF p. 19)_
-- [ ] Normalised severity _(PDF p. 19)_
-- [ ] Reachability _(PDF p. 19)_
-- [ ] EPSS _(PDF p. 19)_
-- [ ] CISA KEV _(PDF p. 19)_
-- [ ] Public exploit availability _(PDF p. 20)_
-- [ ] Internet exposure _(PDF p. 20)_
-- [ ] Authentication requirements _(PDF p. 20)_
-- [ ] Data sensitivity _(PDF p. 20)_
-- [ ] Asset criticality _(PDF p. 20)_
-- [ ] Runtime environment _(PDF p. 20)_
-- [ ] Existing controls _(PDF p. 20)_
-- [ ] Fix availability _(PDF p. 20)_
-- [ ] New versus existing status _(PDF p. 20)_
-- [ ] Human triage state _(PDF p. 20)_
+- [x] Finding-validity confidence _(PDF p. 19)_
+- [x] Original severity _(PDF p. 19)_
+- [x] Normalised severity _(PDF p. 19)_
+- [x] Reachability _(PDF p. 19)_
+- [x] EPSS _(PDF p. 19)_
+- [x] CISA KEV _(PDF p. 19)_
+- [x] Public exploit availability _(PDF p. 20)_
+- [x] Internet exposure _(PDF p. 20)_
+- [x] Authentication requirements _(PDF p. 20)_
+- [x] Data sensitivity _(PDF p. 20)_
+- [x] Asset criticality _(PDF p. 20)_
+- [x] Runtime environment _(PDF p. 20)_
+- [x] Existing controls _(PDF p. 20)_
+- [x] Fix availability _(PDF p. 20)_
+- [x] New versus existing status _(PDF p. 20)_
+- [x] Human triage state _(PDF p. 20)_
 
 ### 10.2 Create decision outcomes
 
-- [ ] Document rules for each outcome. _(PDF p. 20)_
-- [ ] Make outcomes policy-driven. _(PDF p. 20)_
-- [ ] Show the complete explanation. _(PDF p. 20)_
-- [ ] Include evidence strength. _(PDF p. 20)_
-- [ ] Include unresolved uncertainty. _(PDF p. 20)_
-- [ ] Include policy version. _(PDF p. 20)_
-- [ ] Every decision is reproducible from stored evidence. _(PDF p. 20)_
-- [ ] Users can inspect which policy caused the result. _(PDF p. 20)_
+- [x] Document rules for each outcome. _(PDF p. 20)_
+- [x] Make outcomes policy-driven. _(PDF p. 20)_
+- [x] Show the complete explanation. _(PDF p. 20)_
+- [x] Include evidence strength. _(PDF p. 20)_
+- [x] Include unresolved uncertainty. _(PDF p. 20)_
+- [x] Include policy version. _(PDF p. 20)_
+- [x] Every decision is reproducible from stored evidence. _(PDF p. 20)_
+- [x] Users can inspect which policy caused the result. _(PDF p. 20)_
 
 ## Phase 11 - Implement policy-as-code
 
 ### 11.1 Define the policy schema
 
-- [ ] Severity _(PDF p. 21)_
-- [ ] CWE _(PDF p. 21)_
-- [ ] CVE _(PDF p. 21)_
-- [ ] EPSS _(PDF p. 21)_
-- [ ] KEV _(PDF p. 21)_
-- [ ] Reachability _(PDF p. 21)_
-- [ ] Environment _(PDF p. 21)_
-- [ ] Repository _(PDF p. 21)_
-- [ ] Branch _(PDF p. 21)_
-- [ ] Asset criticality _(PDF p. 21)_
-- [ ] Confidence lower bound _(PDF p. 21)_
-- [ ] Finding status _(PDF p. 21)_
-- [ ] Introduced-in-PR status _(PDF p. 21)_
-- [ ] Fix availability _(PDF p. 21)_
-- [ ] Scanner health _(PDF p. 21)_
-- [ ] Secret validation status _(PDF p. 21)_
-- [ ] Suppression expiry _(PDF p. 21)_
+- [x] Severity _(PDF p. 21)_
+- [x] CWE _(PDF p. 21)_
+- [x] CVE _(PDF p. 21)_
+- [x] EPSS _(PDF p. 21)_
+- [x] KEV _(PDF p. 21)_
+- [x] Reachability _(PDF p. 21)_
+- [x] Environment _(PDF p. 21)_
+- [x] Repository _(PDF p. 21)_
+- [x] Branch _(PDF p. 21)_
+- [x] Asset criticality _(PDF p. 21)_
+- [x] Confidence lower bound _(PDF p. 21)_
+- [x] Finding status _(PDF p. 21)_
+- [x] Introduced-in-PR status _(PDF p. 21)_
+- [x] Fix availability _(PDF p. 21)_
+- [x] Scanner health _(PDF p. 21)_
+- [x] Secret validation status _(PDF p. 21)_
+- [x] Suppression expiry _(PDF p. 21)_
 
 ### 11.2 Add policy tooling
 
-- [ ] Add policy validation. _(PDF p. 22)_
-- [ ] Add policy simulation. _(PDF p. 22)_
-- [ ] Add policy explanation. _(PDF p. 22)_
-- [ ] Add policy unit testing. _(PDF p. 22)_
-- [ ] Add policy versioning. _(PDF p. 22)_
-- [ ] Add policy inheritance. _(PDF p. 22)_
-- [ ] Add repository overrides. _(PDF p. 22)_
-- [ ] Add organisation defaults. _(PDF p. 22)_
-- [ ] Prevent invalid rules from silently passing. _(PDF p. 22)_
-- [ ] A policy can be tested against saved findings before deployment. _(PDF p. 22)_
-- [ ] Invalid policies fail clearly. _(PDF p. 22)_
-- [ ] Policy decisions are deterministic. _(PDF p. 22)_
+- [x] Add policy validation. _(PDF p. 22)_
+- [x] Add policy simulation. _(PDF p. 22)_
+- [x] Add policy explanation. _(PDF p. 22)_
+- [x] Add policy unit testing. _(PDF p. 22)_
+- [x] Add policy versioning. _(PDF p. 22)_
+- [x] Add policy inheritance. _(PDF p. 22)_
+- [x] Add repository overrides. _(PDF p. 22)_
+- [x] Add organisation defaults. _(PDF p. 22)_
+- [x] Prevent invalid rules from silently passing. _(PDF p. 22)_
+- [x] A policy can be tested against saved findings before deployment. _(PDF p. 22)_
+- [x] Invalid policies fail clearly. _(PDF p. 22)_
+- [x] Policy decisions are deterministic. _(PDF p. 22)_
 
 ### 11.3 Create standard policy packs
 
-- [ ] Startup baseline _(PDF p. 22)_
-- [ ] High-assurance baseline _(PDF p. 22)_
-- [ ] Financial services _(PDF p. 22)_
-- [ ] Healthcare _(PDF p. 22)_
-- [ ] Public-sector supplier _(PDF p. 22)_
-- [ ] OWASP ASVS-aligned _(PDF p. 22)_
-- [ ] NIST SSDF-aligned _(PDF p. 22)_
-- [ ] Container security _(PDF p. 22)_
-- [ ] Secret protection _(PDF p. 22)_
-- [ ] Supply-chain security _(PDF p. 22)_
-- [ ] Every policy pack has documentation and tests. _(PDF p. 22)_
-- [ ] Policy packs state that automated evidence does not guarantee compliance. _(PDF p. 22)_
+- [x] Startup baseline _(PDF p. 22)_
+- [x] High-assurance baseline _(PDF p. 22)_
+- [x] Financial services _(PDF p. 22)_
+- [x] Healthcare _(PDF p. 22)_
+- [x] Public-sector supplier _(PDF p. 22)_
+- [x] OWASP ASVS-aligned _(PDF p. 22)_
+- [x] NIST SSDF-aligned _(PDF p. 22)_
+- [x] Container security _(PDF p. 22)_
+- [x] Secret protection _(PDF p. 22)_
+- [x] Supply-chain security _(PDF p. 22)_
+- [x] Every policy pack has documentation and tests. _(PDF p. 22)_
+- [x] Policy packs state that automated evidence does not guarantee compliance. _(PDF p. 22)_
 
 ## Phase 12 - Add baseline and differential scanning
 
 ### 12.1 Create baseline support
 
-- [ ] Generate a baseline from the default branch. _(PDF p. 23)_
-- [ ] Store baseline findings by fingerprint. _(PDF p. 23)_
-- [ ] Compare pull-request findings to the baseline. _(PDF p. 23)_
-- [ ] Detect new findings. _(PDF p. 23)_
-- [ ] Detect removed findings. _(PDF p. 23)_
-- [ ] Detect worsened findings. _(PDF p. 23)_
-- [ ] Detect newly reachable findings. _(PDF p. 23)_
-- [ ] Detect newly exploited dependencies. _(PDF p. 23)_
-- [ ] Detect expired suppressions. _(PDF p. 23)_
-- [ ] Detect scanner coverage regressions. _(PDF p. 23)_
+- [x] Generate a baseline from the default branch. _(PDF p. 23)_
+- [x] Store baseline findings by fingerprint. _(PDF p. 23)_
+- [x] Compare pull-request findings to the baseline. _(PDF p. 23)_
+- [x] Detect new findings. _(PDF p. 23)_
+- [x] Detect removed findings. _(PDF p. 23)_
+- [x] Detect worsened findings. _(PDF p. 23)_
+- [x] Detect newly reachable findings. _(PDF p. 23)_
+- [x] Detect newly exploited dependencies. _(PDF p. 23)_
+- [x] Detect expired suppressions. _(PDF p. 23)_
+- [x] Detect scanner coverage regressions. _(PDF p. 23)_
 
 ### 12.2 Gate new risk by default
 
-- [ ] Add gate-mode: new. _(PDF p. 23)_
-- [ ] Add gate-mode: all. _(PDF p. 23)_
-- [ ] Add gate-mode: worsened. _(PDF p. 23)_
-- [ ] Add gate-mode: policy. _(PDF p. 23)_
-- [ ] Allow explicit legacy-risk enforcement. _(PDF p. 23)_
-- [ ] Show baseline age. _(PDF p. 23)_
-- [ ] Fail when the baseline is invalid or incompatible. _(PDF p. 23)_
-- [ ] Existing repositories can adopt the product without immediately fixing every historical finding. _(PDF p. 23)_
-- [ ] Newly introduced high-risk findings still block the pull request. _(PDF p. 23)_
+- [x] Add gate-mode: new. _(PDF p. 23)_
+- [x] Add gate-mode: all. _(PDF p. 23)_
+- [x] Add gate-mode: worsened. _(PDF p. 23)_
+- [x] Add gate-mode: policy. _(PDF p. 23)_
+- [x] Allow explicit legacy-risk enforcement. _(PDF p. 23)_
+- [x] Show baseline age. _(PDF p. 23)_
+- [x] Fail when the baseline is invalid or incompatible. _(PDF p. 23)_
+- [x] Existing repositories can adopt the product without immediately fixing every historical finding. _(PDF p. 23)_
+- [x] Newly introduced high-risk findings still block the pull request. _(PDF p. 23)_
 
 ## Phase 13 - Build the finding lifecycle
 
 ### 13.1 Implement finding states
 
-- [ ] Record state history. _(PDF p. 24)_
-- [ ] Record actor. _(PDF p. 24)_
-- [ ] Record timestamp. _(PDF p. 24)_
-- [ ] Record reason. _(PDF p. 24)_
-- [ ] Record evidence. _(PDF p. 24)_
-- [ ] Record approval where required. _(PDF p. 24)_
-- [ ] Record expiry. _(PDF p. 24)_
-- [ ] Support automatic reopening. _(PDF p. 24)_
+- [x] Record state history. _(PDF p. 24)_
+- [x] Record actor. _(PDF p. 24)_
+- [x] Record timestamp. _(PDF p. 24)_
+- [x] Record reason. _(PDF p. 24)_
+- [x] Record evidence. _(PDF p. 24)_
+- [x] Record approval where required. _(PDF p. 24)_
+- [x] Record expiry. _(PDF p. 24)_
+- [x] Support automatic reopening. _(PDF p. 24)_
 
 ### 13.2 Implement suppressions
 
-- [ ] Finding fingerprint _(PDF p. 24)_
-- [ ] Reason _(PDF p. 24)_
-- [ ] Author _(PDF p. 24)_
-- [ ] Creation date _(PDF p. 24)_
-- [ ] Expiry date _(PDF p. 24)_
-- [ ] Scope _(PDF p. 24)_
-- [ ] Approval _(PDF p. 24)_
-- [ ] Evidence _(PDF p. 24)_
-- [ ] Revalidation rule _(PDF p. 24)_
-- [ ] Prevent permanent suppression by default. _(PDF p. 24)_
-- [ ] Add suppression linting. _(PDF p. 24)_
-- [ ] Add suppression-expiry warnings. _(PDF p. 24)_
-- [ ] Reopen when code meaningfully changes. _(PDF p. 24)_
-- [ ] Reopen when reachability changes. _(PDF p. 24)_
-- [ ] Reopen when KEV status changes. _(PDF p. 24)_
-- [ ] Reopen when exploit evidence changes. _(PDF p. 24)_
-- [ ] Reopen when policy changes. _(PDF p. 24)_
-- [ ] Expired suppressions automatically re-enter evaluation. _(PDF p. 24)_
-- [ ] Every suppression is auditable. _(PDF p. 24)_
-- [ ] A suppression cannot silently apply to unrelated findings. _(PDF p. 25)_
+- [x] Finding fingerprint _(PDF p. 24)_
+- [x] Reason _(PDF p. 24)_
+- [x] Author _(PDF p. 24)_
+- [x] Creation date _(PDF p. 24)_
+- [x] Expiry date _(PDF p. 24)_
+- [x] Scope _(PDF p. 24)_
+- [x] Approval _(PDF p. 24)_
+- [x] Evidence _(PDF p. 24)_
+- [x] Revalidation rule _(PDF p. 24)_
+- [x] Prevent permanent suppression by default. _(PDF p. 24)_
+- [x] Add suppression linting. _(PDF p. 24)_
+- [x] Add suppression-expiry warnings. _(PDF p. 24)_
+- [x] Reopen when code meaningfully changes. _(PDF p. 24)_
+- [x] Reopen when reachability changes. _(PDF p. 24)_
+- [x] Reopen when KEV status changes. _(PDF p. 24)_
+- [x] Reopen when exploit evidence changes. _(PDF p. 24)_
+- [x] Reopen when policy changes. _(PDF p. 24)_
+- [x] Expired suppressions automatically re-enter evaluation. _(PDF p. 24)_
+- [x] Every suppression is auditable. _(PDF p. 24)_
+- [x] A suppression cannot silently apply to unrelated findings. _(PDF p. 25)_
 
 ## Phase 14 - Add GitHub-native integration
 
 ### 14.1 Generate SARIF
 
-- [ ] Map supported findings to SARIF 2.1.0. _(PDF p. 25)_
-- [ ] Validate generated SARIF. _(PDF p. 25)_
-- [ ] Include rule metadata. _(PDF p. 25)_
-- [ ] Include precise locations. _(PDF p. 25)_
-- [ ] Include severity. _(PDF p. 25)_
-- [ ] Include remediation guidance. _(PDF p. 25)_
-- [ ] Include fingerprints. _(PDF p. 25)_
-- [ ] Include partial fingerprints. _(PDF p. 25)_
-- [ ] Upload results to GitHub code scanning. _(PDF p. 25)_
-- [ ] Findings appear in GitHub’s Security tab. _(PDF p. 25)_
-- [ ] Findings annotate pull-request code where locations exist. _(PDF p. 25)_
+- [x] Map supported findings to SARIF 2.1.0. _(PDF p. 25)_
+- [x] Validate generated SARIF. _(PDF p. 25)_
+- [x] Include rule metadata. _(PDF p. 25)_
+- [x] Include precise locations. _(PDF p. 25)_
+- [x] Include severity. _(PDF p. 25)_
+- [x] Include remediation guidance. _(PDF p. 25)_
+- [x] Include fingerprints. _(PDF p. 25)_
+- [x] Include partial fingerprints. _(PDF p. 25)_
+- [x] Upload results to GitHub code scanning. _(PDF p. 25)_
+- [x] Findings appear in GitHub’s Security tab. _(PDF p. 25)_
+- [x] Findings annotate pull-request code where locations exist. _(PDF p. 25)_
 
 ### 14.2 Add GitHub Checks integration
 
-- [ ] Gate result _(PDF p. 25)_
-- [ ] Scanner-health summary _(PDF p. 25)_
-- [ ] New findings _(PDF p. 25)_
-- [ ] Blocking findings _(PDF p. 25)_
-- [ ] Suppressed findings _(PDF p. 25)_
-- [ ] Unscored findings _(PDF p. 25)_
-- [ ] Evidence explanations _(PDF p. 25)_
-- [ ] Links to detailed artefacts _(PDF p. 25)_
-- [ ] Policy information _(PDF p. 25)_
-- [ ] Baseline comparison _(PDF p. 25)_
-- [ ] Developers can understand the release decision without downloading an artefact. _(PDF p. 25)_
-- [ ] Branch protection can require the Trust Gate check. _(PDF p. 25)_
+- [x] Gate result _(PDF p. 25)_
+- [x] Scanner-health summary _(PDF p. 25)_
+- [x] New findings _(PDF p. 25)_
+- [x] Blocking findings _(PDF p. 25)_
+- [x] Suppressed findings _(PDF p. 25)_
+- [x] Unscored findings _(PDF p. 25)_
+- [x] Evidence explanations _(PDF p. 25)_
+- [x] Links to detailed artefacts _(PDF p. 25)_
+- [x] Policy information _(PDF p. 25)_
+- [x] Baseline comparison _(PDF p. 25)_
+- [x] Developers can understand the release decision without downloading an artefact. _(PDF p. 25)_
+- [x] Branch protection can require the Trust Gate check. _(PDF p. 25)_
 
 ### 14.3 Add pull-request comments carefully
 
-- [ ] Post one consolidated comment. _(PDF p. 25)_
-- [ ] Update the existing comment instead of creating duplicates. _(PDF p. 25)_
-- [ ] Keep the summary concise. _(PDF p. 25)_
-- [ ] Collapse long details. _(PDF p. 26)_
-- [ ] Link to exact code locations. _(PDF p. 26)_
-- [ ] Avoid exposing secrets. _(PDF p. 26)_
-- [ ] Avoid posting proprietary source excerpts unnecessarily. _(PDF p. 26)_
-- [ ] Include remediation status. _(PDF p. 26)_
-- [ ] Repeated runs update one comment. _(PDF p. 26)_
-- [ ] Pull requests are not flooded with scanner messages. _(PDF p. 26)_
+- [x] Post one consolidated comment. _(PDF p. 25)_
+- [x] Update the existing comment instead of creating duplicates. _(PDF p. 25)_
+- [x] Keep the summary concise. _(PDF p. 25)_
+- [x] Collapse long details. _(PDF p. 26)_
+- [x] Link to exact code locations. _(PDF p. 26)_
+- [x] Avoid exposing secrets. _(PDF p. 26)_
+- [x] Avoid posting proprietary source excerpts unnecessarily. _(PDF p. 26)_
+- [x] Include remediation status. _(PDF p. 26)_
+- [x] Repeated runs update one comment. _(PDF p. 26)_
+- [x] Pull requests are not flooded with scanner messages. _(PDF p. 26)_
 
 ## Phase 15 - Generate standard security artefacts
 
 ### 15.1 Generate SBOMs
 
-- [ ] CycloneDX JSON _(PDF p. 26)_
-- [ ] SPDX JSON _(PDF p. 26)_
-- [ ] Direct dependencies _(PDF p. 26)_
-- [ ] Transitive dependencies _(PDF p. 26)_
-- [ ] Versions _(PDF p. 26)_
-- [ ] Licences _(PDF p. 26)_
-- [ ] Package URLs _(PDF p. 26)_
-- [ ] Hashes _(PDF p. 26)_
-- [ ] Dependency relationships _(PDF p. 26)_
+- [x] CycloneDX JSON _(PDF p. 26)_
+- [x] SPDX JSON _(PDF p. 26)_
+- [x] Direct dependencies _(PDF p. 26)_
+- [x] Transitive dependencies _(PDF p. 26)_
+- [x] Versions _(PDF p. 26)_
+- [x] Licences _(PDF p. 26)_
+- [x] Package URLs _(PDF p. 26)_
+- [x] Hashes _(PDF p. 26)_
+- [x] Dependency relationships _(PDF p. 26)_
 
 ### 15.2 Generate VEX
 
-- [ ] Generate CycloneDX VEX. _(PDF p. 26)_
-- [ ] Record exploitability status. _(PDF p. 26)_
-- [ ] Record justification. _(PDF p. 26)_
-- [ ] Record analysis state. _(PDF p. 26)_
-- [ ] Link VEX decisions to reachability evidence. _(PDF p. 26)_
-- [ ] Link VEX decisions to approvals. _(PDF p. 26)_
-- [ ] Version and sign VEX output. _(PDF p. 26)_
+- [x] Generate CycloneDX VEX. _(PDF p. 26)_
+- [x] Record exploitability status. _(PDF p. 26)_
+- [x] Record justification. _(PDF p. 26)_
+- [x] Record analysis state. _(PDF p. 26)_
+- [x] Link VEX decisions to reachability evidence. _(PDF p. 26)_
+- [x] Link VEX decisions to approvals. _(PDF p. 26)_
+- [x] Version and sign VEX output. _(PDF p. 26)_
 
 ### 15.3 Generate compliance and audit evidence
 
@@ -1281,7 +1281,7 @@ Validated derived scanner-agreement fields: `supporting_scanners`,
 - [ ] Stable fingerprinting
 - [x] Deduplication and correlation
 - [x] Threat-intelligence enrichment
-- [ ] Reachability analysis
+- [x] Reachability analysis
 - [ ] Evidence and confidence calculation
 - [ ] Policy-as-code evaluation
 - [ ] Release decision

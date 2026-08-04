@@ -2,10 +2,10 @@
 
 Trust Gate release archives are generated from the tagged Git commit. The
 release workflow creates both `tar.gz` and `zip` archives, records their SHA-256
-digests, generates a CycloneDX SBOM from the exact runtime lock, and signs each
-archive, the SBOM, and the checksum manifest with Sigstore's keyless GitHub
-Actions identity. GitHub also publishes SLSA build provenance and a separate
-SBOM attestation for the archives.
+digests, generates CycloneDX 1.6 and SPDX 2.3 SBOMs from the exact runtime lock,
+and signs each archive, both SBOMs, and the checksum manifest with Sigstore's
+keyless GitHub Actions identity. GitHub also publishes SLSA build provenance and
+a separate CycloneDX SBOM attestation for the archives.
 
 The historical `v1.0.0` and `v1.0.0-submission` tags predate this process and
 must not be treated as signed Trust Gate product releases.
@@ -33,8 +33,8 @@ Download all files from one GitHub release into the same directory, then run:
 sha256sum --check SHA256SUMS
 ```
 
-Every archive and the SBOM must report `OK`. A missing file, extra filename, or
-digest mismatch invalidates the release.
+Every archive and both SBOMs must report `OK`. A missing file, extra filename,
+or digest mismatch invalidates the release.
 
 ## Verify repository and workflow identity
 
@@ -50,6 +50,7 @@ for artifact in \
   "trustgate-${VERSION}.tar.gz" \
   "trustgate-${VERSION}.zip" \
   "trustgate-v${VERSION}.cdx.json" \
+  "trustgate-v${VERSION}.spdx.json" \
   SHA256SUMS
 do
   cosign verify-blob "${artifact}" \
@@ -141,7 +142,8 @@ gh api repos/xkobxx/devsecops-dissertation/environments/release \
   --jq '.protection_rules[] | select(.type == "required_reviewers")'
 ```
 
-Release publication names the versioned CycloneDX file explicitly. The SBOM is
-also required by the checksum manifest and the SBOM-attestation step, both of
-which run before `gh release create`. A missing SBOM therefore blocks release
-publication instead of producing a partial release.
+Release publication names both versioned SBOM files explicitly. Both are
+required by the checksum manifest and have individual Sigstore bundles; the
+CycloneDX file is additionally required by the SBOM-attestation step. These
+checks run before `gh release create`, so a missing SBOM blocks publication
+instead of producing a partial release.

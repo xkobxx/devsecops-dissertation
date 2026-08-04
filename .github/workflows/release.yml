@@ -107,7 +107,8 @@ jobs:
           gh release create "$GITHUB_REF_NAME" \
             release/trustgate-*.tar.gz \
             release/trustgate-*.zip \
-            release/trustgate-*.cdx.json \
+            "release/trustgate-${{ github.ref_name }}.cdx.json" \
+            "release/trustgate-${{ github.ref_name }}.spdx.json" \
             release/SHA256SUMS \
             release/*.sigstore.json \
             --verify-tag \

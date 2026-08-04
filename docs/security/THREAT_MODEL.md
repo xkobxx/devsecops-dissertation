@@ -60,6 +60,11 @@ is reachable only from a successful push build.
 | Malicious expression becomes shell code | Inputs cross the shell boundary through environment variables, then allowlist and metacharacter validation produces canonical outputs |
 | Path input scans or writes outside the workspace | Canonical resolution rejects absolute paths, traversal and symlinks that escape `GITHUB_WORKSPACE` |
 | DAST input targets runner metadata or local services | Public mode requires HTTPS and rejects credentials, private/reserved IPs and local hostnames; local research use requires an explicit override |
+| DAST follows an out-of-scope link or API reference | Preflight hostname allowlist plus an HTTPSender request gate blocks every non-allowlisted outbound host |
+| DAST overloads or mutates a target | Safe mode is passive; active mode requires explicit opt-in; request, rate, and duration limits are mandatory |
+| DAST credential leaks through plans or logs | Plans reference an environment variable, use a report without request bodies, and redact the value from captured output |
+| Decision evidence or policy is altered after evaluation | Each decision stores canonical context and policy snapshots under a SHA-256 reproduction digest; schema validation and re-evaluation reject mismatches |
+| Missing context is interpreted as low risk | Every unavailable decision component carries explicit uncertainty; the default policy returns insufficient evidence when validity confidence is absent |
 | Malicious artifact name creates ambiguous output | Artifact names use a bounded portable allowlist before upload |
 | Scanner crash becomes zero findings | Execution metadata, report presence and parser status are required by the gate |
 | Compromised third-party dependency changes over time | Python hashes, Action SHAs and container digests are immutable |
@@ -77,7 +82,9 @@ workflow must never check out, import or execute pull-request-controlled code.
 - A maintainer can merge malicious workflow changes; branch protection and
   required review are repository-setting controls.
 - A pinned dependency can still contain a vulnerability; upgrade review,
-  provenance and SBOM work continue in later roadmap phases.
+  provenance verification and signed evidence-bundle work continue in later
+  roadmap phases. Product SBOMs and approved VEX improve context but do not
+  prove safety.
 - Repository-generated HTML is published after merge. Dashboard output
   encoding and content-security-policy hardening remain required.
 - GitHub environment protection and organization policies are external to this

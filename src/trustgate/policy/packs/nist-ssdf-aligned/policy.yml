@@ -1,0 +1,24 @@
+schema_version: 1.0.0
+version: 1
+policy_id: trustgate.nist-ssdf-aligned
+policy_version: 1.0.0
+description: Release gates informed by selected NIST SSDF practices.
+default_action: investigate
+policies:
+  - name: block-new-high-release-finding
+    action: block
+    when:
+      all:
+        - introduced_in_pull_request: true
+        - severity: [critical, high]
+  - name: surface-incomplete-verification
+    action: insufficient_evidence
+    when:
+      not:
+        scanner_health: healthy
+  - name: fix-available-high-before-release
+    action: fix_before_release
+    when:
+      all:
+        - severity: [critical, high]
+        - fix_availability: true

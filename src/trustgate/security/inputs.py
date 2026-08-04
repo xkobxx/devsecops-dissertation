@@ -38,6 +38,7 @@ BOOLEAN_VALUES = ("false", "true")
 SEVERITY_BASES = ("normalised", "original")
 MAX_TIMEOUT_SECONDS = Decimal("3600")
 MAX_LICENSE_LENGTH = 8192
+MAX_DAST_SECRET_LENGTH = 8192
 MAX_PATH_LENGTH = 1024
 MAX_URL_LENGTH = 2048
 SAFE_ARTIFACT_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
@@ -286,7 +287,7 @@ def validate_action_environment(environment: Mapping[str, str]) -> dict[str, str
     _validate_license_input(
         _require_environment(environment, "TRUSTGATE_LICENSE_KEY")
     )
-    return {
+    outputs = {
         "target": target,
         "fail-on": fail_on,
         "scanner-failure-policy": failure_policy,
@@ -296,6 +297,151 @@ def validate_action_environment(environment: Mapping[str, str]) -> dict[str, str
         "redact-sensitive-content": redact_sensitive_content,
         "artifact-name": artifact_name,
     }
+    dast_enabled = _validate_choice(
+        _require_environment(environment, "TRUSTGATE_DAST_ENABLED"),
+        label="dast-enabled",
+        choices=BOOLEAN_VALUES,
+    )
+    outputs["dast-enabled"] = dast_enabled
+    if dast_enabled == "true":
+        outputs.update(_validate_action_dast(environment, workspace))
+    return outputs
+
+
+def _validate_action_dast(
+    environment: Mapping[str, str], workspace: Path
+) -> dict[str, str]:
+    """Validate enabled Action DAST inputs without exporting credentials."""
+
+    from trustgate.dast import (
+        DastConfig,
+        DastConfigurationError,
+        DastMode,
+        ScanMode,
+        TargetEnvironment,
+        build_dast_plan,
+    )
+
+    def boolean(name: str, label: str) -> bool:
+        return _validate_choice(
+            _require_environment(environment, name),
+            label=label,
+            choices=BOOLEAN_VALUES,
+        ) == "true"
+
+    mode = _validate_choice(
+        _require_environment(environment, "TRUSTGATE_DAST_MODE"),
+        label="dast-mode",
+        choices=tuple(value.value for value in DastMode),
+    )
+    scan_mode = _validate_choice(
+        _require_environment(environment, "TRUSTGATE_DAST_SCAN_MODE"),
+        label="dast-scan-mode",
+        choices=tuple(value.value for value in ScanMode),
+    )
+    target_environment = _validate_choice(
+        _require_environment(environment, "TRUSTGATE_DAST_ENVIRONMENT"),
+        label="dast-environment",
+        choices=tuple(value.value for value in TargetEnvironment),
+    )
+    scope_hosts = tuple(
+        value.strip()
+        for value in _require_environment(
+            environment, "TRUSTGATE_DAST_SCOPE_HOSTS"
+        ).split(",")
+        if value.strip()
+    )
+    auth_secret = _require_environment(
+        environment, "TRUSTGATE_DAST_AUTH_SECRET"
+    )
+    _validate_bounded_text(
+        auth_secret,
+        label="DAST authentication secret",
+        maximum_length=MAX_DAST_SECRET_LENGTH,
+    )
+    config = DastConfig(
+        target_url=_require_environment(environment, "TRUSTGATE_DAST_URL"),
+        mode=DastMode(mode),
+        scan_mode=ScanMode(scan_mode),
+        environment=TargetEnvironment(target_environment),
+        scope_allowlist=scope_hosts,
+        rate_limit_per_second=int(
+            _canonical_integer(
+                _require_environment(environment, "TRUSTGATE_DAST_RATE_LIMIT"),
+                label="dast-rate-limit",
+            )
+        ),
+        request_limit=int(
+            _canonical_integer(
+                _require_environment(environment, "TRUSTGATE_DAST_REQUEST_LIMIT"),
+                label="dast-request-limit",
+            )
+        ),
+        max_duration_seconds=int(
+            _canonical_integer(
+                _require_environment(environment, "TRUSTGATE_DAST_MAX_DURATION"),
+                label="dast-max-duration-seconds",
+            )
+        ),
+        openapi_path=(
+            _require_environment(environment, "TRUSTGATE_DAST_OPENAPI_PATH")
+            or None
+        ),
+        auth_type=_require_environment(environment, "TRUSTGATE_DAST_AUTH_TYPE"),
+        auth_header_name=_require_environment(
+            environment, "TRUSTGATE_DAST_AUTH_HEADER"
+        ),
+        public_target_acknowledged=boolean(
+            "TRUSTGATE_DAST_PUBLIC_ACK", "dast-public-target-acknowledged"
+        ),
+        active_scan_acknowledged=boolean(
+            "TRUSTGATE_DAST_ACTIVE_ACK", "dast-active-scan-acknowledged"
+        ),
+        production_scan_acknowledged=boolean(
+            "TRUSTGATE_DAST_PRODUCTION_ACK",
+            "dast-production-scan-acknowledged",
+        ),
+        allow_private_target=boolean(
+            "TRUSTGATE_DAST_ALLOW_PRIVATE", "dast-allow-private-target"
+        ),
+    )
+    try:
+        plan = build_dast_plan(config, workspace=workspace)
+    except DastConfigurationError as error:
+        raise InputValidationError(f"Invalid DAST configuration: {error}") from error
+    if plan.authenticated and not auth_secret:
+        raise InputValidationError(
+            "Invalid DAST configuration: authenticated mode requires a secret."
+        )
+    return {
+        "dast-target-url": plan.config.target_url,
+        "dast-mode": plan.config.mode.value,
+        "dast-scan-mode": plan.config.scan_mode.value,
+        "dast-environment": plan.config.environment.value,
+        "dast-scope-hosts": ",".join(plan.config.scope_allowlist),
+        "dast-rate-limit": str(plan.config.rate_limit_per_second),
+        "dast-request-limit": str(plan.config.request_limit),
+        "dast-max-duration-seconds": str(plan.config.max_duration_seconds),
+        "dast-openapi-path": plan.config.openapi_path or "",
+        "dast-auth-type": plan.config.auth_type,
+        "dast-auth-header": plan.config.auth_header_name,
+        "dast-public-target-acknowledged": str(
+            plan.config.public_target_acknowledged
+        ).lower(),
+        "dast-active-scan-acknowledged": str(
+            plan.config.active_scan_acknowledged
+        ).lower(),
+        "dast-production-scan-acknowledged": str(
+            plan.config.production_scan_acknowledged
+        ).lower(),
+        "dast-allow-private-target": str(plan.config.allow_private_target).lower(),
+    }
+
+
+def _canonical_integer(value: str, *, label: str) -> str:
+    if not re.fullmatch(r"[0-9]+", value):
+        raise InputValidationError(f"Invalid {label}; expected a positive integer.")
+    return str(int(value))
 
 
 def _write_outputs(path: Path, outputs: Mapping[str, str]) -> None:

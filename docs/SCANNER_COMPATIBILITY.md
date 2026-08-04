@@ -12,7 +12,7 @@ evaluation release. The supported baseline is GitHub-hosted Ubuntu with Python
 | pip-audit | 2.10.1 | Python package | `1` means vulnerabilities | pip requirements files | Python 3.11, Ubuntu |
 | Trivy | 0.69.3 via Action 0.36.0 | GitHub Action at an immutable commit, scanner version set explicitly | Action outcome plus report presence; findings remain exit `0` | Repository configuration | GitHub-hosted Ubuntu |
 | Gitleaks | 8.30.1 | OCI image at an immutable digest | Trust Gate sets `--exit-code 3` for leaks; `1` remains an execution error | Checked-out repository and history | Linux runner with Docker |
-| ZAP Baseline Action | 0.12.0 | GitHub Action at an immutable commit | Action outcome plus report presence | HTTP endpoint | GitHub-hosted Ubuntu; research workflow only |
+| ZAP stable | Stable image resolved 2026-08-02 | OCI image at `sha256:8d387b1a63e3425beef4846e39719f5af2a787753af2d8b6558c6257d7a577a2` | Automation Framework exit plus report presence | Allowlisted HTTP endpoint or workspace OpenAPI document | Linux runner with Docker; bounded product DAST |
 
 ## Compatibility contract
 
@@ -27,8 +27,9 @@ evaluation release. The supported baseline is GitHub-hosted Ubuntu with Python
 - Exit-code findings are accepted only when the expected report exists.
   Timeouts, unknown exit codes, missing reports and external Action failures
   produce scanner-failure evidence rather than zero findings.
-- The ZAP job and the Docker Compose applications are research fixtures. They
-  do not define the production gate's supported target matrix.
+- The historical ZAP workflow and Docker Compose applications remain research
+  fixtures. Product DAST uses the bounded Automation Framework interface in
+  `docs/DAST_SAFETY.md`.
 
 ## Phase 4 adapter catalogue
 

@@ -1,348 +1,17 @@
 # Trust Gate
 
-Trust Gate is a Python-first, local-first application-security decision platform
-under active development. It runs several established scanners, aggregates their
-reports, applies a severity gate, and generates a static HTML report.
+**Automatically find security problems in your code before they reach production.**
 
-The current `0.1.x` release is an early prototype. It is useful for evaluation and
-research, but it is not yet a production-grade security control.
+Trust Gate runs security scanners on every pull request, filters out the noise,
+and tells you exactly which issues need fixing — right inside GitHub. It works
+locally in your CI pipeline, so your source code never leaves your environment.
 
-## Current safety status
+## Quick start — GitHub Action
 
-The existing Action runs Bandit, Semgrep, pip-audit, Trivy, and Gitleaks. Its
-command-based scanners now record timestamps, exit codes, timeouts, versions,
-report presence, and separate output logs. Trivy's external Action outcome is
-recorded alongside the same health model. Missing, malformed, timed-out, or
-crashed required scanners fail the gate by default.
-
-The repository's historical research workflow still contains best-effort
-scanner commands while it is migrated through Phase 1.3. Do not treat that
-workflow's green result as equivalent to the composite Action's health-aware
-gate.
-
-Do not use the current green gate as the sole basis for a release decision. The
-ordered implementation work and acceptance status are tracked in
-[docs/ROADMAP_STATUS.md](docs/ROADMAP_STATUS.md).
-
-Other important limitations:
-
-- SAST and dependency discovery are Python-first.
-- AI-assisted remediation is explicitly opt-in and limited to reviewed context,
-  isolated branches, mandatory verification, and draft pull requests. It does
-  not autonomously merge changes or treat model output as proof of a fix.
-- Confidence data comes from one small, deliberately vulnerable fixture and is
-  Directional rather than statistically mature; decisions use its conservative
-  lower credible bound.
-- The Stripe licence webhook is an undeployed design sketch.
-
-See [docs/audits/REPOSITORY_AUDIT.md](docs/audits/REPOSITORY_AUDIT.md) for the
-complete baseline.
-
-## What works today
-
-- A reusable composite GitHub Action for Linux runners.
-- Bandit and Semgrep Python scanning.
-- `requirements.txt` auditing with pip-audit.
-- Trivy configuration scanning.
-- Gitleaks secret scanning.
-- Versioned canonical finding, scan-run, decision, policy-as-code, and
-  policy-result JSON contracts.
-- Schema validation before atomic JSON publication.
-- Backward-compatible migration for historical unversioned findings and scan runs.
-- Stable, versioned finding fingerprints and cross-scanner correlation.
-- Versioned benchmark manifests with generated, consistency-checked metrics.
-- A versioned, hash-bound multilingual benchmark fixture corpus covering seven
-  source languages, Terraform, containers, Kubernetes, vulnerable/patched
-  pairs, safe lookalikes, reachability, and code/dependency scopes without
-  overstating unevaluated detection quality.
-- Integrity-bound independent benchmark reviews with disagreement adjudication,
-  Cohen's kappa, uncertainty, public-blind and private-commitment partitions,
-  label commitments, and fail-closed rule-tuning leakage controls.
-- Explainable multi-signal matching and manual adjudication for ambiguous labels.
-- Beta-Binomial precision intervals, calibration metrics, and separate confidence
-  components.
-- Explicit scanner health for missing and malformed reports.
-- Health-aware scanner execution with configurable timeouts and separate logs.
-- Configurable severity threshold gating.
-- A static, filterable HTML report.
-- Offline Ed25519 licence verification.
-- An installable `trustgate` CLI with aggregation and reporting commands.
-- A typed scanner-adapter SDK with registration, entry-point discovery,
-  applicability planning, isolated parsing, and 17 built-in integrations.
-- Deterministic repository detection and an explainable, per-package scan plan
-  with safe generated/vendor exclusions and explicit privacy declarations.
-- Conservative exact deduplication, multi-signal cross-scanner correlation, and
-  ancestry-aware corroboration with confidence limits.
-- Cache-backed OSV, GitHub advisory, NVD, EPSS, and CISA KEV enrichment with
-  offline, identifier-only, and full dependency-metadata modes.
-- Conservative dependency reachability, Python source-to-sink traces, and
-  optional DAST correlation with explainable static and runtime evidence.
-- Opt-in, digest-pinned ZAP DAST with baseline/API discovery, safe and active
-  modes, authenticated headers, scope allowlists, and hard resource bounds.
-- Deterministic contextual decisions across 16 evidence components, with nine
-  policy-driven outcomes, full rule traces, uncertainty, and tamper detection.
-- JSON/YAML policy validation, exact-version inheritance, organisation defaults,
-  repository overrides, saved-finding simulation, explanations, and policy tests.
-- Ten documented and tested standard policy packs spanning startup,
-  high-assurance, sector, framework-aligned, container, secret, and supply-chain
-  starting points.
-- Content-bound default-branch baselines and deterministic pull-request
-  comparisons for new, removed, worsened, reachable, exploited, expired, and
-  scanner-coverage changes.
-- Differential baseline gates with new-risk enforcement by default, explicit
-  all-risk and worsened-risk modes, public policy evaluation, and fail-closed
-  scanner coverage checks.
-- Immutable finding-state transitions with actor, timestamp, reason, evidence,
-  approval, expiry, integrity checks, and automatic expiry reopening.
-- Content-bound, exact-fingerprint suppression records with explicit scope,
-  linting, expiry warnings, and automatic revalidation for code, reachability,
-  KEV, exploit-evidence, and policy changes.
-- Deterministic SARIF 2.1.0 with rule metadata, remediation, precise locations,
-  stable fingerprints, artifact publication, and least-privilege GitHub code
-  scanning upload.
-- A stable GitHub Actions `Trust Gate` check with a bounded in-product summary
-  of the decision, scanner health, finding classes, policy, baseline changes,
-  evidence explanations, and detailed artifact link.
-- One safely updatable pull-request comment with concise counts, collapsed
-  detail, exact code links, remediation availability, and no source excerpts.
-- Deterministic CycloneDX 1.6 and SPDX 2.3 product SBOMs with direct and
-  transitive dependency relationships, exact versions, licences, Package URLs,
-  lockfile hashes, signed release assets, and a fail-closed licence inventory.
-- Approval-backed CycloneDX 1.6 VEX with explicit exploitability status,
-  analysis state and justification, content-bound reachability and approval
-  links, versioned revisions, and optional keyless signing.
-- Reproducible audit-evidence manifests binding repository and workflow
-  identity, scan and policy records, baselines, suppressions, approvals, SBOM,
-  VEX, provenance, attestations, exclusions, and threat-data timestamps, with
-  byte-for-byte verification and separate manual compliance requirements.
-- Content-bound deterministic remediation for parameterised SQLite queries,
-  direct subprocess argv, safe YAML, security-purpose hashes, exact dependency
-  upgrades, numeric Docker users, environment-backed secrets, and Flask
-  security headers, with protected backups and verified rollback.
-- Evidence-bound guided remediation explaining vulnerabilities, exploit
-  scenarios, recorded source-to-sink evidence, secure framework patterns, CWE
-  references, tests, regression risks, and verification steps without changing
-  source or claiming a fix.
-- Explicitly opt-in AI-assisted remediation with bounded context disclosure,
-  secret redaction, local and remote model modes, isolated worktree branches,
-  five mandatory verification classes, post-scan regression checks, and
-  verified-only draft pull requests.
-
-Severity handling, including unknown defaults and the audited Trivy CVSS
-fallback, is documented in `docs/SEVERITY_NORMALISATION.md`.
-Stable finding identity and cross-scanner dependency correlation are documented
-in `docs/FINGERPRINTS.md`.
-Adapter lifecycle and extension guidance are documented in
-`docs/ADAPTER_SDK.md`.
-Repository detection, overrides, dry-run behavior, and plan fields are
-documented in `docs/SCAN_PLANNING.md`.
-Finding consolidation, evidence ancestry, contradictions, and corroboration
-limits are documented in `docs/CORRELATION.md`.
-Threat-feed privacy, cache expiry, stale-data behavior, and CLI usage are
-documented in `docs/THREAT_INTELLIGENCE.md`.
-Reachability statuses, limitations, evidence inputs, and CLI usage are
-documented in `docs/REACHABILITY_ANALYSIS.md`.
-DAST authorization, acknowledgements, limits, authentication handling, and CLI
-usage are documented in `docs/DAST_SAFETY.md`.
-Contextual outcomes, evidence strength, reproducibility, and CLI usage are
-documented in `docs/DECISION_SCORING.md`.
-Policy authoring, inheritance, simulation, explanation, and test commands are
-documented in `docs/POLICY_AS_CODE.md`.
-SARIF mapping, validation, GitHub permissions, and fork behavior are documented
-in `docs/SARIF.md`.
-GitHub Check summaries and branch-protection configuration are documented in
-`docs/GITHUB_CHECKS.md`.
-Consolidated pull-request comments and their publication boundary are
-documented in `docs/PR_COMMENTS.md`.
-
-## Install the CLI
-
-From a checkout:
-
-```bash
-python -m pip install --require-hashes -r requirements/runtime.lock
-python -m pip install --editable . --no-deps
-trustgate --help
-```
-
-Aggregate existing scanner reports:
-
-```bash
-trustgate aggregate \
-  --reports-dir reports \
-  --output reports/findings.json \
-  --fail-on high
-```
-
-Generate validated SARIF for GitHub code scanning or another SARIF consumer:
-
-```bash
-trustgate sarif \
-  --input reports/findings.json \
-  --output reports/trustgate.sarif
-```
-
-Generate both standard product SBOM formats from an immutable release tag:
-
-```bash
-trustgate sbom \
-  --repository . \
-  --ref v0.1.0 \
-  --tag v0.1.0 \
-  --output-directory reports/sbom
-```
-
-Generate and optionally sign an approved CycloneDX VEX document:
-
-```bash
-trustgate vex \
-  --input reports/reachability.json \
-  --analyses vex-analyses.json \
-  --output reports/trustgate.vex.cdx.json \
-  --sign
-```
-
-Generate and verify a content-addressed audit-evidence manifest:
-
-```bash
-trustgate evidence generate \
-  --root . \
-  --config audit-evidence.json \
-  --output reports/audit-evidence.json
-trustgate evidence verify \
-  --root . \
-  --manifest reports/audit-evidence.json
-```
-
-List, apply, and roll back supported deterministic remediations:
-
-```bash
-trustgate remediate rules --output reports/remediation-rules.json
-trustgate remediate guide \
-  --input reports/findings.json \
-  --guidance remediation-guidance.json \
-  --output reports/remediation-guidance.json
-trustgate remediate apply \
-  --root . \
-  --plan remediation-plan.json \
-  --receipt reports/remediation-receipt.json
-trustgate remediate rollback \
-  --root . \
-  --receipt reports/remediation-receipt.json
-
-# Preview first; this command does not contact a model.
-trustgate remediate ai-context \
-  --root . \
-  --input reports/findings.json \
-  --request ai-context-request.json \
-  --output reports/ai-remediation-context.json
-```
-
-Generate the bounded Markdown shown directly on a GitHub Actions Check Run:
-
-```bash
-trustgate checks \
-  --input reports/findings.json \
-  --policy-result reports/policy-result.json \
-  --output reports/check-summary.md
-```
-
-Generate the bounded Markdown for one consolidated pull-request comment:
-
-```bash
-trustgate pr-comment \
-  --input reports/findings.json \
-  --policy-result reports/policy-result.json \
-  --repository owner/repository \
-  --commit "$GITHUB_SHA" \
-  --output reports/pr-comment.md
-```
-
-Generate a product report without research benchmark metrics:
-
-```bash
-trustgate report \
-  --input reports/findings.json \
-  --output reports/dashboard.html \
-  --no-benchmark-ground-truth
-```
-
-Enrich an existing scan without sending source code:
-
-```bash
-trustgate enrich \
-  --input reports/findings.json \
-  --output reports/enriched-findings.json \
-  --network-mode metadata-only
-```
-
-Analyze dependency, Python data-flow, and optional runtime evidence:
-
-```bash
-trustgate reachability \
-  --input reports/findings.json \
-  --output reports/reachability.json \
-  --repository-root . \
-  --vulnerable-symbols vulnerable-symbols.json \
-  --deployment-inventory deployment.json
-```
-
-Generate a safe, bounded DAST plan without executing it:
-
-```bash
-trustgate dast \
-  --target-url https://pr-123.preview.example.test \
-  --environment preview \
-  --scope-host pr-123.preview.example.test \
-  --public-target-acknowledged
-```
-
-Evaluate findings with explicit deployment context and a versioned policy:
-
-```bash
-trustgate decide \
-  --input reports/reachability.json \
-  --runtime-context deployment-context.json \
-  --output reports/decisions.json
-```
-
-Validate and test a JSON or YAML policy against saved findings:
-
-```bash
-trustgate policy validate --policy policies/service.policy.yml
-trustgate policy validate --policy pack:startup-baseline
-trustgate policy test \
-  --policy policies/service.policy.yml \
-  --input reports/findings.json \
-  --expectations policies/service.expectations.json
-```
-
-Create, compare, and gate against a default-branch finding baseline:
-
-```bash
-trustgate baseline create \
-  --input reports/default-branch-findings.json \
-  --output reports/baseline.json \
-  --default-branch main
-trustgate baseline compare \
-  --baseline reports/baseline.json \
-  --input reports/pull-request-findings.json \
-  --output reports/baseline-diff.json
-trustgate baseline gate \
-  --baseline reports/baseline.json \
-  --input reports/pull-request-findings.json \
-  --output reports/baseline-gate.json \
-  --gate-mode new \
-  --fail-on high
-```
-
-## Evaluate the GitHub Action
-
-The repository slug remains `xkobxx/devsecops-dissertation` during the migration.
-For evaluation:
+Add this to `.github/workflows/security.yml` in your repository:
 
 ```yaml
-name: Trust Gate evaluation
+name: Security scan
 
 on:
   pull_request:
@@ -353,7 +22,6 @@ permissions:
 
 jobs:
   trust-gate:
-    name: Trust Gate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -363,63 +31,175 @@ jobs:
           fail-on: high
 ```
 
-This example uses the repository's current release tag for compatibility. The
-roadmap requires immutable commit pins before production readiness.
+That's it. Every pull request now gets a security check. If a high or critical
+issue is found, the build fails and a comment appears on the PR explaining what
+was found and how to fix it.
 
-### Action inputs
+### What you can configure
 
-| Input | Default | Description |
+| Input | Default | What it does |
 |---|---|---|
-| `target` | `.` | Path to scan, relative to the checked-out workspace |
-| `fail-on` | `high` | `critical`, `high`, `medium`, `low`, or `none` |
-| `scanner-failure-policy` | `fail` | `fail`, `warn`, or `ignore` for required scanner failures |
-| `severity-basis` | `normalised` | Gate on canonical severity or mapped scanner-native `original` severity |
-| `optional-scanners` | empty | Comma-separated scanners allowed to be absent or unhealthy |
-| `scanner-timeout-seconds` | `300` | Maximum duration for each command-based scanner |
-| `redact-sensitive-content` | `false` | Publish content-addressed redacted report views while retaining originals as separate sensitive audit evidence |
-| `dast-enabled` | `false` | Opt into bounded ZAP execution; see the DAST safety guide for the related target, mode, scope, limit, authentication, and acknowledgement inputs |
-| `license-key` | empty | Optional key for the experimental proprietary scoring layer |
+| `target` | `.` | Which folder to scan |
+| `fail-on` | `high` | Minimum severity that blocks the PR: `critical`, `high`, `medium`, `low`, or `none` |
+| `scanner-failure-policy` | `fail` | What happens if a scanner crashes: `fail`, `warn`, or `ignore` |
+| `optional-scanners` | _(none)_ | Scanners that are allowed to be missing (comma-separated) |
+| `scanner-timeout-seconds` | `300` | How long each scanner can run before timing out |
+| `dast-enabled` | `false` | Also run a live web-application scan (see [DAST safety](docs/DAST_SAFETY.md)) |
 
-### Action outputs
+### What you get back
 
-| Output | Description |
+| Output | What it is |
 |---|---|
-| `findings-path` | Path to the validated canonical scan-run JSON |
-| `policy-result-path` | Path to the validated policy-result JSON |
-| `sarif-path` | Path to the validated SARIF 2.1.0 output |
-| `check-summary-path` | Path to the bounded Markdown published on the Check Run |
-| `pr-comment-path` | Path to the concise Markdown for a consolidated PR comment |
+| `findings-path` | The full scan results as JSON |
+| `sarif-path` | Findings in GitHub's security format (shows up in the Security tab) |
+| `check-summary-path` | A pass/fail summary shown on the PR check |
+| `pr-comment-path` | The PR comment body with findings and fix suggestions |
 
-The current Action supports one invocation per job because its dashboard artifact
-name is fixed.
+## How it works
 
-## Privacy and network behaviour
+```
+Your code
+  ↓
+1. Detect what technologies you use (Python, Node, Docker, Terraform, etc.)
+  ↓
+2. Pick the right scanners (Bandit, Semgrep, pip-audit, Trivy, Gitleaks, etc.)
+  ↓
+3. Run them and check they actually succeeded (no silent failures)
+  ↓
+4. Merge duplicate findings from different scanners
+  ↓
+5. Look up known exploits and threat intelligence
+  ↓
+6. Check if the vulnerable code is actually reachable
+  ↓
+7. Apply your security policy to decide: block, warn, or allow
+  ↓
+8. Post results to your PR, GitHub Security tab, and audit reports
+```
 
-Customer source is scanned in the caller's CI workspace. Trust Gate does not
-implement a source-code upload service. However, the current workflow downloads
-Actions, Python packages, container images, and Semgrep rules. The generated
-dashboard also references Google Fonts unless opened offline with that request
-blocked.
+Trust Gate doesn't just dump scanner output. It answers the question:
+**"Given everything we know, should this code ship?"**
 
-Threat enrichment defaults to `metadata-only`, which sends only existing
-advisory IDs. `disabled` makes no threat-feed requests; `full` may additionally
-send dependency ecosystem, name, version, and PURL to OSV. Source paths,
-excerpts, and repository content are never sent. See
-[docs/THREAT_INTELLIGENCE.md](docs/THREAT_INTELLIGENCE.md).
+## Install the CLI
 
-The optional licence check is local. The undeployed commercial webhook would send
-customer identity, email address, licence token, and expiry metadata through
-Stripe, Vercel, and Resend; it does not receive repository source.
+If you want to run Trust Gate locally instead of (or alongside) the GitHub Action:
 
-## Research is not a production benchmark
+```bash
+pip install --require-hashes -r requirements/runtime.lock
+pip install --editable . --no-deps
+trustgate --help
+```
 
-The dissertation experiment, labelled fixture, historical run data, and known
-methodological limitations are documented separately in
-[docs/research/README.md](docs/research/README.md).
+### Common commands
 
-Published historical precision figures must not be interpreted as general scanner
-accuracy or current production confidence. The five recorded runs are
-byte-identical, and most rule-level confidence samples contain only one finding.
+**Scan and aggregate results:**
+
+```bash
+trustgate aggregate \
+  --reports-dir reports \
+  --output reports/findings.json \
+  --fail-on high
+```
+
+**Generate a security report for GitHub:**
+
+```bash
+trustgate sarif \
+  --input reports/findings.json \
+  --output reports/trustgate.sarif
+```
+
+**Check findings against your security policy:**
+
+```bash
+trustgate decide \
+  --input reports/findings.json \
+  --output reports/decisions.json
+```
+
+**Create a baseline so only new issues block PRs:**
+
+```bash
+trustgate baseline create \
+  --input reports/findings.json \
+  --output reports/baseline.json \
+  --default-branch main
+```
+
+See `trustgate --help` for all available commands, including `enrich`,
+`reachability`, `dast`, `policy`, `sbom`, `vex`, `evidence`, `remediate`,
+and `report`.
+
+## What's included
+
+### Scanners (17 built-in adapters)
+
+Bandit, Semgrep, pip-audit, Trivy, Gitleaks, OWASP ZAP, OSV-Scanner, Syft,
+Grype, Checkov, Hadolint, Gosec, Brakeman, and more. Trust Gate picks the
+right ones based on what's in your repository.
+
+### Smart filtering
+
+- **Deduplication** — if two scanners find the same issue, you see it once
+  (with a note that both agree).
+- **Threat intelligence** — checks OSV, GitHub Advisories, NVD, EPSS, and CISA
+  KEV to see if a vulnerability is actually being exploited in the wild.
+- **Reachability analysis** — a vulnerable library you never import is less
+  urgent than one in your login page.
+- **Baseline comparison** — only new issues block your PR, so you can adopt
+  Trust Gate without fixing every legacy problem first.
+
+### Policy as code
+
+Write rules in YAML like "block critical SQL injection in production" or
+"require a fix for anything on the CISA Known Exploited list." Ten starter
+policy packs are included for common scenarios (startup, healthcare, financial
+services, container security, etc.).
+
+### Reports and artefacts
+
+- **SARIF** — findings appear in GitHub's Security tab
+- **GitHub Check** — pass/fail summary on every PR
+- **PR comment** — one comment listing what was found, updated on each push
+- **SBOM** — full ingredient list of your dependencies (CycloneDX + SPDX)
+- **VEX** — documents which vulnerabilities are actually exploitable
+- **Audit evidence** — signed proof of what was scanned and when
+- **HTML dashboard** — a filterable standalone report
+
+### Remediation help
+
+- **Guided fixes** — explains why something is vulnerable and shows the secure
+  coding pattern.
+- **Auto-fix** — can automatically fix common issues (SQL injection, unsafe
+  YAML, weak hashes, exposed secrets) with rollback support.
+- **AI-assisted** — optionally uses an LLM to generate fix PRs, but never
+  marks anything as fixed until tests pass. Requires explicit opt-in.
+
+## Privacy
+
+Your source code stays in your CI environment. Trust Gate does not upload it
+anywhere. Threat intelligence lookups send only advisory IDs by default (e.g.
+CVE numbers), never source code. You can disable network access entirely for
+air-gapped environments.
+
+See [Privacy model](docs/PRIVACY_MODEL.md) for full details.
+
+## Working examples
+
+The [examples/](examples/) directory has ready-to-use configurations for:
+
+Python Flask · Python Django · Node.js · TypeScript · Java · Go · Docker ·
+Terraform · Kubernetes · Monorepo · Offline mode · Custom policy ·
+Authenticated DAST · Self-hosted deployment
+
+## Project status
+
+Trust Gate `v1.0.0` has completed 982 of 998 implementation items. The 16
+remaining items require external human reviewers (independent security audit,
+penetration test, and benchmark labelling review) and cannot be automated.
+
+See [Roadmap status](docs/ROADMAP_STATUS.md) for details and
+[Known limitations](docs/KNOWN_LIMITATIONS.md) for current boundaries.
 
 <!-- trustgate:benchmark-metrics:start -->
 > Generated from the versioned benchmark manifest. Do not edit this block.
@@ -433,53 +213,145 @@ Methodology `1.0.0` uses a Beta(1, 1) prior. Displayed confidence is the posteri
 4 byte-identical repeat run(s) are retained for provenance but excluded as independent statistical samples.
 <!-- trustgate:benchmark-metrics:end -->
 
-## Repository map
+## Repository layout
 
 ```text
-src/trustgate/       installable community package
-scripts/             compatibility wrappers and research utilities
-benchmarks/          deliberately vulnerable fixtures and benchmark material
-tests/               unit and integration tests
-docs/                product, security, migration, and research documentation
-action.yml           reusable composite Action
+src/trustgate/       the main Python package
+schemas/             JSON schemas for findings, policies, and reports
+policies/            ready-to-use security policy packs
+benchmarks/          test fixtures and benchmark data
+tests/               unit, integration, security, and end-to-end tests
+examples/            working examples for different project types
+docs/                all documentation
+action.yml           the GitHub Action
 ```
 
 ## Documentation
 
+<details>
+<summary>Getting started</summary>
+
+- [Quick start](docs/QUICKSTART.md)
+- [CLI installation](docs/CLI_INSTALLATION.md)
+- [GitHub Action setup](docs/GITHUB_ACTION.md)
+- [Configuration reference](docs/CONFIGURATION_REFERENCE.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+</details>
+
+<details>
+<summary>Core concepts</summary>
+
 - [Architecture](docs/ARCHITECTURE.md)
-- [Local development](docs/DEVELOPMENT.md)
+- [Schemas](docs/SCHEMAS.md)
+- [Severity normalisation](docs/SEVERITY_NORMALISATION.md)
+- [Stable fingerprints](docs/FINGERPRINTS.md)
 - [Scanner compatibility](docs/SCANNER_COMPATIBILITY.md)
-- [Dependency update process](docs/DEPENDENCY_UPDATES.md)
-- [Benchmark methodology](docs/BENCHMARK_METHODOLOGY.md)
-- [Multilingual benchmark corpus](docs/MULTILINGUAL_BENCHMARK.md)
-- [Benchmark labelling and partitions](docs/BENCHMARK_LABELLING.md)
-- [Confidence methodology](docs/CONFIDENCE_METHODOLOGY.md)
+- [Compatibility matrix](docs/COMPATIBILITY_MATRIX.md)
+- [Adapter SDK](docs/ADAPTER_SDK.md)
+- [Scan planning](docs/SCAN_PLANNING.md)
+- [Correlation](docs/CORRELATION.md)
+</details>
+
+<details>
+<summary>Enrichment and analysis</summary>
+
 - [Threat-intelligence enrichment](docs/THREAT_INTELLIGENCE.md)
 - [Reachability analysis](docs/REACHABILITY_ANALYSIS.md)
 - [DAST safety](docs/DAST_SAFETY.md)
 - [Contextual decision scoring](docs/DECISION_SCORING.md)
+</details>
+
+<details>
+<summary>Policy and gating</summary>
+
 - [Policy as code](docs/POLICY_AS_CODE.md)
+- [Policy reference](docs/POLICY_REFERENCE.md)
 - [Baseline and differential comparison](docs/BASELINES.md)
+- [Baseline setup](docs/BASELINE_SETUP.md)
 - [Finding lifecycle](docs/FINDING_LIFECYCLE.md)
+- [Suppression workflow](docs/SUPPRESSION_WORKFLOW.md)
+</details>
+
+<details>
+<summary>Reporting and artefacts</summary>
+
+- [SARIF](docs/SARIF.md)
+- [GitHub Checks](docs/GITHUB_CHECKS.md)
+- [Pull-request comments](docs/PR_COMMENTS.md)
 - [Software bills of materials](docs/SBOM.md)
 - [Vulnerability Exploitability eXchange](docs/VEX.md)
 - [Audit evidence](docs/AUDIT_EVIDENCE.md)
+</details>
+
+<details>
+<summary>Remediation</summary>
+
+- [Remediation workflow](docs/REMEDIATION_WORKFLOW.md)
 - [Deterministic remediation](docs/DETERMINISTIC_REMEDIATION.md)
 - [Guided remediation](docs/GUIDED_REMEDIATION.md)
 - [AI-assisted remediation](docs/AI_REMEDIATION.md)
-- [Implementation roadmap status](docs/ROADMAP_STATUS.md)
+</details>
+
+<details>
+<summary>Benchmarks and confidence</summary>
+
+- [Benchmark methodology](docs/BENCHMARK_METHODOLOGY.md)
+- [Multilingual benchmark corpus](docs/MULTILINGUAL_BENCHMARK.md)
+- [Benchmark labelling and partitions](docs/BENCHMARK_LABELLING.md)
+- [Confidence methodology](docs/CONFIDENCE_METHODOLOGY.md)
+</details>
+
+<details>
+<summary>Operations and deployment</summary>
+
+- [Deployment modes](docs/DEPLOYMENT_MODES.md)
+- [Offline operation](docs/OFFLINE_OPERATION.md)
+- [Data processing](docs/DATA_PROCESSING.md)
+- [Dependency updates](docs/DEPENDENCY_UPDATES.md)
+- [Release notes](docs/RELEASE_NOTES.md)
+- [Release verification](docs/RELEASE_VERIFICATION.md)
+</details>
+
+<details>
+<summary>Security and privacy</summary>
+
+- [Security model](docs/SECURITY_MODEL.md)
+- [Privacy model](docs/PRIVACY_MODEL.md)
+- [Threat model](docs/security/THREAT_MODEL.md)
+- [Workflow security](docs/security/WORKFLOW_SECURITY.md)
+- [Security review](docs/SECURITY_REVIEW.md)
+- [Incident response](docs/INCIDENT_RESPONSE.md)
+</details>
+
+<details>
+<summary>Licensing and commercial</summary>
+
+- [Licensing architecture](docs/LICENSING_ARCHITECTURE.md)
+- [Support policy](docs/SUPPORT_POLICY.md)
+</details>
+
+<details>
+<summary>Migration and versioning</summary>
+
 - [Migration guide](docs/MIGRATION.md)
+- [Migration guide (detailed)](docs/MIGRATION_GUIDE.md)
+- [Upgrade guide](docs/UPGRADE_GUIDE.md)
 - [Versioning policy](docs/VERSIONING.md)
+- [Known limitations](docs/KNOWN_LIMITATIONS.md)
+</details>
+
+<details>
+<summary>Internal</summary>
+
+- [Local development](docs/DEVELOPMENT.md)
+- [Implementation roadmap status](docs/ROADMAP_STATUS.md)
 - [Research methodology](docs/research/README.md)
 - [Repository audit](docs/audits/REPOSITORY_AUDIT.md)
+</details>
 
-## Licensing
+## Licence
 
-The community package and core scanning/aggregation code are MIT licensed. The
-confidence-scoring source under `src/trustgate/scoring/`,
-`scripts/build_confidence_table.py`, and the generated
-`benchmarks/reports/flask-vulnerable-v1.confidence.json` artifact are
-source-available under [LICENSE-COMMERCIAL](LICENSE-COMMERCIAL) and are excluded
-from the community wheel.
-
-Commercial terms require legal review before production reliance.
+The core package is MIT licensed. The confidence-scoring module under
+`src/trustgate/scoring/` is source-available under
+[LICENSE-COMMERCIAL](LICENSE-COMMERCIAL). See
+[Licensing architecture](docs/LICENSING_ARCHITECTURE.md) for details.

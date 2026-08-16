@@ -1,5 +1,5 @@
 # Build, test, research-analysis and benchmark-fixture dependencies.
-setuptools==82.0.1
+setuptools==84.0.0
 wheel==0.47.0
 matplotlib==3.10.8
 numpy==2.3.2

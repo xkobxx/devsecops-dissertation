@@ -34,3 +34,7 @@ Thumbs.db
 .env
 .env.*
 license_signing_key.pem
+
+# Private benchmark material must never enter the public repository
+benchmarks/private/
+benchmarks/labels/private/

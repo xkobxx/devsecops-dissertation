@@ -1,0 +1,68 @@
+# TrustGate config for a monorepo with multiple scan targets.
+# Defines per-target scanner sets for a Python API, React frontend,
+# Go service, and shared Terraform infrastructure.
+
+deployment_mode: local
+
+targets:
+  - path: services/api
+    language: python
+    scanners:
+      - name: bandit
+        enabled: true
+      - name: semgrep
+        enabled: true
+        options:
+          rulesets:
+            - p/python
+      - name: pip-audit
+        enabled: true
+
+  - path: services/frontend
+    language: typescript
+    scanners:
+      - name: eslint-security
+        enabled: true
+      - name: semgrep
+        enabled: true
+        options:
+          rulesets:
+            - p/typescript
+      - name: osv-scanner
+        enabled: true
+
+  - path: services/gateway
+    language: go
+    scanners:
+      - name: gosec
+        enabled: true
+      - name: semgrep
+        enabled: true
+        options:
+          rulesets:
+            - p/golang
+
+  - path: infrastructure
+    language: terraform
+    scanners:
+      - name: checkov
+        enabled: true
+      - name: trivy
+        enabled: true
+
+# Scanners that apply repo-wide regardless of target.
+scanners:
+  - name: gitleaks
+    enabled: true
+  - name: trufflehog
+    enabled: true
+  - name: trivy
+    enabled: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true

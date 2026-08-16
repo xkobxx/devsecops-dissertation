@@ -117,6 +117,62 @@ approvals are linked by canonical digest without exposing approver identity in
 the public artifact. The CLI can create a keyless Sigstore bundle. See
 [VEX.md](VEX.md).
 
+`trustgate.evidence` consumes a versioned configuration whose artifact paths
+are confined to a declared root. It validates and cross-binds canonical scan,
+policy, baseline, suppression, SBOM, and VEX records, then records provenance,
+attestations, exclusions, approval digests, and threat-data timestamps in a
+content-addressed manifest. A separate verifier recomputes the manifest digest
+and every artifact digest and size. Automatically verifiable evidence and
+manual compliance requirements remain separate in the contract. See
+[AUDIT_EVIDENCE.md](AUDIT_EVIDENCE.md).
+
+`trustgate.remediation` exposes eight versioned rule contracts and applies only
+framework-specific syntax with proven preconditions. Plans bind each source by
+relative path and SHA-256. All transformations finish in memory before the
+engine creates mode-restricted, content-bound backups and atomically replaces
+files. Application failures restore earlier writes; rollback verifies receipt,
+current-source, and backup digests before restoring exact bytes. Ambiguous or
+unsupported syntax is unchanged. See
+[DETERMINISTIC_REMEDIATION.md](DETERMINISTIC_REMEDIATION.md).
+
+`trustgate.remediation.guidance` produces a separate guidance-only report from
+a canonical scan run and explicit finding-to-rule mappings. Mappings must match
+the scan content digest, published framework, and finding CWE evidence. Each
+entry explains the weakness and exploit scenario, preserves only recorded
+source/sink evidence, and supplies a secure pattern, framework example, CWE
+links, testing guidance, regression risks, and verification instructions. It
+does not read or alter source files. See
+[GUIDED_REMEDIATION.md](GUIDED_REMEDIATION.md).
+
+`trustgate.remediation.ai` implements a five-state, content-bound AI patch
+boundary: context preview, explicitly authorised proposal, isolated worktree
+staging, mandatory verification, and verified-only draft publication. Context
+is path/range bounded and optionally redacted; remote disclosure requires a
+second permission. Generated patches remain unverified and cannot modify files
+outside reviewed context. Verification runs formatting, type, unit,
+integration, and scanner commands, then requires the original fingerprint to
+disappear without new high-risk findings or unhealthy required scanners. The
+staged diff is checked before and after commands. See
+[AI_REMEDIATION.md](AI_REMEDIATION.md).
+
+`trustgate.benchmarks.corpus` validates the separate multilingual fixture
+corpus. It root-confines and hash-checks every UTF-8 fixture, requires every file
+to belong to a case, verifies bidirectional vulnerable/patched pairs, and
+enforces Phase 17.1 coverage independently of manifest claims. Languages,
+frameworks, target types, lookalikes, cross-file flows, reachability, test code,
+and dependency scopes remain corpus metadata rather than performance results.
+See [MULTILINGUAL_BENCHMARK.md](MULTILINGUAL_BENCHMARK.md).
+
+`trustgate.benchmarks.labelling` binds exactly two distinct review records to
+the corpus, partition, and labelling-rule digests. It preserves file/line
+evidence, rationale, conflict disclosure, confidence, and independent-review
+attestation; calculates raw agreement and Cohen's kappa; and requires a third
+distinct adjudicator for every disagreement. Public development, public blind,
+and commitment-only private evaluation sets are disjoint. A separate tuning
+gate permits only development-public inputs and requires explicit exclusion of
+both evaluation partitions. See
+[BENCHMARK_LABELLING.md](BENCHMARK_LABELLING.md).
+
 The central `trustgate.aggregation` package contains no scanner-specific parser
 implementation. It resolves the catalogue and invokes adapters, retaining
 compatibility exports for the original parser function names. See

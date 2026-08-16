@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0.0",
+  "partition_id": "trustgate-multilingual-partitions",
+  "partition_version": "1.0.0",
+  "corpus_digest": "sha256:0e27768b6da672681902b4c2588be28129e3312a280f19e50dc1d9568480f414",
+  "labelling_rules": {
+    "path": "benchmarks/labelling/rules-v1.json",
+    "version": "1.0.0",
+    "sha256": "76e2a216036547d897fe121bb839e7e92ece54b53c34adf3755474373d767dbb"
+  },
+  "development_public": {
+    "visibility": "public",
+    "case_ids": [
+      "CONTAINER-ROOT-PATCH",
+      "CONTAINER-ROOT-VULN",
+      "CS-PATH-PATCH",
+      "CS-PATH-VULN",
+      "GO-CMD-PATCH",
+      "GO-CMD-VULN",
+      "IAC-S3-PATCH",
+      "IAC-S3-VULN",
+      "JAVA-CMD-PATCH",
+      "JAVA-CMD-VULN",
+      "JS-CMD-PATCH",
+      "JS-CMD-VULN",
+      "JS-DEAD-CMD-PATCH",
+      "JS-DEAD-CMD-VULN",
+      "JS-DEV-DEPENDENCY",
+      "JS-PROD-DEPENDENCY",
+      "K8S-PRIV-PATCH",
+      "K8S-PRIV-VULN",
+      "PY-SECRET-LOOKALIKE",
+      "PY-SQL-PATCH",
+      "PY-SQL-VULN",
+      "RB-SQL-PATCH",
+      "RB-SQL-VULN",
+      "RB-TEST-EVAL-PATCH",
+      "RB-TEST-EVAL-VULN",
+      "TS-PATH-PATCH",
+      "TS-PATH-VULN"
+    ]
+  },
+  "evaluation_public_blind": {
+    "visibility": "public_labels_withheld",
+    "items": [
+      {
+        "blind_id": "BLIND-PUB-001",
+        "path": "benchmarks/blind/public/BLIND-PUB-001.py",
+        "sha256": "5fe5d7125895417740310c2eab85a9412117922769637fa3bb249ac0ab2031ee",
+        "label_commitment": "sha256:ad0690a8f83f0548cfb8513b06abf6c1a7b5e68418d4e608029a894ad64add12"
+      },
+      {
+        "blind_id": "BLIND-PUB-002",
+        "path": "benchmarks/blind/public/BLIND-PUB-002.yaml",
+        "sha256": "8a9704f88c4e82487fa15114690c1b3f5ac78685c3da81aa8e910b8e75eb91a3",
+        "label_commitment": "sha256:580ee6963a0189a09bc3ed6db2ce67b045860c6d9e2a767a4b6806db152726c4"
+      }
+    ]
+  },
+  "evaluation_private": {
+    "visibility": "commitments_only",
+    "items": [
+      {
+        "blind_id": "PRIVATE-CUSTODIAN-001",
+        "fixture_commitment": "sha256:6317a70e5d11f40874fc405d8e9ae0d4e0c0bd76363e064b8fbc0e94fc79a92d",
+        "label_commitment": "sha256:8bead84f9a2ab5e22c60b598118bc45217a3ba20918d41819f24a955d5efe500"
+      }
+    ]
+  },
+  "tuning_policy": {
+    "allowed_partitions": ["development_public"],
+    "forbidden_partitions": ["evaluation_public_blind", "evaluation_private"]
+  }
+}

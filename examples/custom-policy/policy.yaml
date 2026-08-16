@@ -1,0 +1,69 @@
+# Custom TrustGate policy-as-code example.
+# Extends the startup baseline and adds organisation-specific rules.
+# See: trustgate policy validate --file policy.yaml
+
+schema_version: "1.0.0"
+version: 1
+policy_id: acme.custom-release-gate
+policy_version: 1.0.0
+description: >
+  ACME Corp release gate policy. Blocks critical and KEV findings,
+  requires fixes for high-severity issues before release, and
+  monitors medium findings with SLA tracking.
+
+extends:
+  - pack:startup-baseline
+
+default_action: investigate
+
+policies:
+  - name: block-critical-or-kev
+    action: block
+    when:
+      any:
+        - kev: true
+        - all:
+            - severity: critical
+            - confidence_lower_bound: ">=0.80"
+
+  - name: fix-high-before-release
+    action: fix_before_release
+    when:
+      all:
+        - severity: high
+        - reachability: reachable
+
+  - name: sla-high-unreachable
+    action: fix_within_sla
+    when:
+      all:
+        - severity: high
+        - reachability: unreachable
+
+  - name: monitor-medium
+    action: monitor
+    when:
+      severity: medium
+
+  - name: accept-low-noise
+    action: likely_noise
+    when:
+      all:
+        - severity: low
+        - confidence_lower_bound: "<0.50"
+
+organisation_defaults:
+  sla_days:
+    critical: 1
+    high: 14
+    medium: 90
+
+repository_overrides:
+  - repository: acme/payments-api
+    policies:
+      - name: block-high-in-payments
+        action: block
+        when:
+          all:
+            - severity: high
+            - asset_criticality: ">=high"

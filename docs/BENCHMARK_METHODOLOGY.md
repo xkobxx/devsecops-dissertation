@@ -23,11 +23,15 @@ The release workflow runs the check before publishing.
 
 ```text
 benchmarks/
+├── blind/           public evaluation fixtures with committed labels withheld
 ├── configurations/  versioned scanner commands, rules, and matching policy
+├── corpora/          multilingual fixture and case contracts
 ├── datasets/        versioned dataset descriptors
 ├── fixtures/        deliberately vulnerable source and dependency fixtures
 ├── ground_truth/    versioned labels and manual adjudications
+├── labelling/       independent-review rules and templates
 ├── manifests/       the complete source-of-truth publication record
+├── partitions/      public, blind, private-commitment, and tuning boundaries
 ├── reports/         generated metrics, confidence data, and charts
 └── results/         immutable recorded scanner outputs and raw evidence
 ```
@@ -100,3 +104,9 @@ python -m unittest tests.unit.benchmarks
 ```
 
 Publication must stop if any check fails.
+
+The multilingual corpus uses the separate two-reviewer and partition workflow
+described in [BENCHMARK_LABELLING.md](BENCHMARK_LABELLING.md). Its review
+receipt must exist before future scanner results can be treated as labelled
+evaluation evidence. Blind and private partitions are never matching or tuning
+inputs.

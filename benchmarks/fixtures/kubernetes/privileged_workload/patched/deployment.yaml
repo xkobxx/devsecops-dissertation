@@ -1,0 +1,25 @@
+# Patched benchmark equivalent. It is not deployable configuration.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: benchmark-worker
+spec:
+  selector:
+    matchLabels:
+      app: benchmark-worker
+  template:
+    metadata:
+      labels:
+        app: benchmark-worker
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: worker
+          image: example.invalid/worker@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]

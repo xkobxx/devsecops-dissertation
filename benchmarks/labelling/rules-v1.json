@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "rules_version": "1.0.0",
+  "purpose": "Independent security classification of Trust Gate benchmark fixtures without using scanner output as ground truth.",
+  "classifications": {
+    "vulnerable": "The fixture contains a security weakness with a supported source, sink, configuration, or dependency-scope rationale.",
+    "patched": "The fixture is the distinct secure equivalent of a paired vulnerable case and removes or safely constrains that weakness.",
+    "safe_lookalike": "The fixture resembles a scanner signal but lacks the corresponding security weakness."
+  },
+  "review_requirements": [
+    "Review the fixture content rather than scanner output.",
+    "Record a decision for every development-public case.",
+    "Cite at least one hash-bound file and line range for every decision.",
+    "Write a case-specific rationale.",
+    "Disclose conflicts and attest that the review was completed independently.",
+    "Do not inspect the other review before submitting an integrity-bound record."
+  ],
+  "confidence": {
+    "certain": "Direct evidence establishes the classification with no material ambiguity.",
+    "probable": "Evidence supports the classification but one material assumption remains.",
+    "uncertain": "Available evidence permits more than one reasonable classification."
+  },
+  "adjudication": {
+    "required_for_every_disagreement": true,
+    "adjudicator_must_be_distinct": true,
+    "preserve_both_original_decisions": true,
+    "preserve_uncertainty": true
+  },
+  "partition_policy": {
+    "development_public": "May be used for rule development and tuning.",
+    "evaluation_public_blind": "Fixture content is public but committed labels are withheld from evaluators and rule tuning.",
+    "evaluation_private": "Only fixture and label commitments are public; content and labels remain with the benchmark custodian."
+  },
+  "prohibited_practices": [
+    "Treating scanner agreement as ground truth.",
+    "Using public-blind or private evaluation data for rule tuning.",
+    "Changing a decision after seeing evaluation results without a new review revision.",
+    "Publishing metrics without corpus, partition, review, adjudication, scanner, and configuration versions."
+  ]
+}

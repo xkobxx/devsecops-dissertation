@@ -1,0 +1,30 @@
+# Self-hosted TrustGate deployment using Docker Compose.
+# Runs TrustGate with pre-cached vulnerability databases for offline scanning.
+#
+# Usage:
+#   docker compose up -d
+#   docker compose exec trustgate trustgate adapter-list
+#   docker compose exec trustgate trustgate adapter-run --scanner bandit
+
+services:
+  trustgate:
+    image: ghcr.io/trustgate/trustgate:latest
+    container_name: trustgate
+    environment:
+      - TRUSTGATE_DEPLOYMENT_MODE=local
+      - TRUSTGATE_NETWORK_MODE=disabled
+      - TRUSTGATE_TELEMETRY=false
+    volumes:
+      # Mount the project source to scan.
+      - ./project:/workspace:ro
+      # Persist vulnerability databases between runs.
+      - trivy-db:/root/.cache/trivy
+      - grype-db:/root/.cache/grype
+      # Mount a custom policy file.
+      - ./policy.yaml:/etc/trustgate/policy.yaml:ro
+    working_dir: /workspace
+    network_mode: none
+
+volumes:
+  trivy-db:
+  grype-db:

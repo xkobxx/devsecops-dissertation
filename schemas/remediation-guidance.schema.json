@@ -1,0 +1,130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/remediation-guidance.schema.json",
+  "title": "Trust Gate Guided Remediation Report",
+  "description": "Evidence-bound educational remediation guidance that does not modify source or claim verification.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "revision",
+    "generated_at",
+    "run_id",
+    "scan_run_digest",
+    "repository",
+    "commit",
+    "entries",
+    "limitations",
+    "guidance_id",
+    "guidance_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "revision": {"type": "integer", "minimum": 1},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "run_id": {"type": "string", "minLength": 1, "maxLength": 256},
+    "scan_run_digest": {"$ref": "#/$defs/digest"},
+    "repository": {"type": ["string", "null"], "minLength": 1, "maxLength": 512},
+    "commit": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9a-fA-F]{7,64}$"
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/entry"}
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 3,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "guidance_id": {
+      "type": "string",
+      "pattern": "^guidance-[0-9a-f]{24}$"
+    },
+    "guidance_digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "text": {"type": "string", "minLength": 1, "maxLength": 8192},
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "textList": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/text"}
+    },
+    "flow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "source_evidence", "sink", "sink_evidence"],
+      "properties": {
+        "source": {"$ref": "#/$defs/text"},
+        "source_evidence": {"enum": ["finding.source", "not_available"]},
+        "sink": {"$ref": "#/$defs/text"},
+        "sink_evidence": {"enum": ["finding.sink", "not_available"]}
+      }
+    },
+    "cweReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "url"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^CWE-[1-9][0-9]*$"},
+        "url": {
+          "type": "string",
+          "pattern": "^https://cwe\\.mitre\\.org/data/definitions/[1-9][0-9]*\\.html$"
+        }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "finding_id",
+        "finding_fingerprint",
+        "scanner",
+        "scanner_rule_id",
+        "remediation_rule_id",
+        "framework",
+        "status",
+        "why_vulnerable",
+        "exploit_scenario",
+        "relevant_flow",
+        "secure_coding_pattern",
+        "framework_specific_example",
+        "cwe_references",
+        "testing_guidance",
+        "regression_risks",
+        "verification_instructions"
+      ],
+      "properties": {
+        "finding_id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "finding_fingerprint": {"type": "string", "minLength": 1, "maxLength": 512},
+        "scanner": {"type": "string", "minLength": 1, "maxLength": 128},
+        "scanner_rule_id": {"type": "string", "minLength": 1, "maxLength": 512},
+        "remediation_rule_id": {
+          "type": "string",
+          "pattern": "^TG-[A-Z0-9-]+-[0-9]{3}$"
+        },
+        "framework": {"type": "string", "minLength": 1, "maxLength": 128},
+        "status": {"const": "guidance_only"},
+        "why_vulnerable": {"$ref": "#/$defs/text"},
+        "exploit_scenario": {"$ref": "#/$defs/text"},
+        "relevant_flow": {"$ref": "#/$defs/flow"},
+        "secure_coding_pattern": {"$ref": "#/$defs/text"},
+        "framework_specific_example": {"$ref": "#/$defs/text"},
+        "cwe_references": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"$ref": "#/$defs/cweReference"}
+        },
+        "testing_guidance": {"$ref": "#/$defs/textList"},
+        "regression_risks": {"$ref": "#/$defs/textList"},
+        "verification_instructions": {"$ref": "#/$defs/textList"}
+      }
+    }
+  }
+}

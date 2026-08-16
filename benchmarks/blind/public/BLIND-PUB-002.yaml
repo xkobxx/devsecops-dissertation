@@ -1,0 +1,11 @@
+# Public blind scanner-evaluation fixture. Do not apply or deploy.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: blind-worker
+spec:
+  containers:
+    - name: worker
+      image: example.invalid/worker@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+      securityContext:
+        privileged: true

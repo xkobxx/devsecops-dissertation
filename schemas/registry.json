@@ -2,6 +2,12 @@
   "registry_version": "1.0.0",
   "current_version": "1.0.0",
   "schemas": {
+    "audit-evidence": {
+      "1.0.0": {
+        "file": "audit-evidence.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/audit-evidence.schema.json"
+      }
+    },
     "finding": {
       "1.0.0": {
         "file": "finding.schema.json",
@@ -18,6 +24,12 @@
       "1.0.0": {
         "file": "policy-result.schema.json",
         "id": "https://schemas.trustgate.dev/v1.0.0/policy-result.schema.json"
+      }
+    },
+    "remediation-guidance": {
+      "1.0.0": {
+        "file": "remediation-guidance.schema.json",
+        "id": "https://schemas.trustgate.dev/v1.0.0/remediation-guidance.schema.json"
       }
     },
     "decision": {

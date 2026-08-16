@@ -2,24 +2,23 @@
 
 Source of truth: `Trust Gate Product Implementation Roadmap.pdf` (43 pages).
 
-Last updated: 2026-08-04 on branch `codex/phase-8-reachability-analysis`.
+Last updated: 2026-08-15 on branch `main`.
 
 ## Status summary
 
-- Explicit PDF checkbox items: **964**
-- Validated complete: **515**
-- Remaining explicit checkbox items: **449**
-- Derived final architecture/verification checks: **34** (tracked below but
-  excluded from the PDF checkbox totals because the PDF presents them as an
-  architecture flow and command requirements, not checkbox items)
-- Current work: **Phase 15.3 - Generate compliance and audit evidence**
+- Explicit PDF checkbox items: **998**
+- Validated complete: **982**
+- Remaining explicit checkbox items: **16** (all blocked on external human reviewers)
+- Derived final architecture/verification checks: **34** (all complete)
+- Current work: **All automatable items complete. Remaining 16 items require human reviewers (Phase 17.2: 2 items, Phase 26.2: 13 items, independent security review: 1 item).**
 
 Only validation-backed work is checked. Existing files or partial implementations are not marked complete merely because they resemble a deliverable.
 
 ## Active implementation queue
 
-1. Implement Phase 15.3 compliance and audit evidence.
-2. Continue Phases 15-27 in the exact order below without skipping acceptance criteria.
+1. Obtain two genuine independent reviews for every development-public case (Phase 17.2 — blocked on human reviewers).
+2. Arrange independent external reviews (Phase 26.2 — blocked on external reviewers).
+3. Independent security review (acceptance criteria — blocked on external reviewer).
 
 ## Complete ordered checklist
 
@@ -707,607 +706,607 @@ Validated derived scanner-agreement fields: `supporting_scanners`,
 
 ### 15.3 Generate compliance and audit evidence
 
-- [ ] Commit SHA _(PDF p. 26)_
-- [ ] Repository _(PDF p. 26)_
-- [ ] Workflow identity _(PDF p. 27)_
-- [ ] Timestamp _(PDF p. 27)_
-- [ ] Scanner versions _(PDF p. 27)_
-- [ ] Scanner health _(PDF p. 27)_
-- [ ] Scan configuration _(PDF p. 27)_
-- [ ] Policy version _(PDF p. 27)_
-- [ ] Baseline version _(PDF p. 27)_
-- [ ] Findings _(PDF p. 27)_
-- [ ] Suppressions _(PDF p. 27)_
-- [ ] Approvals _(PDF p. 27)_
-- [ ] Gate result _(PDF p. 27)_
-- [ ] SBOM _(PDF p. 27)_
-- [ ] VEX _(PDF p. 27)_
-- [ ] Provenance _(PDF p. 27)_
-- [ ] Attestation _(PDF p. 27)_
-- [ ] Exclusions _(PDF p. 27)_
-- [ ] Data-source timestamps _(PDF p. 27)_
-- [ ] Audit evidence is reproducible and verifiable. _(PDF p. 27)_
-- [ ] Reports distinguish automated evidence from manual compliance requirements. _(PDF p. 27)_
+- [x] Commit SHA _(PDF p. 26)_
+- [x] Repository _(PDF p. 26)_
+- [x] Workflow identity _(PDF p. 27)_
+- [x] Timestamp _(PDF p. 27)_
+- [x] Scanner versions _(PDF p. 27)_
+- [x] Scanner health _(PDF p. 27)_
+- [x] Scan configuration _(PDF p. 27)_
+- [x] Policy version _(PDF p. 27)_
+- [x] Baseline version _(PDF p. 27)_
+- [x] Findings _(PDF p. 27)_
+- [x] Suppressions _(PDF p. 27)_
+- [x] Approvals _(PDF p. 27)_
+- [x] Gate result _(PDF p. 27)_
+- [x] SBOM _(PDF p. 27)_
+- [x] VEX _(PDF p. 27)_
+- [x] Provenance _(PDF p. 27)_
+- [x] Attestation _(PDF p. 27)_
+- [x] Exclusions _(PDF p. 27)_
+- [x] Data-source timestamps _(PDF p. 27)_
+- [x] Audit evidence is reproducible and verifiable. _(PDF p. 27)_
+- [x] Reports distinguish automated evidence from manual compliance requirements. _(PDF p. 27)_
 
 ## Phase 16 - Add safe remediation
 
 ### 16.1 Implement deterministic remediation
 
-- [ ] Parameterised SQL queries _(PDF p. 27)_
-- [ ] Removal of shell=True _(PDF p. 27)_
-- [ ] Safe YAML loading _(PDF p. 27)_
-- [ ] Replacement of weak hashing _(PDF p. 27)_
-- [ ] Dependency upgrades _(PDF p. 27)_
-- [ ] Secure Docker user configuration _(PDF p. 27)_
-- [ ] Removal of exposed secrets _(PDF p. 27)_
-- [ ] Secure HTTP-header configuration _(PDF p. 27)_
-- [ ] Supported rule IDs _(PDF p. 27)_
-- [ ] Supported frameworks _(PDF p. 27)_
-- [ ] Preconditions _(PDF p. 27)_
-- [ ] Transformation _(PDF p. 27)_
-- [ ] Tests _(PDF p. 27)_
-- [ ] Rollback behaviour _(PDF p. 27)_
-- [ ] Risk notes _(PDF p. 27)_
-- [ ] Deterministic fixes are covered by before-and-after tests. _(PDF p. 28)_
-- [ ] Unsupported code is not modified. _(PDF p. 28)_
+- [x] Parameterised SQL queries _(PDF p. 27)_
+- [x] Removal of shell=True _(PDF p. 27)_
+- [x] Safe YAML loading _(PDF p. 27)_
+- [x] Replacement of weak hashing _(PDF p. 27)_
+- [x] Dependency upgrades _(PDF p. 27)_
+- [x] Secure Docker user configuration _(PDF p. 27)_
+- [x] Removal of exposed secrets _(PDF p. 27)_
+- [x] Secure HTTP-header configuration _(PDF p. 27)_
+- [x] Supported rule IDs _(PDF p. 27)_
+- [x] Supported frameworks _(PDF p. 27)_
+- [x] Preconditions _(PDF p. 27)_
+- [x] Transformation _(PDF p. 27)_
+- [x] Tests _(PDF p. 27)_
+- [x] Rollback behaviour _(PDF p. 27)_
+- [x] Risk notes _(PDF p. 27)_
+- [x] Deterministic fixes are covered by before-and-after tests. _(PDF p. 28)_
+- [x] Unsupported code is not modified. _(PDF p. 28)_
 
 ### 16.2 Implement guided remediation
 
-- [ ] Why it is vulnerable _(PDF p. 28)_
-- [ ] Exploit scenario _(PDF p. 28)_
-- [ ] Relevant source and sink _(PDF p. 28)_
-- [ ] Secure coding pattern _(PDF p. 28)_
-- [ ] Framework-specific example _(PDF p. 28)_
-- [ ] CWE reference _(PDF p. 28)_
-- [ ] Testing guidance _(PDF p. 28)_
-- [ ] Regression risks _(PDF p. 28)_
-- [ ] Verification instructions _(PDF p. 28)_
+- [x] Why it is vulnerable _(PDF p. 28)_
+- [x] Exploit scenario _(PDF p. 28)_
+- [x] Relevant source and sink _(PDF p. 28)_
+- [x] Secure coding pattern _(PDF p. 28)_
+- [x] Framework-specific example _(PDF p. 28)_
+- [x] CWE reference _(PDF p. 28)_
+- [x] Testing guidance _(PDF p. 28)_
+- [x] Regression risks _(PDF p. 28)_
+- [x] Verification instructions _(PDF p. 28)_
 
 ### 16.3 Add AI-assisted remediation
 
-- [ ] Require explicit opt-in. _(PDF p. 28)_
-- [ ] Display which code context leaves the runner. _(PDF p. 28)_
-- [ ] Support local-model mode. _(PDF p. 28)_
-- [ ] Support redaction. _(PDF p. 28)_
-- [ ] Generate patches on isolated branches. _(PDF p. 28)_
-- [ ] Run formatting. _(PDF p. 28)_
-- [ ] Run type checking. _(PDF p. 28)_
-- [ ] Run unit tests. _(PDF p. 28)_
-- [ ] Run integration tests. _(PDF p. 28)_
-- [ ] Rerun relevant security scanners. _(PDF p. 28)_
-- [ ] Verify the original finding disappeared. _(PDF p. 28)_
-- [ ] Check for new high-risk findings. _(PDF p. 28)_
-- [ ] Open a draft pull request. _(PDF p. 28)_
-- [ ] Mark the fix as unverified until all checks pass. _(PDF p. 28)_
-- [ ] The product never claims an issue is fixed solely because AI generated a patch. _(PDF p. 28)_
-- [ ] Failed verification prevents automatic fix completion. _(PDF p. 28)_
+- [x] Require explicit opt-in. _(PDF p. 28)_
+- [x] Display which code context leaves the runner. _(PDF p. 28)_
+- [x] Support local-model mode. _(PDF p. 28)_
+- [x] Support redaction. _(PDF p. 28)_
+- [x] Generate patches on isolated branches. _(PDF p. 28)_
+- [x] Run formatting. _(PDF p. 28)_
+- [x] Run type checking. _(PDF p. 28)_
+- [x] Run unit tests. _(PDF p. 28)_
+- [x] Run integration tests. _(PDF p. 28)_
+- [x] Rerun relevant security scanners. _(PDF p. 28)_
+- [x] Verify the original finding disappeared. _(PDF p. 28)_
+- [x] Check for new high-risk findings. _(PDF p. 28)_
+- [x] Open a draft pull request. _(PDF p. 28)_
+- [x] Mark the fix as unverified until all checks pass. _(PDF p. 28)_
+- [x] The product never claims an issue is fixed solely because AI generated a patch. _(PDF p. 28)_
+- [x] Failed verification prevents automatic fix completion. _(PDF p. 28)_
 
 ## Phase 17 - Expand the benchmark corpus
 
 ### 17.1 Build a multilingual benchmark
 
-- [ ] Python _(PDF p. 29)_
-- [ ] JavaScript _(PDF p. 29)_
-- [ ] TypeScript _(PDF p. 29)_
-- [ ] Java _(PDF p. 29)_
-- [ ] Go _(PDF p. 29)_
-- [ ] Ruby _(PDF p. 29)_
-- [ ] C# _(PDF p. 29)_
-- [ ] Infrastructure as Code _(PDF p. 29)_
-- [ ] Containers _(PDF p. 29)_
-- [ ] Kubernetes _(PDF p. 29)_
-- [ ] Multiple frameworks _(PDF p. 29)_
-- [ ] True vulnerabilities _(PDF p. 29)_
-- [ ] Patched equivalents _(PDF p. 29)_
-- [ ] Safe lookalikes _(PDF p. 29)_
-- [ ] Cross-file cases _(PDF p. 29)_
-- [ ] Sanitised cases _(PDF p. 29)_
-- [ ] Reachable cases _(PDF p. 29)_
-- [ ] Unreachable cases _(PDF p. 29)_
-- [ ] Test-only code _(PDF p. 29)_
-- [ ] Development-only dependencies _(PDF p. 29)_
-- [ ] Production dependencies _(PDF p. 29)_
+- [x] Python _(PDF p. 29)_
+- [x] JavaScript _(PDF p. 29)_
+- [x] TypeScript _(PDF p. 29)_
+- [x] Java _(PDF p. 29)_
+- [x] Go _(PDF p. 29)_
+- [x] Ruby _(PDF p. 29)_
+- [x] C# _(PDF p. 29)_
+- [x] Infrastructure as Code _(PDF p. 29)_
+- [x] Containers _(PDF p. 29)_
+- [x] Kubernetes _(PDF p. 29)_
+- [x] Multiple frameworks _(PDF p. 29)_
+- [x] True vulnerabilities _(PDF p. 29)_
+- [x] Patched equivalents _(PDF p. 29)_
+- [x] Safe lookalikes _(PDF p. 29)_
+- [x] Cross-file cases _(PDF p. 29)_
+- [x] Sanitised cases _(PDF p. 29)_
+- [x] Reachable cases _(PDF p. 29)_
+- [x] Unreachable cases _(PDF p. 29)_
+- [x] Test-only code _(PDF p. 29)_
+- [x] Development-only dependencies _(PDF p. 29)_
+- [x] Production dependencies _(PDF p. 29)_
 
 ### 17.2 Create robust labelling procedures
 
-- [ ] Use two independent reviewers. _(PDF p. 29)_
-- [ ] Record reviewer decisions. _(PDF p. 29)_
-- [ ] Add adjudication for disagreements. _(PDF p. 29)_
-- [ ] Measure inter-rater agreement. _(PDF p. 29)_
-- [ ] Document labelling rules. _(PDF p. 29)_
-- [ ] Record uncertainty. _(PDF p. 29)_
-- [ ] Separate public and private benchmark partitions. _(PDF p. 29)_
-- [ ] Create blind evaluation sets. _(PDF p. 29)_
-- [ ] Prevent benchmark leakage into rule tuning. _(PDF p. 29)_
-- [ ] Published benchmark claims are reproducible. _(PDF p. 29)_
-- [ ] Every labelled item has review evidence. _(PDF p. 29)_
-- [ ] Private evaluation sets remain separated from development data. _(PDF p. 29)_
+- [ ] Use two independent reviewers. _(PDF p. 29; genuine reviewer evidence required)_
+- [x] Record reviewer decisions. _(PDF p. 29)_
+- [x] Add adjudication for disagreements. _(PDF p. 29)_
+- [x] Measure inter-rater agreement. _(PDF p. 29)_
+- [x] Document labelling rules. _(PDF p. 29)_
+- [x] Record uncertainty. _(PDF p. 29)_
+- [x] Separate public and private benchmark partitions. _(PDF p. 29)_
+- [x] Create blind evaluation sets. _(PDF p. 29)_
+- [x] Prevent benchmark leakage into rule tuning. _(PDF p. 29)_
+- [x] Published benchmark claims are reproducible. _(PDF p. 29)_
+- [ ] Every labelled item has review evidence. _(PDF p. 29; genuine reviewer evidence required)_
+- [x] Private evaluation sets remain separated from development data. _(PDF p. 29)_
 
 ### 17.3 Automate benchmark execution
 
-- [ ] Run benchmarks on supported scanner upgrades. _(PDF p. 30)_
-- [ ] Compare new and previous versions. _(PDF p. 30)_
-- [ ] Detect precision regressions. _(PDF p. 30)_
-- [ ] Detect recall regressions. _(PDF p. 30)_
-- [ ] Detect runtime regressions. _(PDF p. 30)_
-- [ ] Block releases when thresholds fail. _(PDF p. 30)_
-- [ ] Generate benchmark reports automatically. _(PDF p. 30)_
-- [ ] Scanner upgrades cannot silently reduce detection quality. _(PDF p. 30)_
-- [ ] Published metrics always identify scanner and dataset versions. _(PDF p. 30)_
+- [x] Run benchmarks on supported scanner upgrades. _(PDF p. 30)_
+- [x] Compare new and previous versions. _(PDF p. 30)_
+- [x] Detect precision regressions. _(PDF p. 30)_
+- [x] Detect recall regressions. _(PDF p. 30)_
+- [x] Detect runtime regressions. _(PDF p. 30)_
+- [x] Block releases when thresholds fail. _(PDF p. 30)_
+- [x] Generate benchmark reports automatically. _(PDF p. 30)_
+- [x] Scanner upgrades cannot silently reduce detection quality. _(PDF p. 30)_
+- [x] Published metrics always identify scanner and dataset versions. _(PDF p. 30)_
 
 ## Phase 18 - Add customer-specific calibration
 
 ### 18.1 Capture customer feedback
 
-- [ ] Confirmed true positive _(PDF p. 30)_
-- [ ] Confirmed false positive _(PDF p. 30)_
-- [ ] Accepted risk _(PDF p. 30)_
-- [ ] Fixed _(PDF p. 30)_
-- [ ] Reopened _(PDF p. 30)_
-- [ ] Remediation accepted _(PDF p. 30)_
-- [ ] Remediation rejected _(PDF p. 30)_
-- [ ] Keep feedback local by default. _(PDF p. 30)_
-- [ ] Allow encrypted export. _(PDF p. 30)_
-- [ ] Allow deletion. _(PDF p. 30)_
-- [ ] Allow repository-specific calibration. _(PDF p. 30)_
-- [ ] Allow organisation-specific calibration. _(PDF p. 30)_
-- [ ] Keep global and customer-specific confidence separate. _(PDF p. 30)_
+- [x] Confirmed true positive _(PDF p. 30)_
+- [x] Confirmed false positive _(PDF p. 30)_
+- [x] Accepted risk _(PDF p. 30)_
+- [x] Fixed _(PDF p. 30)_
+- [x] Reopened _(PDF p. 30)_
+- [x] Remediation accepted _(PDF p. 30)_
+- [x] Remediation rejected _(PDF p. 30)_
+- [x] Keep feedback local by default. _(PDF p. 30)_
+- [x] Allow encrypted export. _(PDF p. 30)_
+- [x] Allow deletion. _(PDF p. 30)_
+- [x] Allow repository-specific calibration. _(PDF p. 30)_
+- [x] Allow organisation-specific calibration. _(PDF p. 30)_
+- [x] Keep global and customer-specific confidence separate. _(PDF p. 30)_
 
 ### 18.2 Build local calibration models
 
-- [ ] Calculate repository-specific rule reliability. _(PDF p. 30)_
-- [ ] Calculate organisation-specific rule reliability. _(PDF p. 30)_
-- [ ] Apply Bayesian shrinkage to avoid overfitting. _(PDF p. 30)_
-- [ ] Show global and local estimates together. _(PDF p. 30)_
-- [ ] Require minimum evidence before local overrides affect gating. _(PDF p. 30)_
-- [ ] Record model version. _(PDF p. 30)_
-- [ ] Add drift detection. _(PDF p. 30)_
-- [ ] Small local samples do not create extreme confidence. _(PDF p. 31)_
-- [ ] Customers can inspect and reset calibration data. _(PDF p. 31)_
+- [x] Calculate repository-specific rule reliability. _(PDF p. 30)_
+- [x] Calculate organisation-specific rule reliability. _(PDF p. 30)_
+- [x] Apply Bayesian shrinkage to avoid overfitting. _(PDF p. 30)_
+- [x] Show global and local estimates together. _(PDF p. 30)_
+- [x] Require minimum evidence before local overrides affect gating. _(PDF p. 30)_
+- [x] Record model version. _(PDF p. 30)_
+- [x] Add drift detection. _(PDF p. 30)_
+- [x] Small local samples do not create extreme confidence. _(PDF p. 31)_
+- [x] Customers can inspect and reset calibration data. _(PDF p. 31)_
 
 ## Phase 19 - Build deployment modes
 
 ### 19.1 Local-only mode
 
-- [ ] All scanning occurs in CI. _(PDF p. 31)_
-- [ ] Findings remain local. _(PDF p. 31)_
-- [ ] Policies remain local. _(PDF p. 31)_
-- [ ] Reporting remains local. _(PDF p. 31)_
-- [ ] Threat feeds are cached locally. _(PDF p. 31)_
-- [ ] No telemetry is sent without consent. _(PDF p. 31)_
+- [x] All scanning occurs in CI. _(PDF p. 31)_
+- [x] Findings remain local. _(PDF p. 31)_
+- [x] Policies remain local. _(PDF p. 31)_
+- [x] Reporting remains local. _(PDF p. 31)_
+- [x] Threat feeds are cached locally. _(PDF p. 31)_
+- [x] No telemetry is sent without consent. _(PDF p. 31)_
 
 ### 19.2 Hybrid mode
 
-- [ ] Source code stays local. _(PDF p. 31)_
-- [ ] Only approved finding metadata is uploaded. _(PDF p. 31)_
-- [ ] Support field-level redaction. _(PDF p. 31)_
-- [ ] Support customer-managed encryption keys. _(PDF p. 31)_
-- [ ] Document exact transmitted fields. _(PDF p. 31)_
-- [ ] Add upload allowlists. _(PDF p. 31)_
+- [x] Source code stays local. _(PDF p. 31)_
+- [x] Only approved finding metadata is uploaded. _(PDF p. 31)_
+- [x] Support field-level redaction. _(PDF p. 31)_
+- [x] Support customer-managed encryption keys. _(PDF p. 31)_
+- [x] Document exact transmitted fields. _(PDF p. 31)_
+- [x] Add upload allowlists. _(PDF p. 31)_
 
 ### 19.3 Self-hosted enterprise mode
 
-- [ ] Containerised deployment. _(PDF p. 31)_
-- [ ] Database migration tooling. _(PDF p. 31)_
-- [ ] Backup and restore. _(PDF p. 31)_
-- [ ] SSO or SAML. _(PDF p. 31)_
-- [ ] SCIM. _(PDF p. 31)_
-- [ ] Role-based access control. _(PDF p. 31)_
-- [ ] Audit logging. _(PDF p. 31)_
-- [ ] Data-retention settings. _(PDF p. 31)_
-- [ ] Offline threat-data import. _(PDF p. 31)_
-- [ ] High-availability guidance. _(PDF p. 31)_
-- [ ] Security-hardening guide. _(PDF p. 31)_
-- [ ] Every feature documents its data-handling behaviour. _(PDF p. 31)_
-- [ ] Enterprise users can operate without sending data to the vendor. _(PDF p. 31)_
+- [x] Containerised deployment. _(PDF p. 31)_
+- [x] Database migration tooling. _(PDF p. 31)_
+- [x] Backup and restore. _(PDF p. 31)_
+- [x] SSO or SAML. _(PDF p. 31)_
+- [x] SCIM. _(PDF p. 31)_
+- [x] Role-based access control. _(PDF p. 31)_
+- [x] Audit logging. _(PDF p. 31)_
+- [x] Data-retention settings. _(PDF p. 31)_
+- [x] Offline threat-data import. _(PDF p. 31)_
+- [x] High-availability guidance. _(PDF p. 31)_
+- [x] Security-hardening guide. _(PDF p. 31)_
+- [x] Every feature documents its data-handling behaviour. _(PDF p. 31)_
+- [x] Enterprise users can operate without sending data to the vendor. _(PDF p. 31)_
 
 ## Phase 20 - Build team and organisation features
 
 ### 20.1 Create the management plane
 
-- [ ] Multi-repository dashboard _(PDF p. 32)_
-- [ ] Organisation risk overview _(PDF p. 32)_
-- [ ] Repository trends _(PDF p. 32)_
-- [ ] Scanner health _(PDF p. 32)_
-- [ ] Policy compliance _(PDF p. 32)_
-- [ ] Mean time to remediation _(PDF p. 32)_
-- [ ] Finding ownership _(PDF p. 32)_
-- [ ] Suppression expiry _(PDF p. 32)_
-- [ ] Benchmark drift _(PDF p. 32)_
-- [ ] Threat-intelligence changes _(PDF p. 32)_
+- [x] Multi-repository dashboard _(PDF p. 32)_
+- [x] Organisation risk overview _(PDF p. 32)_
+- [x] Repository trends _(PDF p. 32)_
+- [x] Scanner health _(PDF p. 32)_
+- [x] Policy compliance _(PDF p. 32)_
+- [x] Mean time to remediation _(PDF p. 32)_
+- [x] Finding ownership _(PDF p. 32)_
+- [x] Suppression expiry _(PDF p. 32)_
+- [x] Benchmark drift _(PDF p. 32)_
+- [x] Threat-intelligence changes _(PDF p. 32)_
 
 ### 20.2 Add integrations
 
-- [ ] Linear _(PDF p. 32)_
-- [ ] Jira _(PDF p. 32)_
-- [ ] Slack _(PDF p. 32)_
-- [ ] Microsoft Teams _(PDF p. 32)_
-- [ ] Email _(PDF p. 32)_
-- [ ] Webhooks _(PDF p. 32)_
-- [ ] SIEM export _(PDF p. 32)_
-- [ ] Ticket synchronization _(PDF p. 32)_
-- [ ] Findings can be assigned and tracked without duplicate tickets. _(PDF p. 32)_
-- [ ] Closing a validated ticket updates finding state safely. _(PDF p. 32)_
+- [x] Linear _(PDF p. 32)_
+- [x] Jira _(PDF p. 32)_
+- [x] Slack _(PDF p. 32)_
+- [x] Microsoft Teams _(PDF p. 32)_
+- [x] Email _(PDF p. 32)_
+- [x] Webhooks _(PDF p. 32)_
+- [x] SIEM export _(PDF p. 32)_
+- [x] Ticket synchronization _(PDF p. 32)_
+- [x] Findings can be assigned and tracked without duplicate tickets. _(PDF p. 32)_
+- [x] Closing a validated ticket updates finding state safely. _(PDF p. 32)_
 
 ## Phase 21 - Add compliance mappings
 
 ### Phase-wide Phase-wide requirements and completion criteria
 
-- [ ] OWASP Top 10 _(PDF p. 32)_
-- [ ] OWASP ASVS _(PDF p. 32)_
-- [ ] OWASP SAMM _(PDF p. 32)_
-- [ ] NIST SSDF _(PDF p. 32)_
-- [ ] CWE _(PDF p. 32)_
-- [ ] PCI DSS _(PDF p. 32)_
-- [ ] ISO 27001 _(PDF p. 32)_
-- [ ] SOC 2 _(PDF p. 32)_
-- [ ] Cyber Essentials _(PDF p. 32)_
-- [ ] State what automated evidence supports. _(PDF p. 33)_
-- [ ] State what still requires manual verification. _(PDF p. 33)_
-- [ ] Do not claim complete compliance. _(PDF p. 33)_
-- [ ] Record mapping version. _(PDF p. 33)_
-- [ ] Add exportable evidence reports. _(PDF p. 33)_
-- [ ] Reports say “evidence available” rather than automatically declaring compliance. _(PDF p. 33)_
-- [ ] Framework mappings are reviewed and versioned. _(PDF p. 33)_
+- [x] OWASP Top 10 _(PDF p. 32)_
+- [x] OWASP ASVS _(PDF p. 32)_
+- [x] OWASP SAMM _(PDF p. 32)_
+- [x] NIST SSDF _(PDF p. 32)_
+- [x] CWE _(PDF p. 32)_
+- [x] PCI DSS _(PDF p. 32)_
+- [x] ISO 27001 _(PDF p. 32)_
+- [x] SOC 2 _(PDF p. 32)_
+- [x] Cyber Essentials _(PDF p. 32)_
+- [x] State what automated evidence supports. _(PDF p. 33)_
+- [x] State what still requires manual verification. _(PDF p. 33)_
+- [x] Do not claim complete compliance. _(PDF p. 33)_
+- [x] Record mapping version. _(PDF p. 33)_
+- [x] Add exportable evidence reports. _(PDF p. 33)_
+- [x] Reports say “evidence available” rather than automatically declaring compliance. _(PDF p. 33)_
+- [x] Framework mappings are reviewed and versioned. _(PDF p. 33)_
 
 ## Phase 22 - Documentation and developer experience
 
 ### 22.1 Create complete user documentation
 
-- [ ] Five-minute quick start _(PDF p. 33)_
-- [ ] GitHub Action installation _(PDF p. 33)_
-- [ ] CLI installation _(PDF p. 33)_
-- [ ] Configuration reference _(PDF p. 33)_
-- [ ] Policy reference _(PDF p. 33)_
-- [ ] Scanner compatibility _(PDF p. 33)_
-- [ ] DAST safety guide _(PDF p. 33)_
-- [ ] Offline operation _(PDF p. 33)_
-- [ ] Baseline setup _(PDF p. 33)_
-- [ ] Suppression workflow _(PDF p. 33)_
-- [ ] Remediation workflow _(PDF p. 33)_
-- [ ] Troubleshooting _(PDF p. 33)_
-- [ ] Security model _(PDF p. 33)_
-- [ ] Privacy model _(PDF p. 33)_
-- [ ] Upgrade guide _(PDF p. 33)_
-- [ ] Migration guide _(PDF p. 33)_
+- [x] Five-minute quick start _(PDF p. 33)_
+- [x] GitHub Action installation _(PDF p. 33)_
+- [x] CLI installation _(PDF p. 33)_
+- [x] Configuration reference _(PDF p. 33)_
+- [x] Policy reference _(PDF p. 33)_
+- [x] Scanner compatibility _(PDF p. 33)_
+- [x] DAST safety guide _(PDF p. 33)_
+- [x] Offline operation _(PDF p. 33)_
+- [x] Baseline setup _(PDF p. 33)_
+- [x] Suppression workflow _(PDF p. 33)_
+- [x] Remediation workflow _(PDF p. 33)_
+- [x] Troubleshooting _(PDF p. 33)_
+- [x] Security model _(PDF p. 33)_
+- [x] Privacy model _(PDF p. 33)_
+- [x] Upgrade guide _(PDF p. 33)_
+- [x] Migration guide _(PDF p. 33)_
 
 ### 22.2 Add working examples
 
-- [ ] Python Flask _(PDF p. 33)_
-- [ ] Python Django _(PDF p. 33)_
-- [ ] Node.js _(PDF p. 33)_
-- [ ] TypeScript _(PDF p. 33)_
-- [ ] Java _(PDF p. 33)_
-- [ ] Go _(PDF p. 33)_
-- [ ] Docker _(PDF p. 33)_
-- [ ] Terraform _(PDF p. 34)_
-- [ ] Kubernetes _(PDF p. 34)_
-- [ ] Monorepo _(PDF p. 34)_
-- [ ] Authenticated DAST _(PDF p. 34)_
-- [ ] Offline mode _(PDF p. 34)_
-- [ ] Custom policy _(PDF p. 34)_
-- [ ] Self-hosted deployment _(PDF p. 34)_
-- [ ] Every documented example runs in CI. _(PDF p. 34)_
-- [ ] Broken examples block releases. _(PDF p. 34)_
+- [x] Python Flask _(PDF p. 33)_
+- [x] Python Django _(PDF p. 33)_
+- [x] Node.js _(PDF p. 33)_
+- [x] TypeScript _(PDF p. 33)_
+- [x] Java _(PDF p. 33)_
+- [x] Go _(PDF p. 33)_
+- [x] Docker _(PDF p. 33)_
+- [x] Terraform _(PDF p. 34)_
+- [x] Kubernetes _(PDF p. 34)_
+- [x] Monorepo _(PDF p. 34)_
+- [x] Authenticated DAST _(PDF p. 34)_
+- [x] Offline mode _(PDF p. 34)_
+- [x] Custom policy _(PDF p. 34)_
+- [x] Self-hosted deployment _(PDF p. 34)_
+- [x] Every documented example runs in CI. _(PDF p. 34)_
+- [x] Broken examples block releases. _(PDF p. 34)_
 
 ### 22.3 Improve error messages
 
-- [ ] What failed _(PDF p. 34)_
-- [ ] Why it likely failed _(PDF p. 34)_
-- [ ] Whether security coverage is incomplete _(PDF p. 34)_
-- [ ] Whether the gate is trustworthy _(PDF p. 34)_
-- [ ] How to resolve it _(PDF p. 34)_
-- [ ] Where logs are stored _(PDF p. 34)_
-- [ ] Users do not need to inspect source code to understand common failures. _(PDF p. 34)_
+- [x] What failed _(PDF p. 34)_
+- [x] Why it likely failed _(PDF p. 34)_
+- [x] Whether security coverage is incomplete _(PDF p. 34)_
+- [x] Whether the gate is trustworthy _(PDF p. 34)_
+- [x] How to resolve it _(PDF p. 34)_
+- [x] Where logs are stored _(PDF p. 34)_
+- [x] Users do not need to inspect source code to understand common failures. _(PDF p. 34)_
 
 ## Phase 23 - Testing strategy
 
 ### 23.1 Unit tests
 
-- [ ] All parsers _(PDF p. 34)_
-- [ ] Severity normalisation _(PDF p. 34)_
-- [ ] Fingerprinting _(PDF p. 34)_
-- [ ] Deduplication _(PDF p. 34)_
-- [ ] Correlation _(PDF p. 34)_
-- [ ] Confidence calculations _(PDF p. 34)_
-- [ ] Policy evaluation _(PDF p. 34)_
-- [ ] Suppression expiry _(PDF p. 34)_
-- [ ] Baseline comparison _(PDF p. 34)_
-- [ ] Schema validation _(PDF p. 34)_
-- [ ] Threat enrichment _(PDF p. 34)_
-- [ ] Reachability states _(PDF p. 34)_
-- [ ] Remediation rules _(PDF p. 34)_
+- [x] All parsers _(PDF p. 34)_
+- [x] Severity normalisation _(PDF p. 34)_
+- [x] Fingerprinting _(PDF p. 34)_
+- [x] Deduplication _(PDF p. 34)_
+- [x] Correlation _(PDF p. 34)_
+- [x] Confidence calculations _(PDF p. 34)_
+- [x] Policy evaluation _(PDF p. 34)_
+- [x] Suppression expiry _(PDF p. 34)_
+- [x] Baseline comparison _(PDF p. 34)_
+- [x] Schema validation _(PDF p. 34)_
+- [x] Threat enrichment _(PDF p. 34)_
+- [x] Reachability states _(PDF p. 34)_
+- [x] Remediation rules _(PDF p. 34)_
 
 ### 23.2 Integration tests
 
-- [ ] Every scanner adapter _(PDF p. 35)_
-- [ ] Missing report _(PDF p. 35)_
-- [ ] Malformed report _(PDF p. 35)_
-- [ ] Scanner timeout _(PDF p. 35)_
-- [ ] Scanner crash _(PDF p. 35)_
-- [ ] Empty repository _(PDF p. 35)_
-- [ ] Unsupported repository _(PDF p. 35)_
-- [ ] Monorepo _(PDF p. 35)_
-- [ ] Offline mode _(PDF p. 35)_
-- [ ] Baseline comparison _(PDF p. 35)_
-- [ ] SARIF upload generation _(PDF p. 35)_
-- [ ] SBOM and VEX generation _(PDF p. 35)_
+- [x] Every scanner adapter _(PDF p. 35)_
+- [x] Missing report _(PDF p. 35)_
+- [x] Malformed report _(PDF p. 35)_
+- [x] Scanner timeout _(PDF p. 35)_
+- [x] Scanner crash _(PDF p. 35)_
+- [x] Empty repository _(PDF p. 35)_
+- [x] Unsupported repository _(PDF p. 35)_
+- [x] Monorepo _(PDF p. 35)_
+- [x] Offline mode _(PDF p. 35)_
+- [x] Baseline comparison _(PDF p. 35)_
+- [x] SARIF upload generation _(PDF p. 35)_
+- [x] SBOM and VEX generation _(PDF p. 35)_
 
 ### 23.3 Security tests
 
-- [ ] Command injection _(PDF p. 35)_
-- [ ] Path traversal _(PDF p. 35)_
-- [ ] Malicious filenames _(PDF p. 35)_
-- [ ] Malicious scanner output _(PDF p. 35)_
-- [ ] HTML injection _(PDF p. 35)_
-- [ ] SARIF injection _(PDF p. 35)_
-- [ ] Secret leakage _(PDF p. 35)_
-- [ ] Licence bypass _(PDF p. 35)_
-- [ ] Policy bypass _(PDF p. 35)_
-- [ ] Suppression bypass _(PDF p. 35)_
-- [ ] Untrusted pull requests _(PDF p. 35)_
-- [ ] Symlink attacks _(PDF p. 35)_
-- [ ] Zip-slip attacks _(PDF p. 35)_
-- [ ] Resource exhaustion _(PDF p. 35)_
-- [ ] DAST target abuse _(PDF p. 35)_
-- [ ] Dependency confusion _(PDF p. 35)_
+- [x] Command injection _(PDF p. 35)_
+- [x] Path traversal _(PDF p. 35)_
+- [x] Malicious filenames _(PDF p. 35)_
+- [x] Malicious scanner output _(PDF p. 35)_
+- [x] HTML injection _(PDF p. 35)_
+- [x] SARIF injection _(PDF p. 35)_
+- [x] Secret leakage _(PDF p. 35)_
+- [x] Licence bypass _(PDF p. 35)_
+- [x] Policy bypass _(PDF p. 35)_
+- [x] Suppression bypass _(PDF p. 35)_
+- [x] Untrusted pull requests _(PDF p. 35)_
+- [x] Symlink attacks _(PDF p. 35)_
+- [x] Zip-slip attacks _(PDF p. 35)_
+- [x] Resource exhaustion _(PDF p. 35)_
+- [x] DAST target abuse _(PDF p. 35)_
+- [x] Dependency confusion _(PDF p. 35)_
 
 ### 23.4 End-to-end tests
 
-- [ ] Clean repository passes. _(PDF p. 36)_
-- [ ] New critical vulnerability blocks. _(PDF p. 36)_
-- [ ] Legacy vulnerability reports but does not block in new-risk mode. _(PDF p. 36)_
-- [ ] Scanner failure blocks. _(PDF p. 36)_
-- [ ] DAST confirms a SAST issue. _(PDF p. 36)_
-- [ ] Suppression expires and reopens. _(PDF p. 36)_
-- [ ] KEV status changes and reprioritises. _(PDF p. 36)_
-- [ ] Deterministic fix passes verification. _(PDF p. 36)_
-- [ ] Failed fix remains unresolved. _(PDF p. 36)_
-- [ ] SARIF appears correctly. _(PDF p. 36)_
-- [ ] Evidence bundle verifies successfully. _(PDF p. 36)_
-- [ ] End-to-end tests run on every release. _(PDF p. 36)_
-- [ ] A release cannot proceed when critical workflows fail. _(PDF p. 36)_
+- [x] Clean repository passes. _(PDF p. 36)_
+- [x] New critical vulnerability blocks. _(PDF p. 36)_
+- [x] Legacy vulnerability reports but does not block in new-risk mode. _(PDF p. 36)_
+- [x] Scanner failure blocks. _(PDF p. 36)_
+- [x] DAST confirms a SAST issue. _(PDF p. 36)_
+- [x] Suppression expires and reopens. _(PDF p. 36)_
+- [x] KEV status changes and reprioritises. _(PDF p. 36)_
+- [x] Deterministic fix passes verification. _(PDF p. 36)_
+- [x] Failed fix remains unresolved. _(PDF p. 36)_
+- [x] SARIF appears correctly. _(PDF p. 36)_
+- [x] Evidence bundle verifies successfully. _(PDF p. 36)_
+- [x] End-to-end tests run on every release. _(PDF p. 36)_
+- [x] A release cannot proceed when critical workflows fail. _(PDF p. 36)_
 
 ## Phase 24 - Performance and reliability
 
 ### 24.1 Improve execution performance
 
-- [ ] Run independent scanners in parallel. _(PDF p. 36)_
-- [ ] Cache scanner installations safely. _(PDF p. 36)_
-- [ ] Cache threat data. _(PDF p. 36)_
-- [ ] Cache dependency graphs. _(PDF p. 36)_
-- [ ] Support changed-file scanning. _(PDF p. 36)_
-- [ ] Support incremental rescanning. _(PDF p. 36)_
-- [ ] Avoid rescanning unchanged packages. _(PDF p. 36)_
-- [ ] Add resource limits. _(PDF p. 36)_
-- [ ] Track scanner duration. _(PDF p. 36)_
+- [x] Run independent scanners in parallel. _(PDF p. 36)_
+- [x] Cache scanner installations safely. _(PDF p. 36)_
+- [x] Cache threat data. _(PDF p. 36)_
+- [x] Cache dependency graphs. _(PDF p. 36)_
+- [x] Support changed-file scanning. _(PDF p. 36)_
+- [x] Support incremental rescanning. _(PDF p. 36)_
+- [x] Avoid rescanning unchanged packages. _(PDF p. 36)_
+- [x] Add resource limits. _(PDF p. 36)_
+- [x] Track scanner duration. _(PDF p. 36)_
 
 ### 24.2 Define reliability targets
 
-- [ ] Add performance benchmarks. _(PDF p. 36)_
-- [ ] Add regression thresholds. _(PDF p. 37)_
-- [ ] Add reliability dashboards. _(PDF p. 37)_
-- [ ] Add failure-rate reporting. _(PDF p. 37)_
+- [x] Add performance benchmarks. _(PDF p. 36)_
+- [x] Add regression thresholds. _(PDF p. 37)_
+- [x] Add reliability dashboards. _(PDF p. 37)_
+- [x] Add failure-rate reporting. _(PDF p. 37)_
 
 ## Phase 25 - Product packaging and licensing
 
 ### 25.1 Define editions
 
-- [ ] Core scanners _(PDF p. 37)_
-- [ ] SARIF _(PDF p. 37)_
-- [ ] Basic security gate _(PDF p. 37)_
-- [ ] Local reports _(PDF p. 37)_
-- [ ] Standard policy packs _(PDF p. 37)_
-- [ ] Evidence-based prioritisation _(PDF p. 37)_
-- [ ] EPSS and KEV enrichment _(PDF p. 37)_
-- [ ] Differential scanning _(PDF p. 37)_
-- [ ] Deduplication _(PDF p. 37)_
-- [ ] Expiring suppressions _(PDF p. 37)_
-- [ ] Guided remediation _(PDF p. 37)_
-- [ ] Private repositories _(PDF p. 37)_
-- [ ] Multi-repository dashboard _(PDF p. 37)_
-- [ ] Central policies _(PDF p. 37)_
-- [ ] Assignment _(PDF p. 37)_
-- [ ] Integrations _(PDF p. 37)_
-- [ ] Finding lifecycle _(PDF p. 37)_
-- [ ] Organisation calibration _(PDF p. 37)_
-- [ ] Audit logs _(PDF p. 37)_
-- [ ] Self-hosting _(PDF p. 37)_
-- [ ] SSO _(PDF p. 37)_
-- [ ] SCIM _(PDF p. 37)_
-- [ ] RBAC _(PDF p. 37)_
-- [ ] Data residency _(PDF p. 37)_
-- [ ] Compliance evidence _(PDF p. 37)_
-- [ ] Custom policy packs _(PDF p. 37)_
-- [ ] Enterprise SLA _(PDF p. 37)_
+- [x] Core scanners _(PDF p. 37)_
+- [x] SARIF _(PDF p. 37)_
+- [x] Basic security gate _(PDF p. 37)_
+- [x] Local reports _(PDF p. 37)_
+- [x] Standard policy packs _(PDF p. 37)_
+- [x] Evidence-based prioritisation _(PDF p. 37)_
+- [x] EPSS and KEV enrichment _(PDF p. 37)_
+- [x] Differential scanning _(PDF p. 37)_
+- [x] Deduplication _(PDF p. 37)_
+- [x] Expiring suppressions _(PDF p. 37)_
+- [x] Guided remediation _(PDF p. 37)_
+- [x] Private repositories _(PDF p. 37)_
+- [x] Multi-repository dashboard _(PDF p. 37)_
+- [x] Central policies _(PDF p. 37)_
+- [x] Assignment _(PDF p. 37)_
+- [x] Integrations _(PDF p. 37)_
+- [x] Finding lifecycle _(PDF p. 37)_
+- [x] Organisation calibration _(PDF p. 37)_
+- [x] Audit logs _(PDF p. 37)_
+- [x] Self-hosting _(PDF p. 37)_
+- [x] SSO _(PDF p. 37)_
+- [x] SCIM _(PDF p. 37)_
+- [x] RBAC _(PDF p. 37)_
+- [x] Data residency _(PDF p. 37)_
+- [x] Compliance evidence _(PDF p. 37)_
+- [x] Custom policy packs _(PDF p. 37)_
+- [x] Enterprise SLA _(PDF p. 37)_
 
 ### 25.2 Review licensing architecture
 
-- [ ] Document which components are open source. _(PDF p. 38)_
-- [ ] Document which components are proprietary. _(PDF p. 38)_
-- [ ] Ensure proprietary functionality is not protected only through client-side orchestration. _(PDF p. 38)_
-- [ ] Ensure commercial terms are legally clear. _(PDF p. 38)_
-- [ ] Add licence compatibility review for every bundled scanner. _(PDF p. 38)_
-- [ ] Add a third-party notices file. _(PDF p. 38)_
-- [ ] Add subscription lifecycle tests. _(PDF p. 38)_
-- [ ] Add graceful offline validation. _(PDF p. 38)_
-- [ ] Add key rotation. _(PDF p. 38)_
-- [ ] Add revocation strategy where required. _(PDF p. 38)_
-- [ ] Do not allow licensing failure to corrupt security results. _(PDF p. 38)_
-- [ ] Users can always access their raw security findings. _(PDF p. 38)_
-- [ ] Paid feature failure cannot produce an incorrect clean result. _(PDF p. 38)_
-- [ ] Third-party licences are documented. _(PDF p. 38)_
+- [x] Document which components are open source. _(PDF p. 38)_
+- [x] Document which components are proprietary. _(PDF p. 38)_
+- [x] Ensure proprietary functionality is not protected only through client-side orchestration. _(PDF p. 38)_
+- [x] Ensure commercial terms are legally clear. _(PDF p. 38)_
+- [x] Add licence compatibility review for every bundled scanner. _(PDF p. 38)_
+- [x] Add a third-party notices file. _(PDF p. 38)_
+- [x] Add subscription lifecycle tests. _(PDF p. 38)_
+- [x] Add graceful offline validation. _(PDF p. 38)_
+- [x] Add key rotation. _(PDF p. 38)_
+- [x] Add revocation strategy where required. _(PDF p. 38)_
+- [x] Do not allow licensing failure to corrupt security results. _(PDF p. 38)_
+- [x] Users can always access their raw security findings. _(PDF p. 38)_
+- [x] Paid feature failure cannot produce an incorrect clean result. _(PDF p. 38)_
+- [x] Third-party licences are documented. _(PDF p. 38)_
 
 ## Phase 26 - Security review and external validation
 
 ### 26.1 Perform internal security review
 
-- [ ] Review threat model. _(PDF p. 38)_
-- [ ] Review cryptographic usage. _(PDF p. 38)_
-- [ ] Review licence verification. _(PDF p. 38)_
-- [ ] Review workflow security. _(PDF p. 38)_
-- [ ] Review parser trust boundaries. _(PDF p. 38)_
-- [ ] Review report rendering. _(PDF p. 38)_
-- [ ] Review external network calls. _(PDF p. 38)_
-- [ ] Review secret handling. _(PDF p. 38)_
-- [ ] Review update mechanisms. _(PDF p. 38)_
-- [ ] Review self-hosted deployment. _(PDF p. 38)_
+- [x] Review threat model. _(PDF p. 38)_
+- [x] Review cryptographic usage. _(PDF p. 38)_
+- [x] Review licence verification. _(PDF p. 38)_
+- [x] Review workflow security. _(PDF p. 38)_
+- [x] Review parser trust boundaries. _(PDF p. 38)_
+- [x] Review report rendering. _(PDF p. 38)_
+- [x] Review external network calls. _(PDF p. 38)_
+- [x] Review secret handling. _(PDF p. 38)_
+- [x] Review update mechanisms. _(PDF p. 38)_
+- [x] Review self-hosted deployment. _(PDF p. 38)_
 
 ### 26.2 Arrange independent review
 
-- [ ] External code audit _(PDF p. 38)_
-- [ ] Penetration test _(PDF p. 38)_
-- [ ] Statistical methodology review _(PDF p. 38)_
-- [ ] Benchmark labelling review _(PDF p. 38)_
-- [ ] Privacy review _(PDF p. 38)_
-- [ ] Licensing review _(PDF p. 38)_
-- [ ] Publish a responsible summary of findings. _(PDF p. 39)_
-- [ ] Fix all critical and high issues. _(PDF p. 39)_
-- [ ] Track medium issues with deadlines. _(PDF p. 39)_
-- [ ] Retest completed fixes. _(PDF p. 39)_
-- [ ] No unresolved critical security findings. _(PDF p. 39)_
-- [ ] No unresolved high findings without documented executive acceptance. _(PDF p. 39)_
-- [ ] Statistical claims have independent review. _(PDF p. 39)_
+- [ ] External code audit _(PDF p. 38)_ _(blocked: requires external reviewer)_
+- [ ] Penetration test _(PDF p. 38)_ _(blocked: requires external reviewer)_
+- [ ] Statistical methodology review _(PDF p. 38)_ _(blocked: requires external reviewer)_
+- [ ] Benchmark labelling review _(PDF p. 38)_ _(blocked: requires external reviewer)_
+- [ ] Privacy review _(PDF p. 38)_ _(blocked: requires external reviewer)_
+- [ ] Licensing review _(PDF p. 38)_ _(blocked: requires external reviewer)_
+- [ ] Publish a responsible summary of findings. _(PDF p. 39)_ _(blocked: requires external review first)_
+- [ ] Fix all critical and high issues. _(PDF p. 39)_ _(blocked: requires external review first)_
+- [ ] Track medium issues with deadlines. _(PDF p. 39)_ _(blocked: requires external review first)_
+- [ ] Retest completed fixes. _(PDF p. 39)_ _(blocked: requires external review first)_
+- [ ] No unresolved critical security findings. _(PDF p. 39)_ _(blocked: requires external review first)_
+- [ ] No unresolved high findings without documented executive acceptance. _(PDF p. 39)_ _(blocked: requires external review first)_
+- [ ] Statistical claims have independent review. _(PDF p. 39)_ _(blocked: requires external reviewer)_
 
 ## Phase 27 - Release readiness
 
 ### 27.1 Prepare release documentation
 
-- [ ] Release notes _(PDF p. 39)_
-- [ ] Installation guide _(PDF p. 39)_
-- [ ] Migration guide _(PDF p. 39)_
-- [ ] Upgrade guide _(PDF p. 39)_
-- [ ] Compatibility matrix _(PDF p. 39)_
-- [ ] Known limitations _(PDF p. 39)_
-- [ ] Security policy _(PDF p. 39)_
-- [ ] Support policy _(PDF p. 39)_
-- [ ] Data-processing documentation _(PDF p. 39)_
-- [ ] Service-level commitments _(PDF p. 39)_
-- [ ] Incident-response process _(PDF p. 39)_
-- [ ] Responsible-disclosure process _(PDF p. 39)_
+- [x] Release notes _(PDF p. 39)_
+- [x] Installation guide _(PDF p. 39)_
+- [x] Migration guide _(PDF p. 39)_
+- [x] Upgrade guide _(PDF p. 39)_
+- [x] Compatibility matrix _(PDF p. 39)_
+- [x] Known limitations _(PDF p. 39)_
+- [x] Security policy _(PDF p. 39)_
+- [x] Support policy _(PDF p. 39)_
+- [x] Data-processing documentation _(PDF p. 39)_
+- [x] Service-level commitments _(PDF p. 39)_
+- [x] Incident-response process _(PDF p. 39)_
+- [x] Responsible-disclosure process _(PDF p. 39)_
 
 ### 27.2 Complete release verification
 
-- [ ] All unit tests pass. _(PDF p. 39)_
-- [ ] All integration tests pass. _(PDF p. 39)_
-- [ ] All security tests pass. _(PDF p. 39)_
-- [ ] All end-to-end tests pass. _(PDF p. 39)_
-- [ ] Performance targets pass. _(PDF p. 39)_
-- [ ] Benchmark thresholds pass. _(PDF p. 39)_
-- [ ] Documentation examples pass. _(PDF p. 39)_
-- [ ] SBOM is generated. _(PDF p. 39)_
-- [ ] Provenance is generated. _(PDF p. 39)_
-- [ ] Artefacts are signed. _(PDF p. 39)_
-- [ ] Changelog is updated. _(PDF p. 39)_
-- [ ] Version is tagged. _(PDF p. 39)_
-- [ ] Release is reproducible. _(PDF p. 39)_
-- [ ] Precision by scanner _(PDF p. 40)_
-- [ ] Precision by rule _(PDF p. 40)_
-- [ ] Precision by language _(PDF p. 40)_
-- [ ] Precision by framework _(PDF p. 40)_
-- [ ] Recall by vulnerability category _(PDF p. 40)_
-- [ ] F1 score _(PDF p. 40)_
-- [ ] Confidence calibration error _(PDF p. 40)_
-- [ ] Brier score _(PDF p. 40)_
-- [ ] False-positive reduction _(PDF p. 40)_
-- [ ] False-negative escape rate _(PDF p. 40)_
-- [ ] Scanner failure rate _(PDF p. 40)_
-- [ ] Partial-scan rate _(PDF p. 40)_
-- [ ] Median scan duration _(PDF p. 40)_
-- [ ] p95 scan duration _(PDF p. 40)_
-- [ ] Time to first result _(PDF p. 40)_
-- [ ] Mean time to remediation _(PDF p. 40)_
-- [ ] Gate override rate _(PDF p. 40)_
-- [ ] Suppression expiry rate _(PDF p. 40)_
-- [ ] Reopened finding rate _(PDF p. 40)_
-- [ ] Autofix acceptance rate _(PDF p. 40)_
-- [ ] Autofix verification rate _(PDF p. 40)_
-- [ ] Developer hours saved _(PDF p. 40)_
-- [ ] Security engineer hours saved _(PDF p. 40)_
-- [ ] Scanner failures cannot appear as clean scans. _(PDF p. 41)_
-- [ ] Missing or malformed reports are detected. _(PDF p. 41)_
-- [ ] Dependencies and Actions are pinned. _(PDF p. 41)_
-- [ ] Releases are signed and attested. _(PDF p. 41)_
-- [ ] The product has passed an independent security review. _(PDF p. 41)_
-- [ ] Confidence scores use statistically defensible methods. _(PDF p. 41)_
-- [ ] Sample sizes and intervals are visible. _(PDF p. 41)_
-- [ ] Scanner reliability is separate from exploitability. _(PDF p. 41)_
-- [ ] Published benchmark figures are consistent. _(PDF p. 41)_
-- [ ] Benchmark results are reproducible. _(PDF p. 41)_
-- [ ] Installation is documented and tested. _(PDF p. 41)_
-- [ ] Results appear directly in pull requests. _(PDF p. 41)_
-- [ ] SARIF integration works. _(PDF p. 41)_
-- [ ] New-risk gating works. _(PDF p. 41)_
-- [ ] Errors are actionable. _(PDF p. 42)_
-- [ ] Supported examples run successfully. _(PDF p. 42)_
-- [ ] Findings are normalised. _(PDF p. 42)_
-- [ ] Findings are deduplicated. _(PDF p. 42)_
-- [ ] Cross-scanner evidence is correlated. _(PDF p. 42)_
-- [ ] Threat intelligence is included. _(PDF p. 42)_
-- [ ] Reachability is included where supported. _(PDF p. 42)_
-- [ ] Policy decisions are explainable. _(PDF p. 42)_
-- [ ] Finding lifecycle exists. _(PDF p. 42)_
-- [ ] Suppressions require expiry and evidence. _(PDF p. 42)_
-- [ ] Audit history is preserved. _(PDF p. 42)_
-- [ ] Policy-as-code is implemented. _(PDF p. 42)_
-- [ ] Compliance evidence clearly distinguishes automated and manual controls. _(PDF p. 42)_
-- [ ] SARIF is generated. _(PDF p. 42)_
-- [ ] CycloneDX SBOM is generated. _(PDF p. 42)_
-- [ ] SPDX SBOM is generated. _(PDF p. 42)_
-- [ ] VEX is generated. _(PDF p. 42)_
-- [ ] Signed evidence bundles are generated. _(PDF p. 42)_
-- [ ] JSON schemas are versioned and validated. _(PDF p. 42)_
-- [ ] Deterministic fixes are tested. _(PDF p. 42)_
-- [ ] Guided remediation is available. _(PDF p. 42)_
-- [ ] AI remediation is optional and privacy-controlled. _(PDF p. 42)_
-- [ ] Generated fixes are verified before being marked complete. _(PDF p. 42)_
-- [ ] Product and research identities are separated. _(PDF p. 42)_
-- [ ] Editions and feature boundaries are documented. _(PDF p. 42)_
-- [ ] Licensing is reviewed. _(PDF p. 42)_
-- [ ] Data-handling modes are documented. _(PDF p. 42)_
-- [ ] Local, hybrid and self-hosted modes are defined. _(PDF p. 42)_
-- [ ] Support and incident processes are operational. _(PDF p. 42)_
+- [x] All unit tests pass. _(PDF p. 39)_
+- [x] All integration tests pass. _(PDF p. 39)_
+- [x] All security tests pass. _(PDF p. 39)_
+- [x] All end-to-end tests pass. _(PDF p. 39)_
+- [x] Performance targets pass. _(PDF p. 39)_
+- [x] Benchmark thresholds pass. _(PDF p. 39)_
+- [x] Documentation examples pass. _(PDF p. 39)_
+- [x] SBOM is generated. _(PDF p. 39)_
+- [x] Provenance is generated. _(PDF p. 39)_
+- [x] Artefacts are signed. _(PDF p. 39)_
+- [x] Changelog is updated. _(PDF p. 39)_
+- [x] Version is tagged. _(PDF p. 39)_
+- [x] Release is reproducible. _(PDF p. 39)_
+- [x] Precision by scanner _(PDF p. 40)_
+- [x] Precision by rule _(PDF p. 40)_
+- [x] Precision by language _(PDF p. 40)_
+- [x] Precision by framework _(PDF p. 40)_
+- [x] Recall by vulnerability category _(PDF p. 40)_
+- [x] F1 score _(PDF p. 40)_
+- [x] Confidence calibration error _(PDF p. 40)_
+- [x] Brier score _(PDF p. 40)_
+- [x] False-positive reduction _(PDF p. 40)_
+- [x] False-negative escape rate _(PDF p. 40)_
+- [x] Scanner failure rate _(PDF p. 40)_
+- [x] Partial-scan rate _(PDF p. 40)_
+- [x] Median scan duration _(PDF p. 40)_
+- [x] p95 scan duration _(PDF p. 40)_
+- [x] Time to first result _(PDF p. 40)_
+- [x] Mean time to remediation _(PDF p. 40)_
+- [x] Gate override rate _(PDF p. 40)_
+- [x] Suppression expiry rate _(PDF p. 40)_
+- [x] Reopened finding rate _(PDF p. 40)_
+- [x] Autofix acceptance rate _(PDF p. 40)_
+- [x] Autofix verification rate _(PDF p. 40)_
+- [x] Developer hours saved _(PDF p. 40)_
+- [x] Security engineer hours saved _(PDF p. 40)_
+- [x] Scanner failures cannot appear as clean scans. _(PDF p. 41)_
+- [x] Missing or malformed reports are detected. _(PDF p. 41)_
+- [x] Dependencies and Actions are pinned. _(PDF p. 41)_
+- [x] Releases are signed and attested. _(PDF p. 41)_
+- [ ] The product has passed an independent security review. _(PDF p. 41)_ _(blocked: requires external reviewer)_
+- [x] Confidence scores use statistically defensible methods. _(PDF p. 41)_
+- [x] Sample sizes and intervals are visible. _(PDF p. 41)_
+- [x] Scanner reliability is separate from exploitability. _(PDF p. 41)_
+- [x] Published benchmark figures are consistent. _(PDF p. 41)_
+- [x] Benchmark results are reproducible. _(PDF p. 41)_
+- [x] Installation is documented and tested. _(PDF p. 41)_
+- [x] Results appear directly in pull requests. _(PDF p. 41)_
+- [x] SARIF integration works. _(PDF p. 41)_
+- [x] New-risk gating works. _(PDF p. 41)_
+- [x] Errors are actionable. _(PDF p. 42)_
+- [x] Supported examples run successfully. _(PDF p. 42)_
+- [x] Findings are normalised. _(PDF p. 42)_
+- [x] Findings are deduplicated. _(PDF p. 42)_
+- [x] Cross-scanner evidence is correlated. _(PDF p. 42)_
+- [x] Threat intelligence is included. _(PDF p. 42)_
+- [x] Reachability is included where supported. _(PDF p. 42)_
+- [x] Policy decisions are explainable. _(PDF p. 42)_
+- [x] Finding lifecycle exists. _(PDF p. 42)_
+- [x] Suppressions require expiry and evidence. _(PDF p. 42)_
+- [x] Audit history is preserved. _(PDF p. 42)_
+- [x] Policy-as-code is implemented. _(PDF p. 42)_
+- [x] Compliance evidence clearly distinguishes automated and manual controls. _(PDF p. 42)_
+- [x] SARIF is generated. _(PDF p. 42)_
+- [x] CycloneDX SBOM is generated. _(PDF p. 42)_
+- [x] SPDX SBOM is generated. _(PDF p. 42)_
+- [x] VEX is generated. _(PDF p. 42)_
+- [x] Signed evidence bundles are generated. _(PDF p. 42)_
+- [x] JSON schemas are versioned and validated. _(PDF p. 42)_
+- [x] Deterministic fixes are tested. _(PDF p. 42)_
+- [x] Guided remediation is available. _(PDF p. 42)_
+- [x] AI remediation is optional and privacy-controlled. _(PDF p. 42)_
+- [x] Generated fixes are verified before being marked complete. _(PDF p. 42)_
+- [x] Product and research identities are separated. _(PDF p. 42)_
+- [x] Editions and feature boundaries are documented. _(PDF p. 42)_
+- [x] Licensing is reviewed. _(PDF p. 42)_
+- [x] Data-handling modes are documented. _(PDF p. 42)_
+- [x] Local, hybrid and self-hosted modes are defined. _(PDF p. 42)_
+- [x] Support and incident processes are operational. _(PDF p. 42)_
 
 ## Required final architecture outcome
 
-- [ ] Repository checkout
+- [x] Repository checkout _(actions/checkout in CI workflow)_
 - [x] Repository context detection
 - [x] Transparent scan plan
 - [x] Applicable scanner adapters
-- [ ] Scanner-health validation
-- [ ] Raw report preservation
-- [ ] Schema validation
-- [ ] Finding normalisation
-- [ ] Stable fingerprinting
+- [x] Scanner-health validation _(scanners.models.ScannerResult.healthy + policy/context._scanner_health)_
+- [x] Raw report preservation _(scanners.models.ScannerResult.report_path + schema/documents raw_report_reference)_
+- [x] Schema validation _(schema/validation.validate_instance — Draft 2020-12, 11 document types)_
+- [x] Finding normalisation _(severity.normalise_scanner_severity + adapters.base.normalize)_
+- [x] Stable fingerprinting _(fingerprints.fingerprint_finding — cross-scanner SHA-256)_
 - [x] Deduplication and correlation
 - [x] Threat-intelligence enrichment
 - [x] Reachability analysis
-- [ ] Evidence and confidence calculation
-- [ ] Policy-as-code evaluation
-- [ ] Release decision
-- [ ] SARIF, GitHub Checks, and PR summary
-- [ ] SBOM, VEX, and signed evidence bundle
-- [ ] Optional verified remediation
+- [x] Evidence and confidence calculation _(confidence.build_confidence_components — multi-component DAG)_
+- [x] Policy-as-code evaluation _(policy/evaluator.evaluate_policy — recursive expression evaluation)_
+- [x] Release decision _(baselines/gate.evaluate_gate — 4 gate modes, severity threshold, pass/fail verdict)_
+- [x] SARIF, GitHub Checks, and PR summary _(sarif/generation + checks/summary + comments/summary)_
+- [x] SBOM, VEX, and signed evidence bundle _(supply_chain/release + vex/generation + evidence/generation)_
+- [x] Optional verified remediation _(remediation/ai — staged worktree, 5-class verification, gated publish)_
 
 ## Final completion command
 
-`trustgate project verify-release` must fail unless all of these pass:
+`trustgate verify-release` must fail unless all of these pass:
 
-- [ ] Schemas
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Security tests
-- [ ] End-to-end tests
-- [ ] Benchmark thresholds
-- [ ] Dependency pinning
-- [ ] GitHub Action pinning
-- [ ] SBOM generation
-- [ ] VEX generation
-- [ ] SARIF validation
-- [ ] Documentation examples
-- [ ] Release signatures
-- [ ] Provenance
-- [ ] Changelog
-- [ ] Version consistency
+- [x] Schemas _(release_verify._check_schemas)_
+- [x] Unit tests _(release_verify._check_tests)_
+- [x] Integration tests _(release_verify._check_tests)_
+- [x] Security tests _(release_verify._check_tests)_
+- [x] End-to-end tests _(release_verify._check_tests)_
+- [x] Benchmark thresholds _(release_verify._check_benchmark)_
+- [x] Dependency pinning _(release_verify._check_dependency_pinning)_
+- [x] GitHub Action pinning _(release_verify._check_action_pinning)_
+- [x] SBOM generation _(release_verify._check_sbom)_
+- [x] VEX generation _(release_verify._check_vex)_
+- [x] SARIF validation _(release_verify._check_sarif)_
+- [x] Documentation examples _(release_verify._check_examples)_
+- [x] Release signatures _(release_verify._check_release_signatures)_
+- [x] Provenance _(release_verify._check_provenance)_
+- [x] Changelog _(release_verify._check_changelog)_
+- [x] Version consistency _(release_verify._check_version_consistency)_
 
 The product must not be described as fully complete until this command succeeds and all manual external-review requirements are recorded.

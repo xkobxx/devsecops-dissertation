@@ -1,0 +1,32 @@
+# TrustGate config for authenticated DAST scanning.
+# Runs ZAP against an OpenAPI spec with authentication credentials.
+# Use deployment_mode: hybrid to allow network access to the target.
+
+deployment_mode: hybrid
+
+scanners:
+  - name: zap
+    enabled: true
+    options:
+      target_url: http://localhost:8080
+      openapi_spec: openapi.yaml
+      authentication:
+        type: bearer
+        token_env: DAST_AUTH_TOKEN
+      scan_policy: API-Minimal
+      max_duration_minutes: 30
+  - name: semgrep
+    enabled: true
+  - name: gitleaks
+    enabled: true
+
+network:
+  mode: metadata-only
+  upload_allowlist:
+    - localhost:8080
+
+policy:
+  severity_gate: medium
+  fail_on:
+    - severity: critical
+    - severity: high

@@ -11,6 +11,16 @@ Versioning as described in `docs/VERSIONING.md`.
 
 - Complete repository, dependency, data-flow, and test-gap audits.
 - Exhaustive PDF roadmap status tracking.
+- A versioned, hash-bound multilingual benchmark corpus with 27 cases across
+  Python, JavaScript, TypeScript, Java, Go, Ruby, C#, Terraform, Dockerfiles,
+  and Kubernetes; distinct vulnerable/patched pairs; safe lookalikes;
+  cross-file, sanitised, reachable and unreachable flows; test-only code; and
+  production/development dependency scopes, plus fail-closed CLI validation.
+- Versioned benchmark-labelling rules, exactly-two-reviewer integrity records,
+  file/line evidence, uncertainty, Cohen's kappa, mandatory third-party
+  disagreement adjudication, public-blind fixtures, commitment-only private
+  partitions, salted label commitments, rule-tuning leakage gates, and
+  deterministic labelling/control receipts without fabricated human reviews.
 - Installable `trustgate` package and CLI.
 - `trustgate aggregate` and `trustgate report` commands.
 - Unit and integration coverage for CLI and legacy compatibility entry points.
@@ -33,6 +43,28 @@ Versioning as described in `docs/VERSIONING.md`.
   status, analysis state and justification, scan-run and reachability evidence
   binding, approval digests, revisioning, atomic CLI output, and optional
   keyless Sigstore signing.
+- Versioned, deterministic audit-evidence manifests covering repository and
+  workflow identity, scanner health and configuration, findings, policy gates,
+  baselines, suppressions, approvals, SBOM, VEX, provenance, attestations,
+  exclusions, and threat-data timestamps, with root-confined artifact paths,
+  full integrity verification, and separate manual compliance requirements.
+- Content-bound deterministic remediation for parameterised SQLite queries,
+  shell-free subprocess calls, safe PyYAML loading, security-purpose hash
+  upgrades, hash-locked dependency upgrades, numeric Docker users,
+  environment-backed secrets, and Flask response security headers, with
+  published rule contracts, strict preconditions, protected backups,
+  transaction receipts, verified rollback, and before-and-after safety tests.
+- Evidence-bound, versioned guided-remediation reports with explicit
+  finding-to-rule mappings, framework and CWE applicability checks, recorded
+  source/sink provenance, vulnerability and exploit explanations, secure coding
+  patterns, framework examples, CWE links, testing guidance, regression risks,
+  verification instructions, deterministic digests, and guidance-only status.
+- Explicitly opt-in AI-assisted remediation with reviewable and redacted context
+  disclosure, shell-free local and separately authorised remote model modes,
+  bounded unified-diff proposals, isolated worktree branches, mandatory
+  formatting/type/unit/integration/scanner verification, original-finding and
+  new-high-risk regression checks, content-bound receipts, and verified-only
+  draft pull-request publication.
 - Versioned canonical finding, scan-run, and policy-result schemas with
   migrations, raw-evidence preservation, severity normalization, and stable
   fingerprints.

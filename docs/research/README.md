@@ -45,7 +45,9 @@ same canonical metrics artifact and computes a Beta-Binomial posterior per
 `(tool, rule)`. Tools without relevant ground truth are excluded rather than
 assigned a misleading zero precision.
 
-**Honesty, up front:** today's corpus is one small fixture with six seeded
-vulnerabilities. Per-rule sample sizes are tiny. Line proximity is supporting
-evidence only; ambiguous matches are excluded until a recorded manual
-adjudication resolves them.
+**Honesty, up front:** these published metrics use one small fixture with six
+seeded vulnerabilities. Per-rule sample sizes are tiny. The separate Phase 17.1
+multilingual fixture corpus expands test inputs but has not yet been executed or
+independently reviewed, so it does not change this table. Line proximity is
+supporting evidence only; ambiguous matches are excluded until a recorded
+manual adjudication resolves them.

@@ -1,0 +1,246 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.trustgate.dev/v1.0.0/audit-evidence.schema.json",
+  "title": "Trust Gate Audit Evidence Manifest",
+  "description": "Content-addressed automated evidence and explicitly separate manual compliance requirements.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at",
+    "subject",
+    "automated_evidence",
+    "manual_compliance_requirements",
+    "artifacts",
+    "verification",
+    "evidence_id",
+    "evidence_digest"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "generated_at": {"type": "string", "format": "date-time"},
+    "subject": {"$ref": "#/$defs/subject"},
+    "automated_evidence": {"$ref": "#/$defs/automatedEvidence"},
+    "manual_compliance_requirements": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/manualRequirement"}
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "verification": {"$ref": "#/$defs/verification"},
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^audit-evidence-[0-9a-f]{24}$"
+    },
+    "evidence_digest": {"$ref": "#/$defs/digest"}
+  },
+  "$defs": {
+    "path": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "commit", "ref", "workflow_identity"],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1, "maxLength": 512},
+        "commit": {"type": "string", "pattern": "^[0-9a-fA-F]{7,64}$"},
+        "ref": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "workflow_identity": {"type": "string", "minLength": 1, "maxLength": 2048}
+      }
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "kind",
+        "evidence_source",
+        "sha256",
+        "size_bytes",
+        "media_type"
+      ],
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "kind": {"type": "string", "minLength": 1, "maxLength": 128},
+        "evidence_source": {"enum": ["automated", "manual"]},
+        "sha256": {"$ref": "#/$defs/digest"},
+        "size_bytes": {"type": "integer", "minimum": 0},
+        "media_type": {"type": "string", "minLength": 1, "maxLength": 256}
+      }
+    },
+    "scanner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scanner", "version", "state", "healthy", "required"],
+      "properties": {
+        "scanner": {"type": "string", "minLength": 1, "maxLength": 128},
+        "version": {"type": ["string", "null"], "minLength": 1},
+        "state": {"enum": ["CLEAN", "FINDINGS", "FAILED_SCANNER", "PARTIAL", "SKIPPED"]},
+        "healthy": {"type": "boolean"},
+        "required": {"type": "boolean"}
+      }
+    },
+    "scan": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "run_id",
+        "status",
+        "started_at",
+        "ended_at",
+        "configuration",
+        "scanners",
+        "findings",
+        "exclusions"
+      ],
+      "properties": {
+        "run_id": {"type": "string", "minLength": 1, "maxLength": 256},
+        "status": {"enum": ["complete", "partial", "failed"]},
+        "started_at": {"type": "string", "format": "date-time"},
+        "ended_at": {"type": "string", "format": "date-time"},
+        "configuration": {"$ref": "#/$defs/path"},
+        "scanners": {"type": "array", "items": {"$ref": "#/$defs/scanner"}},
+        "findings": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["count", "severity_counts", "artifact"],
+          "properties": {
+            "count": {"type": "integer", "minimum": 0},
+            "severity_counts": {"$ref": "scan-run.schema.json#/$defs/severityCounts"},
+            "artifact": {"$ref": "#/$defs/path"}
+          }
+        },
+        "exclusions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["count", "artifact"],
+          "properties": {
+            "count": {"type": "integer", "minimum": 0},
+            "artifact": {"$ref": "#/$defs/path"}
+          }
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_name", "policy_version", "evaluated_at", "gate_result", "artifact"],
+      "properties": {
+        "policy_name": {"type": "string", "minLength": 1, "maxLength": 256},
+        "policy_version": {"type": "string", "minLength": 1, "maxLength": 128},
+        "evaluated_at": {"type": "string", "format": "date-time"},
+        "gate_result": {"enum": ["pass", "warn", "fail"]},
+        "artifact": {"$ref": "#/$defs/path"}
+      }
+    },
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "schema_version", "generated_at", "digest", "artifact"],
+      "properties": {
+        "version": {"type": "integer", "minimum": 1},
+        "schema_version": {"type": "string", "minLength": 1, "maxLength": 128},
+        "generated_at": {"type": "string", "format": "date-time"},
+        "digest": {"$ref": "#/$defs/digest"},
+        "artifact": {"$ref": "#/$defs/path"}
+      }
+    },
+    "artifactGroup": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "artifacts"],
+      "properties": {
+        "count": {"type": "integer", "minimum": 0},
+        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/path"}}
+      }
+    },
+    "approvals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "digests", "artifacts"],
+      "properties": {
+        "count": {"type": "integer", "minimum": 1},
+        "digests": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/digest"}},
+        "artifacts": {"type": "array", "items": {"$ref": "#/$defs/path"}}
+      }
+    },
+    "supplyChain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sboms", "vex"],
+      "properties": {
+        "sboms": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/path"}},
+        "vex": {"$ref": "#/$defs/path"}
+      }
+    },
+    "dataSourceTimestamp": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["finding_fingerprint", "source", "timestamp"],
+      "properties": {
+        "finding_fingerprint": {"type": "string", "minLength": 1, "maxLength": 512},
+        "source": {"type": "string", "minLength": 1, "maxLength": 128},
+        "timestamp": {"type": "string", "format": "date-time"}
+      }
+    },
+    "automatedEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scan",
+        "policy",
+        "baseline",
+        "suppressions",
+        "approvals",
+        "supply_chain",
+        "provenance",
+        "attestations",
+        "data_source_timestamps"
+      ],
+      "properties": {
+        "scan": {"$ref": "#/$defs/scan"},
+        "policy": {"$ref": "#/$defs/policy"},
+        "baseline": {"$ref": "#/$defs/baseline"},
+        "suppressions": {"$ref": "#/$defs/artifactGroup"},
+        "approvals": {"$ref": "#/$defs/approvals"},
+        "supply_chain": {"$ref": "#/$defs/supplyChain"},
+        "provenance": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/path"}},
+        "attestations": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/path"}},
+        "data_source_timestamps": {"type": "array", "items": {"$ref": "#/$defs/dataSourceTimestamp"}}
+      }
+    },
+    "manualRequirement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "requirement", "owner", "status", "evidence"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1, "maxLength": 128},
+        "requirement": {"type": "string", "minLength": 1, "maxLength": 4096},
+        "owner": {"type": "string", "minLength": 1, "maxLength": 256},
+        "status": {"enum": ["required", "complete", "not_applicable"]},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/path"}}
+      }
+    },
+    "verification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest_algorithm", "canonicalization", "artifact_scope"],
+      "properties": {
+        "digest_algorithm": {"const": "sha256"},
+        "canonicalization": {"const": "RFC8785-compatible sorted compact JSON"},
+        "artifact_scope": {"const": "paths relative to the declared evidence root"}
+      }
+    }
+  }
+}

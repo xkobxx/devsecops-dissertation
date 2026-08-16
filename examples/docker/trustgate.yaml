@@ -1,0 +1,25 @@
+# TrustGate config for Docker container image scanning.
+# Uses Hadolint for Dockerfile linting, Trivy for image vulnerabilities,
+# Grype for SCA, and Syft for SBOM generation.
+
+deployment_mode: local
+
+scanners:
+  - name: hadolint
+    enabled: true
+  - name: trivy
+    enabled: true
+  - name: grype
+    enabled: true
+  - name: syft
+    enabled: true
+  - name: gitleaks
+    enabled: true
+
+policy:
+  extends:
+    - pack:container-security
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true

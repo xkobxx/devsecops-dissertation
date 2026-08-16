@@ -9,12 +9,27 @@ be intentionally vulnerable, use unsafe dependencies, or expose insecure
 behaviour for controlled scanner evaluation. Do not deploy them to a public or
 production environment.
 
-The current corpus is a single Python/Flask fixture. Its small size and repeated
-historical runs are not statistically sufficient for production confidence
-claims; see `docs/research/README.md` and
-`docs/audits/TEST_GAP_ANALYSIS.md`.
+The fixture corpus now covers Python, JavaScript, TypeScript, Java, Go, Ruby,
+C#, Terraform, Dockerfiles, and Kubernetes. It includes vulnerable/patched
+pairs, safe lookalikes, cross-file, sanitised, reachable, unreachable,
+test-only, and dependency-scope cases. The canonical contract is
+`benchmarks/corpora/multilingual-v1.json`; validate it with
+`trustgate benchmark --corpus-check`.
 
-The canonical manifest is
+These new fixtures have not yet been independently reviewed or executed as a
+cross-scanner benchmark. They do not change the published metrics below. The
+published confidence evidence still comes from one Python/Flask fixture and
+byte-identical historical runs, so it is not statistically sufficient for
+production confidence claims. See `docs/MULTILINGUAL_BENCHMARK.md`,
+`docs/research/README.md`, and `docs/audits/TEST_GAP_ANALYSIS.md`.
+
+Two-reviewer records, disagreement adjudication, Cohen's kappa, uncertainty,
+public-blind fixtures, private commitments, and rule-tuning leakage controls are
+defined in `docs/BENCHMARK_LABELLING.md`. The machinery is complete, but real
+review evidence is intentionally not fabricated or committed on behalf of human
+reviewers.
+
+The canonical historical metrics manifest is
 `benchmarks/manifests/flask-vulnerable-v1.json`. It binds dataset, ground-truth,
 scanner-configuration, scanner-rule, result, commit, and calculation-method
 versions by SHA-256. Run `trustgate benchmark --write` to regenerate every

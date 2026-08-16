@@ -1,0 +1,9 @@
+{
+  "schema_version": "1.0.0",
+  "configuration_id": "trustgate-rule-tuning-v1",
+  "training_partitions": ["development_public"],
+  "excluded_partitions": [
+    "evaluation_public_blind",
+    "evaluation_private"
+  ]
+}

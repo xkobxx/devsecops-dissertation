@@ -109,6 +109,8 @@ def load_schema(name: str) -> dict[str, object]:
 
 
 FINDING_SCHEMA = load_schema("finding.schema.json")
+AUDIT_EVIDENCE_SCHEMA = load_schema("audit-evidence.schema.json")
+REMEDIATION_GUIDANCE_SCHEMA = load_schema("remediation-guidance.schema.json")
 SCAN_RUN_SCHEMA = load_schema("scan-run.schema.json")
 POLICY_RESULT_SCHEMA = load_schema("policy-result.schema.json")
 DECISION_SCHEMA = load_schema("decision.schema.json")
@@ -226,6 +228,8 @@ def zero_scanner_state_counts() -> dict[str, int]:
 class SchemaContractTests(unittest.TestCase):
     def test_schemas_use_draft_2020_12_and_have_unique_versioned_ids(self) -> None:
         schemas = (
+            AUDIT_EVIDENCE_SCHEMA,
+            REMEDIATION_GUIDANCE_SCHEMA,
             FINDING_SCHEMA,
             SCAN_RUN_SCHEMA,
             POLICY_RESULT_SCHEMA,

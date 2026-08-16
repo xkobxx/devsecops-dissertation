@@ -27,7 +27,9 @@ ordered implementation work and acceptance status are tracked in
 Other important limitations:
 
 - SAST and dependency discovery are Python-first.
-- VEX is not implemented.
+- AI-assisted remediation is explicitly opt-in and limited to reviewed context,
+  isolated branches, mandatory verification, and draft pull requests. It does
+  not autonomously merge changes or treat model output as proof of a fix.
 - Confidence data comes from one small, deliberately vulnerable fixture and is
   Directional rather than statistically mature; decisions use its conservative
   lower credible bound.
@@ -49,6 +51,13 @@ complete baseline.
 - Backward-compatible migration for historical unversioned findings and scan runs.
 - Stable, versioned finding fingerprints and cross-scanner correlation.
 - Versioned benchmark manifests with generated, consistency-checked metrics.
+- A versioned, hash-bound multilingual benchmark fixture corpus covering seven
+  source languages, Terraform, containers, Kubernetes, vulnerable/patched
+  pairs, safe lookalikes, reachability, and code/dependency scopes without
+  overstating unevaluated detection quality.
+- Integrity-bound independent benchmark reviews with disagreement adjudication,
+  Cohen's kappa, uncertainty, public-blind and private-commitment partitions,
+  label commitments, and fail-closed rule-tuning leakage controls.
 - Explainable multi-signal matching and manual adjudication for ambiguous labels.
 - Beta-Binomial precision intervals, calibration metrics, and separate confidence
   components.
@@ -102,6 +111,22 @@ complete baseline.
 - Approval-backed CycloneDX 1.6 VEX with explicit exploitability status,
   analysis state and justification, content-bound reachability and approval
   links, versioned revisions, and optional keyless signing.
+- Reproducible audit-evidence manifests binding repository and workflow
+  identity, scan and policy records, baselines, suppressions, approvals, SBOM,
+  VEX, provenance, attestations, exclusions, and threat-data timestamps, with
+  byte-for-byte verification and separate manual compliance requirements.
+- Content-bound deterministic remediation for parameterised SQLite queries,
+  direct subprocess argv, safe YAML, security-purpose hashes, exact dependency
+  upgrades, numeric Docker users, environment-backed secrets, and Flask
+  security headers, with protected backups and verified rollback.
+- Evidence-bound guided remediation explaining vulnerabilities, exploit
+  scenarios, recorded source-to-sink evidence, secure framework patterns, CWE
+  references, tests, regression risks, and verification steps without changing
+  source or claiming a fix.
+- Explicitly opt-in AI-assisted remediation with bounded context disclosure,
+  secret redaction, local and remote model modes, isolated worktree branches,
+  five mandatory verification classes, post-scan regression checks, and
+  verified-only draft pull requests.
 
 Severity handling, including unknown defaults and the audited Trivy CVSS
 fallback, is documented in `docs/SEVERITY_NORMALISATION.md`.
@@ -175,6 +200,42 @@ trustgate vex \
   --analyses vex-analyses.json \
   --output reports/trustgate.vex.cdx.json \
   --sign
+```
+
+Generate and verify a content-addressed audit-evidence manifest:
+
+```bash
+trustgate evidence generate \
+  --root . \
+  --config audit-evidence.json \
+  --output reports/audit-evidence.json
+trustgate evidence verify \
+  --root . \
+  --manifest reports/audit-evidence.json
+```
+
+List, apply, and roll back supported deterministic remediations:
+
+```bash
+trustgate remediate rules --output reports/remediation-rules.json
+trustgate remediate guide \
+  --input reports/findings.json \
+  --guidance remediation-guidance.json \
+  --output reports/remediation-guidance.json
+trustgate remediate apply \
+  --root . \
+  --plan remediation-plan.json \
+  --receipt reports/remediation-receipt.json
+trustgate remediate rollback \
+  --root . \
+  --receipt reports/remediation-receipt.json
+
+# Preview first; this command does not contact a model.
+trustgate remediate ai-context \
+  --root . \
+  --input reports/findings.json \
+  --request ai-context-request.json \
+  --output reports/ai-remediation-context.json
 ```
 
 Generate the bounded Markdown shown directly on a GitHub Actions Check Run:
@@ -390,6 +451,8 @@ action.yml           reusable composite Action
 - [Scanner compatibility](docs/SCANNER_COMPATIBILITY.md)
 - [Dependency update process](docs/DEPENDENCY_UPDATES.md)
 - [Benchmark methodology](docs/BENCHMARK_METHODOLOGY.md)
+- [Multilingual benchmark corpus](docs/MULTILINGUAL_BENCHMARK.md)
+- [Benchmark labelling and partitions](docs/BENCHMARK_LABELLING.md)
 - [Confidence methodology](docs/CONFIDENCE_METHODOLOGY.md)
 - [Threat-intelligence enrichment](docs/THREAT_INTELLIGENCE.md)
 - [Reachability analysis](docs/REACHABILITY_ANALYSIS.md)
@@ -400,6 +463,10 @@ action.yml           reusable composite Action
 - [Finding lifecycle](docs/FINDING_LIFECYCLE.md)
 - [Software bills of materials](docs/SBOM.md)
 - [Vulnerability Exploitability eXchange](docs/VEX.md)
+- [Audit evidence](docs/AUDIT_EVIDENCE.md)
+- [Deterministic remediation](docs/DETERMINISTIC_REMEDIATION.md)
+- [Guided remediation](docs/GUIDED_REMEDIATION.md)
+- [AI-assisted remediation](docs/AI_REMEDIATION.md)
 - [Implementation roadmap status](docs/ROADMAP_STATUS.md)
 - [Migration guide](docs/MIGRATION.md)
 - [Versioning policy](docs/VERSIONING.md)

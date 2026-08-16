@@ -1,0 +1,21 @@
+# TrustGate config for Kubernetes manifest scanning.
+# Uses Checkov for K8s policy checks, Trivy for image and config scanning,
+# and Gitleaks for secrets embedded in manifests.
+
+deployment_mode: local
+
+scanners:
+  - name: checkov
+    enabled: true
+  - name: trivy
+    enabled: true
+  - name: gitleaks
+    enabled: true
+
+policy:
+  extends:
+    - pack:container-security
+  severity_gate: medium
+  fail_on:
+    - severity: critical
+    - severity: high

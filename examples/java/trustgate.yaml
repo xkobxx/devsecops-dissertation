@@ -1,0 +1,27 @@
+# TrustGate config for a Java application.
+# Uses SpotBugs for SAST, Semgrep with Java rules, and Grype for SCA.
+
+deployment_mode: local
+
+scanners:
+  - name: spotbugs
+    enabled: true
+  - name: semgrep
+    enabled: true
+    options:
+      rulesets:
+        - p/java
+  - name: grype
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trivy
+    enabled: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true

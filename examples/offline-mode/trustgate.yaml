@@ -1,0 +1,32 @@
+# TrustGate config for fully offline operation.
+# No network access, no telemetry, pre-cached threat feeds only.
+# Suitable for air-gapped or restricted environments.
+
+deployment_mode: local
+
+network:
+  mode: disabled
+  telemetry_consent: false
+
+threat_feeds:
+  cached: true
+  offline_threat_import: /opt/trustgate/feeds/
+
+scanners:
+  - name: bandit
+    enabled: true
+  - name: semgrep
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trivy
+    enabled: true
+    options:
+      skip_db_update: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical

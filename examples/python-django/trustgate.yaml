@@ -1,0 +1,28 @@
+# TrustGate config for a Python Django application.
+# Includes Django-specific Semgrep rules and SCA via pip-audit.
+
+deployment_mode: local
+
+scanners:
+  - name: bandit
+    enabled: true
+  - name: semgrep
+    enabled: true
+    options:
+      rulesets:
+        - p/python
+        - p/django
+  - name: pip-audit
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trivy
+    enabled: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true

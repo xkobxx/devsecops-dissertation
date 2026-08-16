@@ -1,0 +1,21 @@
+# TrustGate config for Terraform infrastructure-as-code scanning.
+# Uses Checkov for IaC policy checks, Trivy for misconfiguration detection,
+# and Gitleaks for leaked secrets in .tf files.
+
+deployment_mode: local
+
+scanners:
+  - name: checkov
+    enabled: true
+  - name: trivy
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trufflehog
+    enabled: true
+
+policy:
+  severity_gate: medium
+  fail_on:
+    - severity: critical
+    - severity: high

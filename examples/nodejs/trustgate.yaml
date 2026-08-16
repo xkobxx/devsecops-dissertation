@@ -1,0 +1,28 @@
+# TrustGate config for a Node.js application.
+# Uses eslint-security for SAST, osv-scanner for SCA, and Gitleaks for secrets.
+
+deployment_mode: local
+
+scanners:
+  - name: eslint-security
+    enabled: true
+  - name: semgrep
+    enabled: true
+    options:
+      rulesets:
+        - p/javascript
+        - p/nodejs
+  - name: osv-scanner
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trivy
+    enabled: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true

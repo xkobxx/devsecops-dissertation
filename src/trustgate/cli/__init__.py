@@ -22,6 +22,8 @@ from trustgate.dast.cli import add_arguments as add_dast_arguments
 from trustgate.dast.cli import run as run_dast
 from trustgate.decisions.cli import add_arguments as add_decision_arguments
 from trustgate.decisions.cli import run as run_decision
+from trustgate.evidence.cli import add_arguments as add_evidence_arguments
+from trustgate.evidence.cli import run as run_evidence
 from trustgate.lifecycle.cli import add_arguments as add_suppression_arguments
 from trustgate.lifecycle.cli import run as run_suppression
 from trustgate.planning.cli import add_arguments as add_plan_arguments
@@ -30,6 +32,8 @@ from trustgate.policy.cli import add_arguments as add_policy_arguments
 from trustgate.policy.cli import run as run_policy
 from trustgate.reachability.cli import add_arguments as add_reachability_arguments
 from trustgate.reachability.cli import run as run_reachability
+from trustgate.remediation.cli import add_arguments as add_remediation_arguments
+from trustgate.remediation.cli import run as run_remediation
 from trustgate.reporting import add_arguments as add_reporting_arguments
 from trustgate.reporting import run as run_reporting
 from trustgate.sarif.cli import add_arguments as add_sarif_arguments
@@ -44,6 +48,8 @@ from trustgate.threat_intelligence.cli import (
     add_arguments as add_enrichment_arguments,
 )
 from trustgate.threat_intelligence.cli import run as run_enrichment
+from trustgate.release_verify import add_arguments as add_verify_arguments
+from trustgate.release_verify import run as run_verify
 from trustgate.vex.cli import add_arguments as add_vex_arguments
 from trustgate.vex.cli import run as run_vex
 
@@ -155,6 +161,18 @@ def build_parser() -> ArgumentParser:
     )
     add_vex_arguments(vex)
     vex.set_defaults(handler=run_vex)
+    evidence = commands.add_parser(
+        "evidence",
+        help="Generate or verify reproducible audit-evidence manifests.",
+    )
+    add_evidence_arguments(evidence)
+    evidence.set_defaults(handler=run_evidence)
+    remediate = commands.add_parser(
+        "remediate",
+        help="List, apply, or roll back deterministic source remediations.",
+    )
+    add_remediation_arguments(remediate)
+    remediate.set_defaults(handler=run_remediation)
     report = commands.add_parser(
         "report",
         help="Generate a static HTML report from normalised findings.",
@@ -179,6 +197,12 @@ def build_parser() -> ArgumentParser:
     )
     add_record_arguments(scanner_record)
     scanner_record.set_defaults(handler=record_scanner)
+    verify = commands.add_parser(
+        "verify-release",
+        help="Verify all release gates pass before publishing.",
+    )
+    add_verify_arguments(verify)
+    verify.set_defaults(handler=run_verify)
     return parser
 
 

@@ -1,0 +1,27 @@
+# TrustGate config for a Go application.
+# Uses gosec for SAST, Semgrep with Go rules, and osv-scanner for SCA.
+
+deployment_mode: local
+
+scanners:
+  - name: gosec
+    enabled: true
+  - name: semgrep
+    enabled: true
+    options:
+      rulesets:
+        - p/golang
+  - name: osv-scanner
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trivy
+    enabled: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true

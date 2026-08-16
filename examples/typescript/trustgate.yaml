@@ -1,0 +1,27 @@
+# TrustGate config for a TypeScript application.
+# Uses eslint-security for SAST, Semgrep with TypeScript rules, and osv-scanner for SCA.
+
+deployment_mode: local
+
+scanners:
+  - name: eslint-security
+    enabled: true
+  - name: semgrep
+    enabled: true
+    options:
+      rulesets:
+        - p/typescript
+  - name: osv-scanner
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trivy
+    enabled: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true

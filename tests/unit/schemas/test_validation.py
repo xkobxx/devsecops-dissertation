@@ -27,6 +27,7 @@ class SchemaValidationTests(unittest.TestCase):
         self.assertEqual(
             available_schema_versions(),
             {
+                "audit-evidence": ("1.0.0",),
                 "baseline": ("1.0.0",),
                 "baseline-diff": ("1.0.0",),
                 "baseline-gate": ("1.0.0",),
@@ -36,6 +37,7 @@ class SchemaValidationTests(unittest.TestCase):
                 "policy-result": ("1.0.0",),
                 "decision": ("1.0.0",),
                 "policy": ("1.0.0",),
+                "remediation-guidance": ("1.0.0",),
             },
         )
 

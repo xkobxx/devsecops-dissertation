@@ -1,0 +1,28 @@
+# TrustGate config for a Python Flask application.
+# Runs Bandit (SAST), pip-audit (SCA), Semgrep, Gitleaks, and Trivy.
+
+deployment_mode: local
+
+scanners:
+  - name: bandit
+    enabled: true
+  - name: semgrep
+    enabled: true
+    options:
+      rulesets:
+        - p/python
+        - p/flask
+  - name: pip-audit
+    enabled: true
+  - name: gitleaks
+    enabled: true
+  - name: trivy
+    enabled: true
+
+policy:
+  extends:
+    - pack:startup-baseline
+  severity_gate: high
+  fail_on:
+    - severity: critical
+    - kev: true
